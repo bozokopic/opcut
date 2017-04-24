@@ -1,0 +1,8 @@
+__pycache__
+/build
+/dist
+/.doit.*
+/yarn.lock
+/node_modules
+/src_py/opcut/json_validator.py
+/src_js/opcut/validator.js

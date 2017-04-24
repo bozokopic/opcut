@@ -1,0 +1,4 @@
+doit
+pyyaml
+jsonschema
+aiohttp
