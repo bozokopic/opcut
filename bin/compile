@@ -1,6 +1,5 @@
 #!/bin/sh
 
 cd $1
-pip install -r requirements.pip.txt
 doit clean_all
 doit
