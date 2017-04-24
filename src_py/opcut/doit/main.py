@@ -39,7 +39,9 @@ def task_dist_clean():
 def task_dist_build():
     """Distribution - build (DEFAULT)"""
 
-    return {'actions': [(_common.mkdir_p, ['dist'])],
+    return {'actions': [(_common.rm_rf, ['dist']),
+                        (_common.cp_r, ['build/pyopcut', 'dist']),
+                        (_common.cp_r, ['build/jsopcut', 'dist/web'])],
             'task_dep': [
                 'gen_all',
                 'pyopcut_build',
