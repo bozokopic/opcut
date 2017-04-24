@@ -14,7 +14,7 @@ Runtime requirements
 
 * python >=3.6
 
-Additional required python packages are listed in `requirements.pip.txt`.
+Additional required python packages are listed in `requirements.txt`.
 
 
 Development requirements
@@ -30,7 +30,7 @@ Build
 Build tool used for `opcut` is pydoit (`http://pydoit.org/`). It can be
 installed together with other python dependencies by running::
 
-    $ pip install -r requirements.pip.txt
+    $ pip install -r requirements.txt
 
 For listing available doit tasks, use::
 
