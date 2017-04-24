@@ -1,10 +1,10 @@
 optcut
 ======
 
-`https://opcut.herokuapp.com/`_
+`https://opcut.herokuapp.com/`
 
 `optcut` is cutting stock problem optimizer
-(`https://en.wikipedia.org/wiki/Cutting_stock_problem`_) utilizing multiple
+(`https://en.wikipedia.org/wiki/Cutting_stock_problem`) utilizing multiple
 panels and guillotine cuts (end-to-end cuts). This project includes multiple
 back-end optimizer implementations and single-page web application front-end.
 
@@ -22,6 +22,25 @@ Development requirements
 
 * nodejs >=7
 * yarn
+
+
+Build
+-----
+
+Build tool used for `opcut` is pydoit (`http://pydoit.org/`). It can be
+installed together with other python dependencies by running::
+
+    $ pip install -r requirements.pip.txt
+
+For listing available doit tasks, use::
+
+    $ doit list
+
+Default task::
+
+    $ doit
+
+creates `dist` folder containing `opcut` distribution.
 
 
 TODO
