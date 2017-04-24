@@ -5,6 +5,7 @@
     "image": "heroku/python",
     "buildpacks": [
         {"url": "heroku/python"},
+        {"url": "heroku/nodejs"},
         {"url": "https://github.com/bozokopic/opcut"}
     ]
 }
