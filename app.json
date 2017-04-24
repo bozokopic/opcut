@@ -4,6 +4,7 @@
     "repository": "https://github.com/bozokopic/opcut",
     "image": "heroku/python",
     "buildpacks": [
+        {"url": "heroku/python"},
         {"url": "https://github.com/bozokopic/opcut"}
     ]
 }
