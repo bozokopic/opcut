@@ -1,4 +1,1 @@
-from setuptools import setup
-
-
-setup(name='opcut')
+# this project uses pydoit as build tool - see README.rst
