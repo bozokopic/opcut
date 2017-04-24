@@ -51,6 +51,8 @@ TODO
     * organize build actions using pydoit and webpack
     * create heroku configuration
     * create CONTRIBUTING
+    * cleanup package.json
+    * cleanup webpack.config.js
 
 * optimizer
 
