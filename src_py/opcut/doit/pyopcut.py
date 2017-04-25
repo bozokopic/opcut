@@ -1,13 +1,14 @@
-import py_compile
+# import py_compile
 import os
 import yaml
 from pathlib import Path
+from doit.action import CmdAction
 
 from opcut.doit import _common
 
 
-__all__ = ['task_pyopcut_clean', 'task_pyopcut_build', 'task_pyopcut_gen',
-           'task_pyopcut_gen_json_validator']
+__all__ = ['task_pyopcut_clean', 'task_pyopcut_build', 'task_pyopcut_check',
+           'task_pyopcut_gen', 'task_pyopcut_gen_json_validator']
 
 
 def task_pyopcut_clean():
@@ -24,15 +25,15 @@ def task_pyopcut_build():
 
     def compile(src_path, dst_path):
         _common.mkdir_p(dst_path.parent)
-        if src_path.suffix == '.py':
-            py_compile.compile(src_path, dst_path, doraise=True)
-        else:
-            _common.cp_r(src_path, dst_path)
+        # if src_path.suffix == '.py':
+        #     py_compile.compile(src_path, dst_path.with_suffix('.pyc'),
+        #                        doraise=True)
+        # else:
+        #     _common.cp_r(src_path, dst_path)
+        _common.cp_r(src_path, dst_path)
 
     def create_subtask(src_path):
         dst_path = Path('build/pyopcut') / src_path.relative_to('src_py')
-        if dst_path.suffix == '.py':
-            dst_path = dst_path.with_suffix('.pyc')
         return {'name': str(src_path),
                 'actions': [(compile, [src_path, dst_path])],
                 'file_dep': [src_path],
@@ -48,6 +49,12 @@ def task_pyopcut_build():
             src_path = Path(dirpath) / i
             if src_path not in generated_files:
                 yield create_subtask(src_path)
+
+
+def task_pyopcut_check():
+    """PyOpcut - run flake8"""
+
+    return {'actions': [CmdAction('python -m flake8 .', cwd='src_py')]}
 
 
 def task_pyopcut_gen():

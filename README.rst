@@ -48,11 +48,10 @@ TODO
 
 * global
 
-    * organize build actions using pydoit and webpack
-    * create heroku configuration
     * create CONTRIBUTING
     * cleanup package.json
     * cleanup webpack.config.js
+    * write setup.py
 
 * optimizer
 
@@ -70,6 +69,5 @@ TODO
 
 * front-end
 
-    * create temporary web page
     * implement communication with back-end
     * additional GUI refactoring

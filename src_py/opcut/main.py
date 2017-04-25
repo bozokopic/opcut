@@ -7,6 +7,7 @@ import aiohttp.web
 import ssl
 import asyncio
 import contextlib
+import os.path
 
 from opcut import util
 import opcut.json_validator
@@ -21,23 +22,26 @@ def main():
         opcut.json_validator.validate(log_conf, 'opcut://logging.yaml#')
         logging.config.dictConfig(log_conf)
 
-    util.run_until_complete_without_interrupt(async_main(args))
-
-
-async def async_main(args):
-
     addr = urllib.parse.urlparse(args.ui_addr)
+    pem_path = args.ui_pem_path
+    ui_path = args.ui_path or os.path.join(os.path.dirname(__file__), 'web')
+
+    util.run_until_complete_without_interrupt(
+        async_main(addr, pem_path, ui_path))
+
+
+async def async_main(addr, pem_path, ui_path):
 
     if addr.scheme == 'https':
         ssl_ctx = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
-        ssl_ctx.load_cert_chain(args.ui_pem_path)
+        ssl_ctx.load_cert_chain(pem_path)
     else:
         ssl_ctx = None
 
     app = aiohttp.web.Application()
     app.router.add_route('GET', '/',
                          lambda req: aiohttp.web.HTTPFound('/index.html'))
-    app.router.add_static('/', args.ui_path)
+    app.router.add_static('/', ui_path)
     app_handler = app.make_handler()
 
     srv = await asyncio.get_event_loop().create_server(
@@ -63,13 +67,11 @@ def _create_parser():
              "<host> is hostname; <port> is tcp port number "
              "(default http://0.0.0.0:8080)")
     parser.add_argument(
-        '--ui-path', default='web',
-        metavar='path', dest='ui_path',
-        help="web front-end path (default web)")
-    parser.add_argument(
-        '--ui-pem', default=None,
-        metavar='path', dest='ui_pem_path',
+        '--ui-pem', default=None, metavar='path', dest='ui_pem_path',
         help="web front-end pem file path - required for https")
+    parser.add_argument(
+        '--ui-path', default=None, metavar='path', dest='ui_path',
+        help="override path to front-end web app")
     parser.add_argument(
         '--log', default=None, metavar='path', dest='log_conf_path',
         help="logging configuration")

@@ -30,6 +30,13 @@ def task_gen_all():
                          'jsopcut_gen']}
 
 
+def task_check_all():
+    """Check all"""
+
+    return {'actions': None,
+            'task_dep': ['pyopcut_check']}
+
+
 def task_dist_clean():
     """Distribution - clean"""
 
@@ -39,9 +46,14 @@ def task_dist_clean():
 def task_dist_build():
     """Distribution - build (DEFAULT)"""
 
+    def generate_setup_py():
+        with open('dist/setup.py', 'w', encoding='utf-8') as f:
+            f.write('\n')
+
     return {'actions': [(_common.rm_rf, ['dist']),
                         (_common.cp_r, ['build/pyopcut', 'dist']),
-                        (_common.cp_r, ['build/jsopcut', 'dist/web'])],
+                        (_common.cp_r, ['build/jsopcut', 'dist/opcut/web']),
+                        generate_setup_py],
             'task_dep': [
                 'gen_all',
                 'pyopcut_build',
