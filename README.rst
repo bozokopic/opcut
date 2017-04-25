@@ -1,9 +1,9 @@
-optcut
-======
+opcut
+=====
 
 `https://opcut.herokuapp.com/`
 
-`optcut` is cutting stock problem optimizer
+`opcut` is cutting stock problem optimizer
 (`https://en.wikipedia.org/wiki/Cutting_stock_problem`) utilizing multiple
 panels and guillotine cuts (end-to-end cuts). This project includes multiple
 back-end optimizer implementations and single-page web application front-end.
