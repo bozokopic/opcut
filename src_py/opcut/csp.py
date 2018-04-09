@@ -60,8 +60,8 @@ def _fitness(state):
                    sum(i.width * i.height
                        for i in panel_state.outputs)) / total_area
         result -= (_fitness_K *
-                   min(i.width * i.height for i in panel_state.outputs,
+                   min((i.width * i.height for i in panel_state.outputs),
                        default=0) *
-                   max(i.width * i.height for i in panel_state.inputs,
+                   max((i.width * i.height for i in panel_state.inputs),
                        default=0)) / (total_area * total_area)
     return result

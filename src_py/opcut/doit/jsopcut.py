@@ -1,6 +1,5 @@
 import json
 import yaml
-import subprocess
 from pathlib import Path
 
 from opcut.doit import _common
@@ -22,20 +21,13 @@ def task_jsopcut_clean():
 def task_jsopcut_install_deps():
     """JsOpcut - install dependencies"""
 
-    def patch():
-        subprocess.Popen(['patch', '-r', '/dev/null', '--forward', '-p0',
-                          '-i', 'node_modules.patch'],
-                         stdout=subprocess.DEVNULL,
-                         stderr=subprocess.DEVNULL).wait()
-
-    return {'actions': ['yarn install',
-                        patch]}
+    return {'actions': ['yarn install']}
 
 
 def task_jsopcut_remove_deps():
     """JsOpcut - remove dependencies"""
 
-    return {'actions': [(_common.rm_rf, ['node_modules', 'yarn.lock'])]}
+    return {'actions': [(_common.rm_rf, ['node_modules'])]}
 
 
 def task_jsopcut_gen():
