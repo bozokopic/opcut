@@ -15,7 +15,6 @@
     "css-loader": "0.28.9",
     "dateformat": "3.0.2",
     "dom-delegator": "13.1.0",
-    "electron": "1.7.6",
     "eslint": "4.18.2",
     "exports-loader": "0.6.4",
     "file-loader": "1.1.6",
