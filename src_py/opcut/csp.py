@@ -14,15 +14,15 @@ State = util.namedtuple(
 
 Panel = util.namedtuple(
     'Panel',
+    ['id', 'Any'],
     ['width', 'float'],
-    ['height', 'float'],
-    ['label', 'str'])
+    ['height', 'float'])
 
 Item = util.namedtuple(
     'Item',
+    ['id', 'Any'],
     ['width', 'float'],
     ['height', 'float'],
-    ['label', 'str'],
     ['rotate', 'bool'])
 
 Used = util.namedtuple(
@@ -33,7 +33,7 @@ Used = util.namedtuple(
     ['y', 'float'],
     ['rotate', 'bool'])
 
-Unused = util.namespace(
+Unused = util.namedtuple(
     'Unused',
     ['panel', 'Panel'],
     ['width', 'float'],
@@ -189,9 +189,9 @@ def _fitness(state):
     result = 0
     for panel in state.panels:
         used_areas = [used.item.width * used.item.height
-                      for used in panel.used]
+                      for used in state.used]
         unused_areas = [unused.width * unused.height
-                        for unused in panel.unused]
+                        for unused in state.unused]
         result += (panel.width * panel.height - sum(used_areas)) / total_area
         result -= (_fitness_K *
                    min(used_areas, default=0) * max(unused_areas, default=0) /
