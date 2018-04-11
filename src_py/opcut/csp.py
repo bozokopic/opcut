@@ -1,82 +1,35 @@
-import enum
 import itertools
 
-from opcut import util
-
-
-State = util.namedtuple(
-    '_State',
-    ['cut_width', 'float'],
-    ['panels', 'List[Panel]'],
-    ['items', 'List[Item]'],
-    ['used', 'List[Used]'],
-    ['unused', 'List[Unused]'])
-
-Panel = util.namedtuple(
-    'Panel',
-    ['id', 'Any'],
-    ['width', 'float'],
-    ['height', 'float'])
-
-Item = util.namedtuple(
-    'Item',
-    ['id', 'Any'],
-    ['width', 'float'],
-    ['height', 'float'],
-    ['rotate', 'bool'])
-
-Used = util.namedtuple(
-    'Used',
-    ['panel', 'Panel'],
-    ['item', 'Item'],
-    ['x', 'float'],
-    ['y', 'float'],
-    ['rotate', 'bool'])
-
-Unused = util.namedtuple(
-    'Unused',
-    ['panel', 'Panel'],
-    ['width', 'float'],
-    ['height', 'float'],
-    ['x', 'float'],
-    ['y', 'float'])
-
-Method = enum.Enum('Method', [
-    'GREEDY',
-    'FORWARD_GREEDY'])
-
-
-class UnresolvableError(Exception):
-    pass
+from opcut import common
 
 
 def calculate(panels, items, cut_width, method):
     """Calculate cutting stock problem
 
     Args:
-        panels (List[Panel]): input panels
-        items (List[Item]): input items
+        panels (List[common.Panel]): input panels
+        items (List[common.Item]): input items
         cut_width (float): cut width
-        method (Method): calculation method
+        method (common.Method): calculation method
 
     Returns:
         State
 
     """
-    state = State(
+    state = common.State(
         cut_width=cut_width,
         panels=panels,
         items=items,
         used=[],
-        unused=[Unused(panel=panel,
-                       width=panel.width,
-                       height=panel.height,
-                       x=0,
-                       y=0)
+        unused=[common.Unused(panel=panel,
+                              width=panel.width,
+                              height=panel.height,
+                              x=0,
+                              y=0)
                 for panel in panels])
     return {
-        Method.GREEDY: _calculate_greedy,
-        Method.FORWARD_GREEDY: _calculate_forward_greedy
+        common.Method.GREEDY: _calculate_greedy,
+        common.Method.FORWARD_GREEDY: _calculate_forward_greedy
     }[method](state)
 
 
@@ -93,7 +46,7 @@ def _calculate_greedy(state):
                 new_state = next_state
                 new_fitness = next_state_fitness
         if not new_state:
-            raise UnresolvableError()
+            raise common.UnresolvableError()
         state = new_state
     return state
 
@@ -105,13 +58,13 @@ def _calculate_forward_greedy(state):
         for next_state in _get_next_states(state):
             try:
                 next_state_fitness = _fitness(_calculate_greedy(next_state))
-            except UnresolvableError:
+            except common.UnresolvableError:
                 continue
             if new_fitness is None or next_state_fitness < new_fitness:
                 new_state = next_state
                 new_fitness = next_state_fitness
         if not new_state:
-            raise UnresolvableError()
+            raise common.UnresolvableError()
         state = new_state
     return state
 
@@ -134,7 +87,7 @@ def _get_next_states(state):
 def _get_next_states_for_item(state, item):
     ret = []
     loop_iter = ((False, i, unused) for i, unused in enumerate(state.unused))
-    if item.rotate:
+    if item.can_rotate:
         loop_iter = itertools.chain(
             loop_iter,
             ((True, i, unused) for i, unused in enumerate(state.unused)))
@@ -155,28 +108,28 @@ def _cut_item_from_unused(unused, item, rotate, cut_width, vertical):
     item_height = item.height if not rotate else item.width
     if unused.height < item_height or unused.width < item_width:
         return None, []
-    used = Used(panel=unused.panel,
-                item=item,
-                x=unused.x,
-                y=unused.y,
-                rotate=rotate)
+    used = common.Used(panel=unused.panel,
+                       item=item,
+                       x=unused.x,
+                       y=unused.y,
+                       rotate=rotate)
     new_unused = []
     width = unused.width - item_width - cut_width
-    height = unused.height if vertical else item.height
+    height = unused.height if vertical else item_height
     if width > 0:
-        new_unused.append(Unused(panel=unused.panel,
-                                 width=width,
-                                 height=height,
-                                 x=unused.x + item_width + cut_width,
-                                 y=unused.y))
+        new_unused.append(common.Unused(panel=unused.panel,
+                                        width=width,
+                                        height=height,
+                                        x=unused.x + item_width + cut_width,
+                                        y=unused.y))
     width = item_width if vertical else unused.width
     height = unused.height - item_height - cut_width
     if height > 0:
-        new_unused.append(Unused(panel=unused.panel,
-                                 width=width,
-                                 height=height,
-                                 x=unused.x,
-                                 y=unused.y + item_height + cut_width))
+        new_unused.append(common.Unused(panel=unused.panel,
+                                        width=width,
+                                        height=height,
+                                        x=unused.x,
+                                        y=unused.y + item_height + cut_width))
     return used, new_unused
 
 
