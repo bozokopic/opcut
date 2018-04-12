@@ -1,4 +1,53 @@
 ---
 "$schema": "http://json-schema.org/schema#"
 id: "opcut://messages.yaml#"
+oneOf:
+    - "$ref": "opcut://messages.yaml#/definitions/calculate/request"
+    - "$ref": "opcut://messages.yaml#/definitions/calculate/response"
+    - "$ref": "opcut://messages.yaml#/definitions/generate_output/request"
+    - "$ref": "opcut://messages.yaml#/definitions/generate_output/response"
+definitions:
+    calculate:
+        request:
+            type: object
+            required:
+                - params
+                - method
+            properties:
+                params:
+                    "$ref": "opcut://params.yaml#"
+                method:
+                    enum:
+                        - GREEDY
+                        - FORWARD_GREEDY
+        response:
+            type: object
+            required:
+                - result
+            properties:
+                result:
+                    oneOf:
+                        - type: "null"
+                        - "$ref": "opcut://result.yaml#"
+    generate_output:
+        request:
+            type: object
+            required:
+                - result
+                - output_type
+            properties:
+                result:
+                    "$ref": "opcut://result.yaml#"
+                output_type:
+                    enum:
+                        - PDF
+        response:
+            type: object
+            required:
+                - data
+            properties:
+                result:
+                    type:
+                        - string
+                        - "null"
 ...

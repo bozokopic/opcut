@@ -25,6 +25,22 @@ Development requirements
 * yarn
 
 
+Install
+-------
+
+.. todo::
+
+    ...
+
+
+Run
+---
+
+.. todo::
+
+    ...
+
+
 Build
 -----
 
@@ -59,7 +75,6 @@ TODO
 
 * back-end
 
-    * basic backend implementation in python
     * additional output formats
 
 * front-end

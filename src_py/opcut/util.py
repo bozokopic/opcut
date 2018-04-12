@@ -2,6 +2,7 @@ import contextlib
 import asyncio
 import sys
 import collections
+import concurrent
 
 
 def namedtuple(name, *props):
@@ -41,11 +42,12 @@ def namedtuple(name, *props):
     return cls
 
 
-def run_until_complete_without_interrupt(future):
+def run_until_complete_without_interrupt(future, loop=None):
     """Run event loop until future or coroutine is done
 
     Args:
         future (Awaitable): future or coroutine
+        loop (Optional[asyncio.AbstractEventLoop]): asyncio loop
 
     Returns:
         Any: provided future's result
@@ -55,24 +57,51 @@ def run_until_complete_without_interrupt(future):
     occur, task is cancelled only once.
 
     """
+    if not loop:
+        loop = asyncio.get_event_loop()
+
     async def ping_loop():
         with contextlib.suppress(asyncio.CancelledError):
             while True:
-                await asyncio.sleep(1)
+                await asyncio.sleep(1, loop=loop)
 
-    task = asyncio.ensure_future(future)
+    task = asyncio.ensure_future(future, loop=loop)
     if sys.platform == 'win32':
-        ping_loop_task = asyncio.ensure_future(ping_loop())
+        ping_loop_task = asyncio.ensure_future(ping_loop(), loop=loop)
     with contextlib.suppress(KeyboardInterrupt):
-        asyncio.get_event_loop().run_until_complete(task)
-    asyncio.get_event_loop().call_soon(task.cancel)
+        loop.run_until_complete(task)
+    loop.call_soon(task.cancel)
     if sys.platform == 'win32':
-        asyncio.get_event_loop().call_soon(ping_loop_task.cancel)
+        loop.call_soon(ping_loop_task.cancel)
     while not task.done():
         with contextlib.suppress(KeyboardInterrupt):
-            asyncio.get_event_loop().run_until_complete(task)
+            loop.run_until_complete(task)
     if sys.platform == 'win32':
         while not ping_loop_task.done():
             with contextlib.suppress(KeyboardInterrupt):
-                asyncio.get_event_loop().run_until_complete(ping_loop_task)
+                loop.run_until_complete(ping_loop_task)
     return task.result()
+
+
+def create_async_executor(*args,
+                          executor_cls=concurrent.futures.ThreadPoolExecutor,
+                          loop=None):
+    """Create run_in_executor wrapper
+
+    Args:
+        args (Any): executor init args
+        executor_cls (Type): executor class
+        loop (Optional[asyncio.AbstractEventLoop]): asyncio loop
+
+    Returns:
+        Callable[[Callable,...],Any]: coroutine accepting function and it's
+            arguments and returning function call result
+
+    """
+    executor = executor_cls(*args)
+
+    async def executor_wrapper(fn, *fn_args):
+        _loop = loop if loop else asyncio.get_event_loop()
+        return await _loop.run_in_executor(executor, fn, *fn_args)
+
+    return executor_wrapper
