@@ -1,0 +1,46 @@
+---
+"$schema": "http://json-schema.org/schema#"
+id: "opcut://params.yaml#"
+type: object
+required:
+    - cut_width
+    - panels
+    - items
+properties:
+    cut_width:
+        type: number
+    panels:
+        type: object
+        patternProperties:
+            "(.)+":
+                "$ref": "opcut://params.yaml#/definitions/panel"
+    items:
+        type: object
+        patternProperties:
+            "(.)+":
+                "$ref": "opcut://params.yaml#/definitions/item"
+definitions:
+    panel:
+        type: object
+        required:
+            - width
+            - height
+        properties:
+            width:
+                type: number
+            height:
+                type: number
+    item:
+        type: object
+        required:
+            - width
+            - height
+            - can_rotate
+        properties:
+            width:
+                type: number
+            height:
+                type: number
+            can_rotate:
+                type: boolean
+...

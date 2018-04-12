@@ -1,0 +1,59 @@
+---
+"$schema": "http://json-schema.org/schema#"
+id: "opcut://result.yaml#"
+type: object
+required:
+    - params
+    - used
+    - unused
+properties:
+    params:
+        "$ref": "opcut://params.yaml#"
+    used:
+        type: array
+        items:
+            "$ref": "opcut://result.yaml#/definitions/used"
+    unused:
+        type: array
+        items:
+            "$ref": "opcut://result.yaml#/definitions/unused"
+definitions:
+    used:
+        type: object
+        required:
+            - panel
+            - item
+            - x
+            - y
+            - rotate
+        properties:
+            panel:
+                type: string
+            item:
+                type: string
+            x:
+                type: number
+            y:
+                type: number
+            rotate:
+                type: boolean
+    unused:
+        type: object
+        required:
+            - panel
+            - width
+            - height
+            - x
+            - y
+        properties:
+            panel:
+                type: string
+            width:
+                type: number
+            height:
+                type: number
+            x:
+                type: number
+            y:
+                type: number
+...

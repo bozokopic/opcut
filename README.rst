@@ -6,7 +6,8 @@ opcut
 `opcut` is cutting stock problem optimizer
 (`https://en.wikipedia.org/wiki/Cutting_stock_problem`) utilizing multiple
 panels and guillotine cuts (end-to-end cuts). This project includes multiple
-back-end optimizer implementations and single-page web application front-end.
+back-end optimizer implementations, command line front-end and single-page web
+application front-end.
 
 
 Runtime requirements
@@ -49,23 +50,17 @@ TODO
 * global
 
     * create CONTRIBUTING
-    * cleanup package.json
-    * cleanup webpack.config.js
     * write setup.py
 
 * optimizer
 
-    * evaluate research papers and proposed algorithms
-    * define optimizer api
-    * implement multiple algorithms in python
-    * evaluate python implementations and do native rewrites is needed
+    * add additional algorithms
+    * evaluate python implementations and do native rewrites if needed
 
 * back-end
 
-    * define json schemas and communication interface between back-end and
-      front-end
     * basic backend implementation in python
-    * additional functionality (multiple output formats)
+    * additional output formats
 
 * front-end
 

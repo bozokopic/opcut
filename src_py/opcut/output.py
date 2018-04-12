@@ -6,13 +6,13 @@ from reportlab.lib.units import mm
 from opcut import util
 
 
-def generate_pdf(state, pagesize_mm=(210, 297),
+def generate_pdf(result, pagesize_mm=(210, 297),
                  margin_top_mm=10, margin_bottom_mm=20,
                  margin_left_mm=10, margin_right_mm=10):
     """Generate PDF output
 
     Args:
-        state (opcut.common.State): state
+        result (opcut.common.Result): result
         pagesize (Tuple[float,float]): page size as (with, height) in mm
         margin_top_mm (float): margin top in mm
         margin_bottom_mm (float): margin bottom in mm
@@ -31,17 +31,17 @@ def generate_pdf(state, pagesize_mm=(210, 297),
     ret = io.BytesIO()
     c = canvas.Canvas(ret, pagesize=pagesize)
     c.setFillColorRGB(0.9, 0.9, 0.9)
-    for panel in state.panels:
-        _pdf_write_panel(c, pagesize, margin, state, panel)
+    for panel in result.params.panels:
+        _pdf_write_panel(c, pagesize, margin, result, panel)
     c.save()
     return ret.getvalue()
 
 
-def generate_csv(state):
+def generate_csv(result):
     """Generate CSV output
 
     Args:
-        state (opcut.common.State): state
+        result (opcut.common.Result): result
 
     Returns:
         bytes
@@ -53,7 +53,7 @@ def generate_csv(state):
 _Margin = util.namedtuple('_Margin', 'top', 'right', 'bottom', 'left')
 
 
-def _pdf_write_panel(c, pagesize, margin, state, panel):
+def _pdf_write_panel(c, pagesize, margin, result, panel):
     if (panel.width / panel.height >
             (pagesize[0] - margin.left - margin.right) /
             (pagesize[1] - margin.top - margin.bottom)):
@@ -72,21 +72,21 @@ def _pdf_write_panel(c, pagesize, margin, state, panel):
           (margin.top + margin.bottom))
     c.setFillColorRGB(0.5, 0.5, 0.5)
     c.rect(x0, y0, width, height, stroke=1, fill=1)
-    for used in state.used:
+    for used in result.used:
         if used.panel != panel:
             continue
-        _pdf_write_used(c, x0, y0, scale, state, used)
-    for unused in state.unused:
+        _pdf_write_used(c, x0, y0, scale, result, used)
+    for unused in result.unused:
         if unused.panel != panel:
             continue
-        _pdf_write_unused(c, x0, y0, scale, state, unused)
+        _pdf_write_unused(c, x0, y0, scale, result, unused)
     c.setFillColorRGB(0, 0, 0)
     c.drawCentredString(pagesize[0] / 2,  margin.bottom / 2,
                         panel.id)
     c.showPage()
 
 
-def _pdf_write_used(c, x0, y0, scale, state, used):
+def _pdf_write_used(c, x0, y0, scale, result, used):
     width = used.item.width * scale
     height = used.item.height * scale
     if used.rotate:
@@ -99,7 +99,7 @@ def _pdf_write_used(c, x0, y0, scale, state, used):
     c.drawCentredString(x + width / 2,  y + height / 2 - 6, used.item.id)
 
 
-def _pdf_write_unused(c, x0, y0, scale, state, unused):
+def _pdf_write_unused(c, x0, y0, scale, result, unused):
     width = unused.width * scale
     height = unused.height * scale
     x = unused.x * scale + x0
