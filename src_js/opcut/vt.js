@@ -23,7 +23,7 @@ function leftPanel() {
                 ['span.fa.fa-github']
             ]
         ],
-        ['div',
+        ['div.group',
             ['label', 'Method'],
             ['select',
                 ['FORWARD_GREEDY', 'GREEDY'].map(method =>
@@ -36,7 +36,7 @@ function leftPanel() {
                     ])
             ]
         ],
-        ['div',
+        ['div.group',
             ['label', 'Cut width'],
             ['input', {
                 props: {

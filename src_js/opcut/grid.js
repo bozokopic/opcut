@@ -1,3 +1,5 @@
+import Papa from 'papaparse';
+
 import r from 'opcut/renderer';
 import * as u from 'opcut/util';
 import * as ev from 'opcut/ev';
@@ -68,7 +70,7 @@ export function tbody(gridPath, columns, validators) {
 }
 
 
-export function tfoot(gridPath, colspan, newItem) {
+export function tfoot(gridPath, colspan, newItem, csvColumns) {
     const itemsPath = [gridPath, 'items'];
     return ['tfoot',
         ['tr',
@@ -85,11 +87,42 @@ export function tfoot(gridPath, colspan, newItem) {
                         'ev-click': () => r.set(itemsPath, [])},
                         ['span.fa.fa-trash-o'],
                         ' Remove all'
-                    ]
+                    ],
+                    (!csvColumns ?
+                        [] :
+                        [
+                            ['button', {
+                                'ev-click': () => {
+                                    const items = importCsv(csvColumns, newItem);
+                                    if (!items)
+                                        return;
+                                    r.change(itemsPath, state => state.concat(items));
+                                }},
+                                ['span.fa.fa-download'],
+                                ' Import from CSV'
+                            ],
+                            ['button', {
+                                'ev-click': () => exportCsv(r.get(itemsPath), csvColumns)},
+                                ['span.fa.fa-upload'],
+                                ' Export to CSV'
+                            ]
+                        ]
+                    )
                 ]
             ]
         ]
     ];
+}
+
+
+export function createStringCsvColumns(...columns) {
+    return u.pipe(
+        u.map(i => [i, {
+            toString: u.get(i),
+            toItem: u.set(i)
+        }]),
+        u.fromPairs
+    )(columns);
 }
 
 
@@ -172,4 +205,37 @@ export function selectColumn(gridPath, column, values) {
             })
         ];
     };
+}
+
+
+function importCsv(csvColumns, newItem) {
+    fs.loadText('csv').then(csvData => {
+        const result = Papa.parse(csvData, {
+            delimiter: ';',
+            skipEmptyLines: true,
+            header: true
+        });
+
+        const items = [];
+        for (let i of result.data) {
+            if (!Object.keys(i).every(k => u.contains(k, Object.keys(csvColumns))))
+                continue;
+            const item = u.reduce(
+                (acc, [name, column]) => column.toItem(i[name], acc),
+                newItem,
+                u.toPairs(csvColumns));
+            items.push(item);
+        }
+        return items;
+    });
+}
+
+
+function exportCsv(items, csvColumns) {
+    const csvData = Papa.unparse(
+        items.map(item => u.map(column => column.toString(item))(csvColumns)), {
+            delimiter: ';',
+            skipEmptyLines: true,
+            header: true});
+    fs.saveText(csvData, 'data.csv');
 }
