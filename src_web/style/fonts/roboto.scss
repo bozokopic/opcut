@@ -1,0 +1,15 @@
+@import "font";
+
+
+@include font('Roboto', 'Black', 900, normal);
+@include font('Roboto', 'BlackItalic', 900, italic);
+@include font('Roboto', 'Bold', 700, normal);
+@include font('Roboto', 'BoldItalic', 700, italic);
+@include font('Roboto', 'Medium', 500, normal);
+@include font('Roboto', 'MediumItalic', 500, italic);
+@include font('Roboto', 'Regular', 400, normal);
+@include font('Roboto', 'RegularItalic', 400, italic);
+@include font('Roboto', 'Light', 300, normal);
+@include font('Roboto', 'LightItalic', 300, italic);
+@include font('Roboto', 'Thin', 100, normal);
+@include font('Roboto', 'ThinItalic', 100, italic);

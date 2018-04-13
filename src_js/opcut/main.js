@@ -1,7 +1,7 @@
 import r from 'opcut/renderer';
 import * as u from 'opcut/util';
 import * as ev from 'opcut/ev';
-import * as common from 'opcut/common';
+import * as states from 'opcut/states';
 import * as vt from 'opcut/vt';
 
 import 'style/main.scss';
@@ -9,7 +9,7 @@ import 'style/main.scss';
 
 function main() {
     let root = document.body.appendChild(document.createElement('div'));
-    r.init(root, common.defaultState, vt.main);
+    r.init(root, states.main, vt.main);
 }
 
 

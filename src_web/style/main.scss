@@ -1,6 +1,96 @@
 @import '~normalize.css/normalize';
 
-body {
-    font-size: 9pt;
-    margin: 5px;
+@import './fonts/fontawesome';
+@import './fonts/roboto';
+@import './color';
+
+
+html, body {
+    font-size: 10pt;
+    font-family: 'Roboto';
+    height: 100%;
+    margin: 0px;
+}
+
+
+.window {
+    height: 100%;
+    display: flex;
+}
+
+
+.left-panel {
+    width: 300px;
+    display: flex;
+    flex-direction: column;
+    background-color: $color-grey-100;
+
+    & > * {
+        display: flex;
+        flex-direction: column;
+        margin: 10px;
+        margin-bottom: 0px;
+        flex-shrink: 0;
+    }
+
+    .header {
+        margin-bottom: 10px;
+        color: $color-grey-800;
+        flex-direction: row;
+        align-items: center;
+
+        .title {
+            flex-grow: 1;
+            font-size: 18pt;
+            font-weight: 500;
+        }
+
+        a {
+            font-size: 24pt;
+
+            &:visited {
+                color: $color-grey-800;
+            }
+
+            &:hover {
+                color: black;
+            }
+        }
+    }
+
+    .list {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        flex-shrink: 1;
+
+        & > * {
+            flex-shrink: 0;
+        }
+
+        .content {
+            flex-grow: 1;
+            flex-shrink: 1;
+            overflow: auto;
+        }
+
+        .add {
+            align-self: flex-end;
+        }
+    }
+
+    .submit {
+        margin: 10px;
+        padding: 10px;
+    }
+}
+
+
+.center-panel {
+    flex-grow: 1;
+}
+
+
+.right-panel {
+
 }
