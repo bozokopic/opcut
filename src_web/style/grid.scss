@@ -1,0 +1,53 @@
+@import './color';
+
+
+table.grid {
+    table-layout: fixed;
+    border-spacing: 0px;
+    border: 1px solid $color-grey-400;
+
+    td:not(:last-child) {
+        border-right: 1px solid $color-grey-300;
+    }
+
+    thead tr, tfoot tr {
+        background-color: $color-grey-200;
+    }
+
+    td, th {
+        padding: 4px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    tbody td {
+        background-color: white;
+    }
+
+    tbody td, tfoot td {
+        border-top: 1px solid $color-grey-400;
+    }
+
+    input {
+        width: 100%;
+    }
+
+    input[type=text] {
+        position: relative;
+        border: 1px;
+        font-size: 10pt;
+        font-family: 'Roboto';
+    }
+
+    tfoot td > div {
+        display: flex;
+
+        & > .spacer {
+            flex-grow: 1;
+        }
+    }
+
+    .invalid {
+        background-color: rgba(red, 0.2);
+    }
+}
