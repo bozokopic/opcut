@@ -3,3 +3,4 @@ pyyaml
 jsonschema
 aiohttp
 flake8
+reportlab
