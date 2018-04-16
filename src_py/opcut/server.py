@@ -57,7 +57,7 @@ async def _calculate_handler(executor, request):
         result_json_data = common.result_to_json_data(result)
     except asyncio.CancelledError:
         raise
-    except Exception:
+    except Exception as e:
         result_json_data = None
     return aiohttp.web.json_response({'result': result_json_data})
 
@@ -73,7 +73,7 @@ async def _generate_output_handler(executor, request):
         output_json_data = base64.b64encode(output).decode('utf-8')
     except asyncio.CancelledError:
         raise
-    except Exception:
+    except Exception as e:
         output_json_data = None
     return aiohttp.web.json_response({'data': output_json_data})
 

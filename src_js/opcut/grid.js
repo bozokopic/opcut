@@ -3,6 +3,7 @@ import Papa from 'papaparse';
 import r from 'opcut/renderer';
 import * as u from 'opcut/util';
 import * as ev from 'opcut/ev';
+import * as fs from 'opcut/fs';
 
 
 export const state = {
@@ -57,7 +58,7 @@ export function tbody(gridPath, columns, validators) {
                 }
             }
             const title = (validator ? validator(u.get(column, row), row) : null);
-            return ['td', {
+            return ['td' + (typeof column == 'function' ? '' : '.grid-col-' + column), {
                 class: {
                     invalid: title
                 },
@@ -104,10 +105,9 @@ export function tfoot(gridPath, colspan, newItem, csvColumns) {
                             ['button', {
                                 on: {
                                     click: () => {
-                                        const items = importCsv(csvColumns, newItem);
-                                        if (!items)
-                                            return;
-                                        r.change(itemsPath, state => state.concat(items));
+                                        importCsv(csvColumns, newItem).then(items => {
+                                            r.change(itemsPath, state => state.concat(items));
+                                        });
                                     }
                                 }},
                                 ['span.fa.fa-download'],
@@ -253,24 +253,25 @@ export function selectColumn(gridPath, column, values) {
 
 
 function importCsv(csvColumns, newItem) {
-    fs.loadText('csv').then(csvData => {
-        const result = Papa.parse(csvData, {
-            delimiter: ';',
-            skipEmptyLines: true,
-            header: true
+    return new Promise(resolve => {
+        fs.loadText('csv').then(csvData => {
+            const result = Papa.parse(csvData, {
+                delimiter: ';',
+                skipEmptyLines: true,
+                header: true
+            });
+            const items = [];
+            for (let i of result.data) {
+                if (!Object.keys(i).every(k => u.contains(k, Object.keys(csvColumns))))
+                    continue;
+                const item = u.reduce(
+                    (acc, [name, column]) => column.toItem(i[name], acc),
+                    newItem,
+                    u.toPairs(csvColumns));
+                items.push(item);
+            }
+            resolve(items);
         });
-
-        const items = [];
-        for (let i of result.data) {
-            if (!Object.keys(i).every(k => u.contains(k, Object.keys(csvColumns))))
-                continue;
-            const item = u.reduce(
-                (acc, [name, column]) => column.toItem(i[name], acc),
-                newItem,
-                u.toPairs(csvColumns));
-            items.push(item);
-        }
-        return items;
     });
 }
 

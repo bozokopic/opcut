@@ -1,6 +1,7 @@
 import h from 'hyperscript';
 import FileSaver from 'file-saver';
 
+import * as u from 'opcut/util';
 import * as ev from 'opcut/ev';
 
 

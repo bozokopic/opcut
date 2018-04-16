@@ -9,8 +9,8 @@ import * as validators from 'opcut/validators';
 export function main() {
     return ['div.window',
         leftPanel(),
-        ['div.center-panel'],
-        ['div.right-panel']
+        centerPanel(),
+        rightPanel()
     ];
 }
 
@@ -26,6 +26,7 @@ function leftPanel() {
             ['div.title', 'OPCUT'],
             ['a', {
                 props: {
+                    title: 'GitHub',
                     href: 'https://github.com/bozokopic/opcut'
                 }},
                 ['span.fa.fa-github']
@@ -131,6 +132,70 @@ function leftPanelItems() {
                        ['name', 'width', 'height', rotateColumn, deleteColumn],
                        [nameValidator, widthValidator, heightValidator]),
             grid.tfoot(itemsPath, 5, states.itemsItem, csvColumns)
+        ]
+    ];
+}
+
+
+function rightPanel() {
+    const result = r.get('result');
+    return ['div.right-panel', (!result ?
+        [] :
+        [
+            ['div.toolbar',
+                ['button', {
+                    on: {
+                        click: () => common.generateOutput('PDF')
+                    }},
+                    ['span.fa.fa-file-pdf-o'],
+                    ' PDF'
+                ]
+            ],
+            Object.keys(result.params.panels).map(rightPanelPanel)
+        ])
+    ];
+}
+
+
+function rightPanelPanel(panel) {
+    const isSelected = item => u.equals(r.get('selected'), {panel: panel, item: item});
+    return ['div.panel',
+        ['div.panel-name', {
+            class: {
+                selected: isSelected(null)
+            },
+            on: {
+                click: () => r.set('selected', {panel: panel, item: null})
+            }},
+            panel
+        ],
+        u.filter(used => used.panel == panel)(r.get('result', 'used')).map(used =>
+            ['div.item', {
+                class: {
+                    selected: isSelected(used.item)
+                },
+                on: {
+                    click: () => r.set('selected', {panel: panel, item: used.item})
+                }},
+                ['div.item-name', used.item],
+                (used.rotate ? ['span.item-rotate.fa.fa-refresh'] : []),
+                ['div.item-x',
+                    'X:',
+                    String(used.x)
+                ],
+                ['div.item-y',
+                    'Y:',
+                    String(used.y)
+                ]
+            ])
+    ];
+}
+
+
+function centerPanel() {
+    return ['div.center-panel',
+        ['svg',
+
         ]
     ];
 }

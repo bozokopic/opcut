@@ -3,6 +3,8 @@ import iziToast from 'izitoast';
 
 import r from 'opcut/renderer';
 import * as u from 'opcut/util';
+import * as states from 'opcut/states';
+import * as fs from 'opcut/fs';
 
 
 const calculateUrl = URI.resolve(window.location.href, './calculate');
@@ -41,6 +43,19 @@ export function calculate() {
 }
 
 
+export function generateOutput(output_type) {
+    const msg = {
+        output_type: output_type,
+        result: r.get('result')
+    };
+    const req = new XMLHttpRequest();
+    req.onload = () => parseGenerateOutputResponse(JSON.parse(req.responseText), output_type);
+    req.open('POST', generateOutputUrl);
+    req.setRequestHeader('Content-Type', 'application/json');
+    req.send(JSON.stringify(msg));
+}
+
+
 function validateCalculateRequest(msg) {
     if (!Number.isFinite(msg.params.cut_width) || msg.params.cut_width < 0)
         throw 'Invalid cut width';
@@ -68,7 +83,25 @@ function validateCalculateRequest(msg) {
 
 
 function parseCalculateResponse(msg) {
-    
+    r.change(u.pipe(
+        u.set('result', msg.result),
+        u.set('selected', states.main.selected)
+    ));
+    if (msg.result) {
+        showNotification('New calculation available', 'success');
+    } else {
+        showNotification('Could not resolve calculation', 'error');
+    }
+}
+
+
+function parseGenerateOutputResponse(msg, output_type) {
+    if (msg.data) {
+        const fileName = 'output.pdf';
+        fs.saveB64Data(msg.data, fileName);
+    } else {
+        showNotification('Error generating output', 'error');
+    };
 }
 
 

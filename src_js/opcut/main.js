@@ -14,3 +14,4 @@ function main() {
 
 
 ev.on(window, 'load', main);
+window.r = r;

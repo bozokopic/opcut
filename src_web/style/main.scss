@@ -83,6 +83,14 @@ html, body {
             tbody td:last-child {
                 text-align: center;
             }
+
+            .grid-col-width, .grid-col-height {
+                text-align: right;
+
+                input {
+                    text-align: right;
+                }
+            }
         }
 
         & > *:not(:last-child) {
@@ -104,9 +112,57 @@ html, body {
 
 .center-panel {
     flex-grow: 1;
+    overflow: auto;
 }
 
 
 .right-panel {
+    @include shadow-4dp();
+    width: 200px;
+    display: flex;
+    flex-direction: column;
+    background-color: $color-grey-100;
+    overflow: auto;
 
+    .toolbar {
+        display: flex;
+        justify-content: center;
+        margin: 10px;
+    }
+
+    .panel {
+        margin: 15px 0px;
+
+        & > *:hover {
+            background-color: $color-grey-400;
+            cursor: pointer;
+        }
+    }
+
+    .panel-name {
+        padding: 3px 10px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-weight: 600;
+        color: $color-grey-800;
+    }
+
+    .item {
+        padding: 3px 10px 3px 20px;
+        display: flex;
+
+        .item-name {
+            flex-grow: 1;
+        }
+
+        .item-rotate, .item-x, .item-y {
+            margin-left: 3px;
+            font-weight: 600;
+            color: $color-grey-800;
+        }
+    }
+
+    .selected {
+        background-color: $color-grey-400;
+    }
 }

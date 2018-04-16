@@ -7,7 +7,12 @@ export const main = {
         cut_width: '1',
         panels: grid.state,
         items: grid.state
-    }
+    },
+    result: null,
+    selected: {
+        panel: null,
+        item: null
+    },
 };
 
 
