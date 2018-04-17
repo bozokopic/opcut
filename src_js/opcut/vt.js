@@ -193,9 +193,78 @@ function rightPanelPanel(panel) {
 
 
 function centerPanel() {
+    const result = r.get('result');
+    const selected = r.get('selected');
+    if (!result || !selected.panel)
+        return ['div.center-panel'];
+    const panel = result.params.panels[selected.panel];
+    const used = u.filter(i => i.panel == selected.panel, result.used);
+    const unused = u.filter(i => i.panel == selected.panel, result.unused);
+    const panelColor = 'rgb(189,189,189)';
+    const itemColor = 'rgb(250,250,250)';
+    const selectedItemColor = 'rgb(200,140,140)';
+    const unusedColor = 'rgb(238,238,238)';
+    const fontSize = String(panel.height * 0.02);
     return ['div.center-panel',
-        ['svg',
-
+        ['svg', {
+            attrs: {
+                width: '100%',
+                height: '100%',
+                viewBox: [0, 0, panel.width, panel.height].join(' '),
+                preserveAspectRatio: 'xMidYMid'
+            }},
+            ['rect', {
+                attrs: {
+                    x: '0',
+                    y: '0',
+                    width: String(panel.width),
+                    height: String(panel.height),
+                    'stroke-width': '0',
+                    fill: panelColor
+                }}
+            ],
+            used.map(used => {
+                const item = result.params.items[used.item];
+                const width = (used.rotate ? item.height : item.width);
+                const height = (used.rotate ? item.width : item.height);
+                return ['rect', {
+                    attrs: {
+                        x: String(used.x),
+                        y: String(used.y),
+                        width: String(width),
+                        height: String(height),
+                        'stroke-width': '0',
+                        fill: (used.item == selected.item ? selectedItemColor : itemColor)
+                    }}
+                ];
+            }),
+            unused.map(unused => {
+                return ['rect', {
+                    attrs: {
+                        x: String(unused.x),
+                        y: String(unused.y),
+                        width: String(unused.width),
+                        height: String(unused.height),
+                        'stroke-width': '0',
+                        fill: unusedColor
+                    }}
+                ];
+            }),
+            used.map(used => {
+                const item = result.params.items[used.item];
+                const width = (used.rotate ? item.height : item.width);
+                const height = (used.rotate ? item.width : item.height);
+                return ['text', {
+                    attrs: {
+                        x: String(used.x + width / 2),
+                        y: String(used.y + height / 2),
+                        'alignment-baseline': 'middle',
+                        'text-anchor': 'middle',
+                        'font-size': fontSize
+                    }},
+                    used.item
+                ];
+            })
         ]
     ];
 }

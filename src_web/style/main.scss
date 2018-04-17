@@ -113,6 +113,10 @@ html, body {
 .center-panel {
     flex-grow: 1;
     overflow: auto;
+    padding: 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 
