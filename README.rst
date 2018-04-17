@@ -28,17 +28,13 @@ Development requirements
 Install
 -------
 
-.. todo::
-
-    ...
+...
 
 
 Run
 ---
 
-.. todo::
-
-    ...
+...
 
 
 Build
@@ -79,5 +75,4 @@ TODO
 
 * front-end
 
-    * implement communication with back-end
     * additional GUI refactoring
