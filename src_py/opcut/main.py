@@ -77,15 +77,16 @@ def output(args):
         args: command line argument
 
     """
+    if not args.output_path:
+        return
     with open(args.result_path, 'r', encoding='utf-8') as f:
         result_json_data = yaml.safe_load(f)
     opcut.json_validator.validate(result_json_data, 'opcut://result.yaml#')
     result = common.json_data_to_result(result_json_data)
-
-    if args.output_pdf_path:
-        pdf_bytes = opcut.output.generate_pdf(result)
-        with open(args.output_pdf_path, 'wb') as f:
-            f.write(pdf_bytes)
+    output_bytes = opcut.output.generate_output(result, args.output_type,
+                                                args.output_panel_id)
+    with open(args.output_path, 'wb') as f:
+        f.write(output_bytes)
 
 
 def _create_parser():
@@ -129,8 +130,16 @@ def _create_parser():
             help="calculate result file path "
                  "(specified by opcut://result.yaml#)")
         p.add_argument(
-            '--output-pdf', default=None, metavar='path',
-            dest='output_pdf_path', help="optional PDF output file path")
+            '--output-type', dest='output_type', type=common.OutputType,
+            default=common.OutputType.PDF,
+            choices=list(map(lambda x: x.name, common.OutputType)),
+            help="output type (default PDF)")
+        p.add_argument(
+            '--output-panel', default=None, metavar='panel_id',
+            dest='output_panel_id', help="output panel id")
+        p.add_argument(
+            '--output', default=None, metavar='path', dest='output_path',
+            help="optional output file path")
 
     return parser
 

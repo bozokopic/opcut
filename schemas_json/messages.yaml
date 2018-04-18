@@ -35,12 +35,17 @@ definitions:
             required:
                 - result
                 - output_type
+                - panel
             properties:
                 result:
                     "$ref": "opcut://result.yaml#"
                 output_type:
                     enum:
                         - PDF
+                panel:
+                    type:
+                        - "null"
+                        - string
         response:
             type: object
             required:

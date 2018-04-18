@@ -3,6 +3,8 @@ import enum
 from opcut import util
 
 
+mm = 72 / 25.4
+
 Params = util.namedtuple(
     'Params',
     ['cut_width', 'float'],
@@ -44,9 +46,20 @@ Unused = util.namedtuple(
     ['x', 'float'],
     ['y', 'float'])
 
+OutputSettings = util.namedtuple(
+    'OutputSettings',
+    ['pagesize', 'Tuple[float,float]', (210 * mm, 297 * mm)],
+    ['margin_top', 'float', 10 * mm],
+    ['margin_bottom', 'float', 20 * mm],
+    ['margin_left', 'float', 10 * mm],
+    ['margin_right', 'float', 10 * mm])
+
 Method = enum.Enum('Method', [
     'GREEDY',
     'FORWARD_GREEDY'])
+
+OutputType = enum.Enum('OutputType', [
+    'PDF'])
 
 
 class UnresolvableError(Exception):

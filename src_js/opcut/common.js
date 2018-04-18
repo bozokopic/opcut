@@ -21,10 +21,11 @@ export function calculate() {
 }
 
 
-export function generateOutput(output_type) {
+export function generateOutput(output_type, panel) {
     const msg = {
         output_type: output_type,
-        result: r.get('result')
+        result: r.get('result'),
+        panel: panel
     };
     send(generateOutputUrl, msg).then(msg => parseGenerateOutputResponse(msg, output_type));
 }

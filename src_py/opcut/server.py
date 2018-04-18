@@ -68,8 +68,10 @@ async def _generate_output_handler(executor, request):
         opcut.json_validator.validate(
             msg, 'opcut://messages.yaml#/definitions/generate_output/request')
         result = common.json_data_to_result(msg['result'])
-        output_type = msg['output_type']
-        output = await executor(_ext_generate_output, result, output_type)
+        output_type = common.OutputType[msg['output_type']]
+        panel = msg['panel']
+        output = await executor(_ext_generate_output, result, output_type,
+                                panel)
         output_json_data = base64.b64encode(output).decode('utf-8')
     except asyncio.CancelledError:
         raise
@@ -82,7 +84,5 @@ def _ext_calculate(params, method):
     return opcut.csp.calculate(params, method)
 
 
-def _ext_generate_output(result, output_type):
-    if output_type == 'PDF':
-        return opcut.output.generate_pdf(result)
-    raise ValueError('output_type {} not supported'.format(output_type))
+def _ext_generate_output(result, output_type, panel):
+    return opcut.output.generate_output(result, output_type, panel)

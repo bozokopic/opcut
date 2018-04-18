@@ -149,7 +149,7 @@ function rightPanel() {
             ['div.toolbar',
                 ['button', {
                     on: {
-                        click: () => common.generateOutput('PDF')
+                        click: () => common.generateOutput('PDF', null)
                     }},
                     ['span.fa.fa-file-pdf-o'],
                     ' PDF'
