@@ -12,34 +12,12 @@ const generateOutputUrl = URI.resolve(window.location.href, './generate_output')
 
 
 export function calculate() {
-    const msg = {
-        method: r.get('form', 'method'),
-        params: {
-            cut_width: u.strictParseFloat(r.get('form', 'cut_width')),
-            panels: u.pipe(
-                u.map(panel => [panel.name, {width: u.strictParseFloat(panel.width),
-                                             height: u.strictParseFloat(panel.height)}]),
-                u.fromPairs
-            )(r.get('form', 'panels', 'items')),
-            items: u.pipe(
-                u.map(item => [item.name, {width: u.strictParseFloat(item.width),
-                                           height: u.strictParseFloat(item.height),
-                                           can_rotate: item.can_rotate}]),
-                u.fromPairs
-            )(r.get('form', 'items', 'items')),
-        }
-    };
     try {
-        validateCalculateRequest(msg);
+        let msg = createValidateRequest();
+        send(calculateUrl, msg).then(parseCalculateResponse);
     } catch (e) {
         showNotification(e, 'error');
-        return;
     }
-    const req = new XMLHttpRequest();
-    req.onload = () => parseCalculateResponse(JSON.parse(req.responseText));
-    req.open('POST', calculateUrl);
-    req.setRequestHeader('Content-Type', 'application/json');
-    req.send(JSON.stringify(msg));
 }
 
 
@@ -48,36 +26,84 @@ export function generateOutput(output_type) {
         output_type: output_type,
         result: r.get('result')
     };
-    const req = new XMLHttpRequest();
-    req.onload = () => parseGenerateOutputResponse(JSON.parse(req.responseText), output_type);
-    req.open('POST', generateOutputUrl);
-    req.setRequestHeader('Content-Type', 'application/json');
-    req.send(JSON.stringify(msg));
+    send(generateOutputUrl, msg).then(msg => parseGenerateOutputResponse(msg, output_type));
 }
 
 
-function validateCalculateRequest(msg) {
-    if (!Number.isFinite(msg.params.cut_width) || msg.params.cut_width < 0)
+function send(url, msg) {
+    return new Promise(resolve => {
+        const req = new XMLHttpRequest();
+        req.onload = () => { resolve(JSON.parse(req.responseText)); };
+        req.open('POST', url);
+        req.setRequestHeader('Content-Type', 'application/json');
+        req.send(JSON.stringify(msg));
+    });
+}
+
+
+function createValidateRequest() {
+    const cutWidth = u.strictParseFloat(r.get('form', 'cut_width'));
+    if (!Number.isFinite(cutWidth) || cutWidth < 0)
         throw 'Invalid cut width';
-    if (u.equals(msg.params.panels, {}))
-        throw 'No panels defined';
-    for (let [name, panel] of u.toPairs(msg.params.panels)) {
-        if (!name)
+
+    const panels = {};
+    for (let panel of r.get('form', 'panels', 'items')) {
+        const quantity = u.strictParseInt(panel.quantity);
+        const width = u.strictParseFloat(panel.width);
+        const height = u.strictParseFloat(panel.height);
+        if (!panel.name)
             throw 'Invalid panel name';
-        if (!Number.isFinite(panel.width) || panel.width <= 0)
-            throw 'Invalid width for panel ' + name;
-        if (!Number.isFinite(panel.height) || panel.height <= 0)
-            throw 'Invalid height for panel ' + name;
+        if (!Number.isFinite(quantity) || quantity < 1)
+            throw 'Invalid quantity for panel ' + panel.name;
+        if (!Number.isFinite(width) || width <= 0)
+            throw 'Invalid width for panel ' + panel.name;
+        if (!Number.isFinite(height) || height <= 0)
+            throw 'Invalid height for panel ' + panel.name;
+        for (let i = 1; i <= quantity; ++i) {
+            const name = panel.name + ' ' + String(i);
+            if (name in panels) {
+                throw 'Duplicate panel name ' + name;
+            }
+            panels[name] = {width: width,
+                            height: height};
+        }
     }
-    if (u.equals(msg.params.items, {}))
-        throw 'No items defined';
-    for (let [name, item] of u.toPairs(msg.params.items)) {
-        if (!name)
+    if (u.equals(panels, {}))
+        throw 'No panels defined';
+
+    const items = {};
+    for (let item of r.get('form', 'items', 'items')) {
+        const quantity = u.strictParseInt(item.quantity);
+        const width = u.strictParseFloat(item.width);
+        const height = u.strictParseFloat(item.height);
+        if (!item.name)
             throw 'Invalid item name';
-        if (!Number.isFinite(item.width) || item.width <= 0)
-            throw 'Invalid width for item ' + name;
-        if (!Number.isFinite(item.height) || item.height <= 0)
-            throw 'Invalid height for item ' + name;
+        if (!Number.isFinite(quantity) || quantity < 1)
+            throw 'Invalid quantity for item ' + item.name;
+        if (!Number.isFinite(width) || width <= 0)
+            throw 'Invalid width for item ' + item.name;
+        if (!Number.isFinite(height) || height <= 0)
+            throw 'Invalid height for item ' + item.name;
+        for (let i = 1; i <= quantity; ++i) {
+            const name = item.name + ' ' + String(i);
+            if (name in items) {
+                throw 'Duplicate item name ' + name;
+            }
+            items[name] = {width: width,
+                           height: height,
+                           can_rotate: item.can_rotate};
+        }
+    }
+    if (u.equals(items, {}))
+        throw 'No items defined';
+
+    return {
+        method: r.get('form', 'method'),
+        params: {
+            cut_width: cutWidth,
+            panels: panels,
+            items: items
+        }
     }
 }
 

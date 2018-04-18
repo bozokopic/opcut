@@ -54,3 +54,10 @@ export function dimensionValidator(value) {
     if (!Number.isFinite(floatValue) || floatValue <= 0)
         return 'not valid dimension';
 }
+
+
+export function quantityValidator(value) {
+    const intValue = u.strictParseInt(value);
+    if (!Number.isFinite(intValue) || intValue < 1)
+        return 'not valid quantity';
+}

@@ -24,7 +24,7 @@ html, body {
 
 .left-panel {
     @include shadow-4dp();
-    width: 400px;
+    width: 450px;
     display: flex;
     flex-direction: column;
     background-color: $color-grey-100;
@@ -77,14 +77,14 @@ html, body {
             width: 100%;
 
             .fixed {
-                width: 50px
+                width: 55px
             }
 
             tbody td:last-child {
                 text-align: center;
             }
 
-            .grid-col-width, .grid-col-height {
+            .grid-col-width, .grid-col-height, .grid-col-quantity {
                 text-align: right;
 
                 input {
@@ -132,6 +132,7 @@ html, body {
         display: flex;
         justify-content: center;
         margin: 10px;
+        flex-shrink: 0;
     }
 
     .panel {

@@ -83,6 +83,7 @@ function leftPanelPanels() {
     const nameValidator = validators.createChainValidator(
         validators.notEmptyValidator,
         validators.createUniqueValidator());
+    const quantityValidator = validators.quantityValidator;
     const widthValidator = validators.dimensionValidator;
     const heightValidator = validators.dimensionValidator;
     const csvColumns = grid.createStringCsvColumns('name', 'width', 'height');
@@ -91,15 +92,16 @@ function leftPanelPanels() {
             ['thead',
                 ['tr',
                     ['th', 'Panel name'],
-                    ['th.fixed', 'Width'],
+                    ['th.fixed', 'Quantity'],
                     ['th.fixed', 'Height'],
+                    ['th.fixed', 'Width'],
                     ['th.fixed']
                 ]
             ],
             grid.tbody(panelsPath,
-                       ['name', 'width', 'height', deleteColumn],
-                       [nameValidator, widthValidator, heightValidator]),
-            grid.tfoot(panelsPath, 4, states.panelsItem, csvColumns)
+                       ['name', 'quantity', 'height', 'width', deleteColumn],
+                       [nameValidator, quantityValidator, heightValidator, widthValidator]),
+            grid.tfoot(panelsPath, 5, states.panelsItem, csvColumns)
         ]
     ];
 }
@@ -112,6 +114,7 @@ function leftPanelItems() {
     const nameValidator = validators.createChainValidator(
         validators.notEmptyValidator,
         validators.createUniqueValidator());
+    const quantityValidator = validators.quantityValidator;
     const widthValidator = validators.dimensionValidator;
     const heightValidator = validators.dimensionValidator;
     const csvColumns =  u.merge(
@@ -122,16 +125,17 @@ function leftPanelItems() {
             ['thead',
                 ['tr',
                     ['th', 'Item name'],
-                    ['th.fixed', 'Width'],
+                    ['th.fixed', 'Quantity'],
                     ['th.fixed', 'Height'],
+                    ['th.fixed', 'Width'],
                     ['th.fixed', 'Rotate'],
                     ['th.fixed']
                 ]
             ],
             grid.tbody(itemsPath,
-                       ['name', 'width', 'height', rotateColumn, deleteColumn],
-                       [nameValidator, widthValidator, heightValidator]),
-            grid.tfoot(itemsPath, 5, states.itemsItem, csvColumns)
+                       ['name', 'quantity', 'height', 'width', rotateColumn, deleteColumn],
+                       [nameValidator, quantityValidator, heightValidator, widthValidator]),
+            grid.tfoot(itemsPath, 6, states.itemsItem, csvColumns)
         ]
     ];
 }
@@ -181,11 +185,11 @@ function rightPanelPanel(panel) {
                 (used.rotate ? ['span.item-rotate.fa.fa-refresh'] : []),
                 ['div.item-x',
                     'X:',
-                    String(used.x)
+                    String(Math.round(used.x * 100) / 100)
                 ],
                 ['div.item-y',
                     'Y:',
-                    String(used.y)
+                    String(Math.round(used.y * 100) / 100)
                 ]
             ])
     ];
@@ -200,7 +204,7 @@ function centerPanel() {
     const panel = result.params.panels[selected.panel];
     const used = u.filter(i => i.panel == selected.panel, result.used);
     const unused = u.filter(i => i.panel == selected.panel, result.unused);
-    const panelColor = 'rgb(189,189,189)';
+    const panelColor = 'rgb(100,100,100)';
     const itemColor = 'rgb(250,250,250)';
     const selectedItemColor = 'rgb(200,140,140)';
     const unusedColor = 'rgb(238,238,238)';
@@ -228,6 +232,9 @@ function centerPanel() {
                 const width = (used.rotate ? item.height : item.width);
                 const height = (used.rotate ? item.width : item.height);
                 return ['rect', {
+                    props: {
+                        style: 'cursor: pointer'
+                    },
                     attrs: {
                         x: String(used.x),
                         y: String(used.y),
@@ -235,6 +242,9 @@ function centerPanel() {
                         height: String(height),
                         'stroke-width': '0',
                         fill: (used.item == selected.item ? selectedItemColor : itemColor)
+                    },
+                    on: {
+                        click: () => r.set(['selected', 'item'], used.item)
                     }}
                 ];
             }),
@@ -255,12 +265,18 @@ function centerPanel() {
                 const width = (used.rotate ? item.height : item.width);
                 const height = (used.rotate ? item.width : item.height);
                 return ['text', {
+                    props: {
+                        style: 'cursor: pointer'
+                    },
                     attrs: {
                         x: String(used.x + width / 2),
                         y: String(used.y + height / 2),
                         'alignment-baseline': 'middle',
                         'text-anchor': 'middle',
                         'font-size': fontSize
+                    },
+                    on: {
+                        click: () => r.set(['selected', 'item'], used.item)
                     }},
                     used.item
                 ];
