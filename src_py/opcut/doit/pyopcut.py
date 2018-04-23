@@ -1,4 +1,3 @@
-# import py_compile
 import os
 import yaml
 from pathlib import Path
@@ -25,11 +24,6 @@ def task_pyopcut_build():
 
     def compile(src_path, dst_path):
         _common.mkdir_p(dst_path.parent)
-        # if src_path.suffix == '.py':
-        #     py_compile.compile(src_path, dst_path.with_suffix('.pyc'),
-        #                        doraise=True)
-        # else:
-        #     _common.cp_r(src_path, dst_path)
         _common.cp_r(src_path, dst_path)
 
     def create_subtask(src_path):
@@ -43,8 +37,9 @@ def task_pyopcut_build():
         yield create_subtask(src_path)
 
     for dirpath, dirnames, filenames in os.walk('src_py'):
-        if '__pycache__' in dirnames:
-            dirnames.remove('__pycache__')
+        for i in ['__pycache__', 'doit']:
+            if i in dirnames:
+                dirnames.remove(i)
         for i in filenames:
             src_path = Path(dirpath) / i
             if src_path not in generated_files:
