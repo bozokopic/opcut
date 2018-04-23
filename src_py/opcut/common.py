@@ -59,7 +59,8 @@ Method = enum.Enum('Method', [
     'FORWARD_GREEDY'])
 
 OutputType = enum.Enum('OutputType', [
-    'PDF'])
+    'PDF',
+    'SVG'])
 
 
 class UnresolvableError(Exception):

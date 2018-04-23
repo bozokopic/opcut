@@ -83,7 +83,8 @@ def output(args):
         result_json_data = yaml.safe_load(f)
     opcut.json_validator.validate(result_json_data, 'opcut://result.yaml#')
     result = common.json_data_to_result(result_json_data)
-    output_bytes = opcut.output.generate_output(result, args.output_type,
+    output_type = common.OutputType[args.output_type]
+    output_bytes = opcut.output.generate_output(result, output_type,
                                                 args.output_panel_id)
     with open(args.output_path, 'wb') as f:
         f.write(output_bytes)
@@ -130,8 +131,7 @@ def _create_parser():
             help="calculate result file path "
                  "(specified by opcut://result.yaml#)")
         p.add_argument(
-            '--output-type', dest='output_type', type=common.OutputType,
-            default=common.OutputType.PDF,
+            '--output-type', dest='output_type', default='PDF',
             choices=list(map(lambda x: x.name, common.OutputType)),
             help="output type (default PDF)")
         p.add_argument(

@@ -42,6 +42,7 @@ definitions:
                 output_type:
                     enum:
                         - PDF
+                        - SVG
                 panel:
                     type:
                         - "null"
