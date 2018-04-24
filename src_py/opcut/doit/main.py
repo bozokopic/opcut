@@ -1,3 +1,4 @@
+from doit.action import CmdAction
 
 from opcut.doit import _common
 
@@ -47,14 +48,48 @@ def task_dist_build():
     """Distribution - build (DEFAULT)"""
 
     def generate_setup_py():
-        with open('dist/setup.py', 'w', encoding='utf-8') as f:
-            f.write('\n')
+        with open('requirements.txt', encoding='utf-8') as f:
+            dependencies = [i.strip() for i in f.readlines() if i.strip()]
+        with open('build/dist/setup.py', 'w', encoding='utf-8') as f:
+            f.write(_setup_py.format(
+                version='0.1.0',
+                dependencies=repr(dependencies)))
 
-    return {'actions': [(_common.rm_rf, ['dist']),
-                        (_common.cp_r, ['build/pyopcut', 'dist']),
-                        (_common.cp_r, ['build/jsopcut', 'dist/opcut/web']),
-                        generate_setup_py],
+    return {'actions': [
+                (_common.rm_rf, ['dist', 'build/dist']),
+                (_common.cp_r, ['build/pyopcut', 'build/dist']),
+                (_common.cp_r, ['build/jsopcut', 'build/dist/opcut/web']),
+                (_common.cp_r, ['README.rst', 'build/dist/README.rst']),
+                generate_setup_py,
+                CmdAction('python setup.py bdist_wheel --dist-dir ../../dist',
+                          cwd='build/dist')],
             'task_dep': [
                 'gen_all',
                 'pyopcut_build',
                 'jsopcut_build']}
+
+
+_setup_py = r"""
+from setuptools import setup
+setup(
+    name='opcut',
+    version='{version}',
+    description='Cutting stock problem optimizer',
+    url='https://github.com/bozokopic/opcut',
+    author='Bozo Kopic',
+    author_email='bozo.kopic@gmail.com',
+    license='GPLv3',
+    python_requires='>=3.5',
+    zip_safe=False,
+    packages=['opcut'],
+    package_data={{
+        'opcut': ['web/*', 'web/fonts/*']
+    }},
+    install_requires={dependencies},
+    entry_points={{
+        'console_scripts': [
+            'opcut = opcut.main:main'
+        ]
+    }}
+)
+"""

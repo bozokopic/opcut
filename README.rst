@@ -28,13 +28,23 @@ Development requirements
 Install
 -------
 
-...
+    $ pip install opcut
 
 
 Run
 ---
 
-...
+Running server (default listening address http://0.0.0.0:8080):
+
+    $ opcut server
+
+Running command line utility:
+
+    $ opcut calculate ...
+
+Additional command line arguments:
+
+    $ opcut --help
 
 
 Build
@@ -62,7 +72,6 @@ TODO
 * global
 
     * create CONTRIBUTING
-    * write setup.py
 
 * optimizer
 

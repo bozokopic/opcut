@@ -4,3 +4,4 @@ jsonschema
 aiohttp
 flake8
 pycairo
+wheel
