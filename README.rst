@@ -28,21 +28,23 @@ Development requirements
 Install
 -------
 
+::
+
     $ pip install opcut
 
 
 Run
 ---
 
-Running server (default listening address http://0.0.0.0:8080):
+Running server (default listening address http://0.0.0.0:8080)::
 
     $ opcut server
 
-Running command line utility:
+Running command line utility::
 
     $ opcut calculate ...
 
-Additional command line arguments:
+Additional command line arguments::
 
     $ opcut --help
 
@@ -81,7 +83,3 @@ TODO
 * back-end
 
     * additional output formats
-
-* front-end
-
-    * additional GUI refactoring
