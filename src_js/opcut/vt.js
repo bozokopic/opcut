@@ -86,7 +86,7 @@ function leftPanelPanels() {
     const quantityValidator = validators.quantityValidator;
     const widthValidator = validators.dimensionValidator;
     const heightValidator = validators.dimensionValidator;
-    const csvColumns = grid.createStringCsvColumns('name', 'width', 'height');
+    const csvColumns = grid.createStringCsvColumns('name', 'quantity', 'width', 'height');
     return ['div',
         ['table.grid',
             ['thead',
@@ -118,7 +118,7 @@ function leftPanelItems() {
     const widthValidator = validators.dimensionValidator;
     const heightValidator = validators.dimensionValidator;
     const csvColumns =  u.merge(
-        grid.createStringCsvColumns('name', 'width', 'height'),
+        grid.createStringCsvColumns('name', 'quantity', 'width', 'height'),
         grid.createBooleanCsvColumns('can_rotate'));
     return ['div',
         ['table.grid',
