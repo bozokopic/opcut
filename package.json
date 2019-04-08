@@ -1,6 +1,5 @@
 {
   "name": "opcut",
-  "version": "0.0.1",
   "license": "GPL-3.0",
   "scripts": {
     "build": "webpack",

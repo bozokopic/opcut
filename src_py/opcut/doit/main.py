@@ -47,11 +47,13 @@ def task_dist_build():
     """Distribution - build (DEFAULT)"""
 
     def generate_setup_py():
+        with open('VERSION', encoding='utf-8') as f:
+            version = f.read().strip()
         with open('requirements.txt', encoding='utf-8') as f:
             dependencies = [i.strip() for i in f.readlines() if i.strip()]
         with open('build/dist/setup.py', 'w', encoding='utf-8') as f:
             f.write(_setup_py.format(
-                version='0.1.0',
+                version=version,
                 dependencies=repr(dependencies)))
 
     return {'actions': [
