@@ -49,11 +49,14 @@ def task_dist_build():
     def generate_setup_py():
         with open('VERSION', encoding='utf-8') as f:
             version = f.read().strip()
+        with open('README.rst', encoding='utf-8') as f:
+            readme = f.read().strip()
         with open('requirements.txt', encoding='utf-8') as f:
             dependencies = [i.strip() for i in f.readlines() if i.strip()]
         with open('build/dist/setup.py', 'w', encoding='utf-8') as f:
             f.write(_setup_py.format(
-                version=version,
+                version=repr(version),
+                long_description=repr(readme),
                 dependencies=repr(dependencies)))
 
     return {'actions': [
@@ -74,8 +77,9 @@ _setup_py = r"""
 from setuptools import setup
 setup(
     name='opcut',
-    version='{version}',
+    version={version},
     description='Cutting stock problem optimizer',
+    long_description={long_description},
     url='https://github.com/bozokopic/opcut',
     author='Bozo Kopic',
     author_email='bozo.kopic@gmail.com',
