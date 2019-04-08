@@ -27,8 +27,7 @@ def task_gen_all():
     """Generate all"""
 
     return {'actions': None,
-            'task_dep': ['pyopcut_gen',
-                         'jsopcut_gen']}
+            'task_dep': ['pyopcut_gen']}
 
 
 def task_check_all():
@@ -61,7 +60,7 @@ def task_dist_build():
                 (_common.cp_r, ['build/jsopcut', 'build/dist/opcut/web']),
                 (_common.cp_r, ['README.rst', 'build/dist/README.rst']),
                 generate_setup_py,
-                CmdAction('python setup.py bdist_wheel --dist-dir ../../dist',
+                CmdAction('python setup.py -q bdist_wheel -d ../../dist',
                           cwd='build/dist')],
             'task_dep': [
                 'gen_all',

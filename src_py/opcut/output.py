@@ -76,7 +76,8 @@ def _write_used(surface, scale, x0, y0, used):
     ctx.rectangle(x, y, width, height)
     ctx.fill()
 
-    _write_centered_text(surface, x + width / 2, y + height / 2, used.item.id)
+    _write_centered_text(surface, x + width / 2, y + height / 2,
+                         used.item.id + (' (r)' if used.rotate else ''))
 
 
 def _write_unused(surface, scale, x0, y0, unused):

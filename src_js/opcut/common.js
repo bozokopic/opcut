@@ -65,8 +65,7 @@ function createValidateRequest() {
             if (name in panels) {
                 throw 'Duplicate panel name ' + name;
             }
-            panels[name] = {width: width,
-                            height: height};
+            panels[name] = {width: width, height: height};
         }
     }
     if (u.equals(panels, {}))
@@ -90,9 +89,11 @@ function createValidateRequest() {
             if (name in items) {
                 throw 'Duplicate item name ' + name;
             }
-            items[name] = {width: width,
-                           height: height,
-                           can_rotate: item.can_rotate};
+            items[name] = {
+                width: width,
+                height: height,
+                can_rotate: item.can_rotate
+            };
         }
     }
     if (u.equals(items, {}))
@@ -105,7 +106,7 @@ function createValidateRequest() {
             panels: panels,
             items: items
         }
-    }
+    };
 }
 
 
@@ -123,12 +124,12 @@ function parseCalculateResponse(msg) {
 
 
 function parseGenerateOutputResponse(msg, output_type) {
-    if (msg.data) {
+    if (output_type == 'PDF' && msg.data) {
         const fileName = 'output.pdf';
         fs.saveB64Data(msg.data, fileName);
     } else {
         showNotification('Error generating output', 'error');
-    };
+    }
 }
 
 

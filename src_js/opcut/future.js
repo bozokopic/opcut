@@ -1,3 +1,5 @@
+/** @module opcut/future */
+
 
 export function create() {
     let data = {

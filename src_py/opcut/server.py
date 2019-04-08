@@ -24,26 +24,29 @@ async def run(addr, pem_path, ui_path):
         ssl_ctx = None
 
     app = aiohttp.web.Application()
-    app.router.add_route('GET', '/',
-                         lambda req: aiohttp.web.HTTPFound('/index.html'))
-    app.router.add_route('POST', '/calculate',
-                         functools.partial(_calculate_handler, executor))
-    app.router.add_route('POST', '/generate_output',
-                         functools.partial(_generate_output_handler, executor))
-    app.router.add_static('/', ui_path)
-    app_handler = app.make_handler()
+    app.add_routes([
+        aiohttp.web.get('/', lambda req: aiohttp.web.HTTPFound('/index.html')),
+        aiohttp.web.post(
+            '/calculate',
+            functools.partial(_calculate_handler, executor)),
+        aiohttp.web.post(
+            '/generate_output',
+            functools.partial(_generate_output_handler, executor)),
+        aiohttp.web.static('/', ui_path)])
 
-    srv = await asyncio.get_event_loop().create_server(
-        app_handler, host=addr.hostname, port=addr.port, ssl=ssl_ctx)
+    runner = aiohttp.web.AppRunner(app)
+    await runner.setup()
+    site = aiohttp.web.TCPSite(runner,
+                               host=addr.hostname,
+                               port=addr.port,
+                               ssl_context=ssl_ctx,
+                               shutdown_timeout=0.1)
+    await site.start()
 
     with contextlib.suppress(asyncio.CancelledError):
         await asyncio.Future()
 
-    srv.close()
-    await srv.wait_closed()
-    await app.shutdown()
-    await app_handler.finish_connections(0.1)
-    await app.cleanup()
+    await runner.cleanup()
 
 
 async def _calculate_handler(executor, request):
@@ -57,7 +60,7 @@ async def _calculate_handler(executor, request):
         result_json_data = common.result_to_json_data(result)
     except asyncio.CancelledError:
         raise
-    except Exception as e:
+    except Exception:
         result_json_data = None
     return aiohttp.web.json_response({'result': result_json_data})
 
@@ -75,7 +78,7 @@ async def _generate_output_handler(executor, request):
         output_json_data = base64.b64encode(output).decode('utf-8')
     except asyncio.CancelledError:
         raise
-    except Exception as e:
+    except Exception:
         output_json_data = None
     return aiohttp.web.json_response({'data': output_json_data})
 

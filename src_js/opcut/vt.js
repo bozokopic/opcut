@@ -208,7 +208,7 @@ function centerPanel() {
     const itemColor = 'rgb(250,250,250)';
     const selectedItemColor = 'rgb(200,140,140)';
     const unusedColor = 'rgb(238,238,238)';
-    const fontSize = String(panel.height * 0.02);
+    const fontSize = String(Math.max(panel.height, panel.width) * 0.02);
     return ['div.center-panel',
         ['svg', {
             attrs: {
@@ -278,7 +278,7 @@ function centerPanel() {
                     on: {
                         click: () => r.set(['selected', 'item'], used.item)
                     }},
-                    used.item
+                    used.item + (used.rotate ? ' \u293E' : '')
                 ];
             })
         ]

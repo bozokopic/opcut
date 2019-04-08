@@ -1,10 +1,9 @@
 const path = require('path');
-const fs = require('fs');
-const webpack = require('webpack');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 
 module.exports = {
+    mode: 'none',
     entry: {
         main: '.' + path.sep + path.join('src_js', 'opcut', 'main')
     },
@@ -17,7 +16,7 @@ module.exports = {
         rules: [
             {
                 test: /\.scss$/,
-                use: ["style-loader", "css-loader?minimize=true", "resolve-url-loader", "sass-loader?sourceMap"]
+                use: ["style-loader", "css-loader", "resolve-url-loader", "sass-loader?sourceMap"]
             },
             {
                 test: /\.ttf$/,
@@ -37,5 +36,6 @@ module.exports = {
     plugins: [
         new CopyWebpackPlugin([{from: 'src_web/static'}])
     ],
-    devtool: 'source-map'
+    devtool: 'source-map',
+    stats: 'errors-only'
 };

@@ -344,7 +344,7 @@ export const map = curry((fn, arr) => isArray(arr) ?
          fromPairs)(arr));
 
 /**
- * Change `arr` to contain only elements fow which function `fn` returns `true`
+ * Change `arr` to contain only elements for which function `fn` returns `true`
  * (curried function)
  * @function
  * @param {Function} fn
@@ -414,6 +414,22 @@ export const find = curry((fn, arr) => arr.find(fn));
 export const concat = curry((arr1, arr2) => arr1.concat(arr2));
 
 /**
+ * Create union of two arrays using `equals` to check equality
+ * (curried function)
+ * @function
+ * @param {Array} arr1
+ * @param {Array} arr2
+ * @return {Array} union of `arr1` and `arr2`
+ */
+export const union = curry((arr1, arr2) => {
+    return reduce((acc, val) => {
+        if (!find(equals(val), arr1))
+            acc = append(val, acc);
+        return acc;
+    }, arr1, arr2);
+});
+
+/**
  * Check if `arr` contains `val`
  * (curried function)
  * @function
@@ -437,6 +453,24 @@ export const insert = curry((idx, val, arr) =>
     arr.slice(0, idx).concat([val], arr.slice(idx)));
 
 /**
+ * Reverse array
+ * @param  {Array} arr
+ * @return {Array}
+ */
+export function reverse(arr) {
+    return Array.from(arr).reverse();
+}
+
+/**
+ * Array length
+ * @param  {Array} arr
+ * @return {Number}
+ */
+export function length(arr) {
+    return arr.length;
+}
+
+/**
  * Create promise that resolves in `t` milliseconds
  * @param {Number} t
  * @return {Promise}
@@ -446,6 +480,18 @@ export function sleep(t) {
         setTimeout(() => { resolve(); }, t);
     });
 }
+
+
+export const slice = curry((begin, end, arr) => arr.slice(begin, end));
+
+export function inc(x) {
+    return x + 1;
+}
+
+export function dec(x) {
+    return x - 1;
+}
+
 
 /**
  * Delay function call `fn(...args)` for `t` milliseconds
