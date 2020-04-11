@@ -120,8 +120,7 @@ def _create_setup_py(path):
     options = {'bdist_wheel': {'python_tag': 'cp38',
                                'py_limited_api': 'cp38',
                                'plat_name': 'any'}}
-    classifiers = ['Programming Language :: Python :: 3',
-                   'License :: OSI Approved :: GPLv3 License']
+    classifiers = ['Programming Language :: Python :: 3']
     with open(path, 'w', encoding='utf-8') as f:
         f.write(f"from setuptools import setup\n\n\n"
                 f"readme = r\"\"\"\n{readme}\n\"\"\"\n\n"
