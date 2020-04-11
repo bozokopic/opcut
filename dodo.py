@@ -28,6 +28,8 @@ dist_dir = Path('dist')
 py_build_dir = build_dir / 'py'
 js_build_dir = build_dir / 'js'
 
+docker_img = 'bozokopic/opcut'
+
 
 def task_clean_all():
     """Clean all"""
@@ -108,6 +110,27 @@ def task_dist():
 
     return {'actions': [dist],
             'task_dep': ['py_build']}
+
+
+def task_docker_build():
+    """Create docker image"""
+    def build():
+        version = _get_version()
+        subprocess.run(['docker', 'build', '-t', f'{docker_img}:{version}',
+                        '.'],
+                       check=True)
+
+    return {'actions': [build]}
+
+
+def task_docker_upload():
+    """Upload docker image"""
+    def upload():
+        version = _get_version()
+        subprocess.run(['docker', 'push', f'{docker_img}:{version}'],
+                       check=True)
+
+    return {'actions': [upload]}
 
 
 def _create_setup_py(path):
