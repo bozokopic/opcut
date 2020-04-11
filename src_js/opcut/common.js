@@ -1,8 +1,9 @@
 import * as URI from 'uri-js';
 import iziToast from 'izitoast';
 
-import r from 'opcut/renderer';
-import * as u from 'opcut/util';
+import r from '@hat-core/renderer';
+import * as u from '@hat-core/util';
+
 import * as states from 'opcut/states';
 import * as fs from 'opcut/fs';
 

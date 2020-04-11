@@ -1,5 +1,7 @@
 #!/bin/bash
 
-PYTHONPATH=../../src_py python -m opcut server \
-    --ui-path ../../build/jsopcut \
+PYTHONPATH=../../src_py python -m opcut \
+    --json-schemas-path ../../schemas_json \
+    --ui-path ../../build/js \
+    server \
     $*

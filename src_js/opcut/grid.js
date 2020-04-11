@@ -1,8 +1,8 @@
 import Papa from 'papaparse';
 
-import r from 'opcut/renderer';
-import * as u from 'opcut/util';
-import * as ev from 'opcut/ev';
+import r from '@hat-core/renderer';
+import * as u from '@hat-core/util';
+
 import * as fs from 'opcut/fs';
 
 
@@ -69,11 +69,10 @@ export function tbody(gridPath, columns, validators) {
                     click: evt => {
                         if (u.equals(gridState.selectedItem, [rowIndex, column]))
                             return;
-                        ev.one(r, 'render', () => {
-                            if (evt.target.firstChild && evt.target.firstChild.focus)
-                                evt.target.firstChild.focus();
-                        });
                         r.set([gridPath, 'selectedItem'], [rowIndex, column]);
+                        r.render();
+                        if (evt.target.firstChild && evt.target.firstChild.focus)
+                            evt.target.firstChild.focus();
                     }
                 }},
                 content];

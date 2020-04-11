@@ -4,13 +4,10 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
     mode: 'none',
-    entry: {
-        main: '.' + path.sep + path.join('src_js', 'opcut', 'main')
-    },
+    entry: '.' + path.sep + path.join('src_js', 'opcut', 'main'),
     output: {
-        filename: '[name].js',
-        path: path.join(__dirname, 'build', 'jsopcut'),
-        pathinfo: true
+        filename: 'main.js',
+        path: path.join(__dirname, 'build', 'js')
     },
     module: {
         rules: [
@@ -19,22 +16,23 @@ module.exports = {
                 use: ["style-loader", "css-loader", "resolve-url-loader", "sass-loader?sourceMap"]
             },
             {
-                test: /\.ttf$/,
-                use: "file-loader?name=fonts/[hash].[ext]"
+                test: /\.woff2$/,
+                use: "file-loader?name=fonts/[name].[ext]"
             }
         ]
     },
     resolve: {
         modules: [
             path.join(__dirname, 'src_js'),
-            path.join(__dirname, 'src_web'),
-            path.join(__dirname, 'node_modules')]
+            path.join(__dirname, 'src_scss'),
+            path.join(__dirname, 'node_modules')
+        ]
     },
     watchOptions: {
         ignored: /node_modules/
     },
     plugins: [
-        new CopyWebpackPlugin([{from: 'src_web/static'}])
+        new CopyWebpackPlugin([{from: 'src_web'}])
     ],
     devtool: 'source-map',
     stats: 'errors-only'

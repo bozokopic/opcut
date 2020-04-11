@@ -13,9 +13,7 @@ application front-end.
 Runtime requirements
 --------------------
 
-* python >=3.6
-
-Additional required python packages are listed in `requirements.txt`.
+* python >=3.8
 
 
 Development requirements

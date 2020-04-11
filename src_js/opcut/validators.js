@@ -1,4 +1,4 @@
-import * as u from 'opcut/util';
+import * as u from '@hat-core/util';
 
 
 export function notEmptyValidator(value) {

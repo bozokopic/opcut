@@ -1,7 +1,7 @@
-doit == 0.31.1
-pyyaml == 5.1.1
-jsonschema == 3.0.1
-aiohttp == 3.5.4
-flake8 == 3.7.7
-pycairo == 1.18.1
-wheel == 0.33.4
+doit
+aiohttp
+flake8
+pycairo
+wheel
+hat-util
+packaging

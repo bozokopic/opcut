@@ -1,5 +1,6 @@
-import r from 'opcut/renderer';
-import * as u from 'opcut/util';
+import r from '@hat-core/renderer';
+import * as u from '@hat-core/util';
+
 import * as grid from 'opcut/grid';
 import * as common from 'opcut/common';
 import * as states from 'opcut/states';

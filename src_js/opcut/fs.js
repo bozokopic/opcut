@@ -1,8 +1,7 @@
 import h from 'hyperscript';
 import FileSaver from 'file-saver';
 
-import * as u from 'opcut/util';
-import * as ev from 'opcut/ev';
+import * as u from '@hat-core/util';
 
 
 export function loadText(ext) {
@@ -11,7 +10,7 @@ export function loadText(ext) {
         type: 'file',
         accept: ext});
     const promise = new Promise(resolve => {
-        ev.on(el, 'change', evt => {
+        el.addEventListener('change', evt => {
             const file = u.get(['files', 0], evt.target);
             if (!file)
                 return;
