@@ -1,0 +1,55 @@
+---
+openapi: 3.1.0
+info:
+    title: opcut
+    version: 0.0.1
+paths:
+    '/calculate':
+        post:
+            parameters:
+              - name: method
+                in: query
+                required: true
+                schema:
+                    enum:
+                        - greedy
+                        - forward_greedy
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            "$ref": "opcut.yaml#/definitions/params"
+            responses:
+                "200":
+                    content:
+                        application/json:
+                            schema:
+                                "$ref": "opcut.yaml#/definitions/result"
+                default:
+                    description: error
+    '/generate_output':
+        post:
+            parameters:
+              - name: output_type
+                in: query
+                required: true
+                schema:
+                    enum:
+                        - pdf
+                        - svg
+              - name: panel
+                in: query
+                required: false
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            "$ref": "opcut.yaml#/definitions/result"
+            responses:
+                "200":
+                    content:
+                        application/pdf: {}
+                        image/svg+xml: {}
+                default:
+                    description: error
+...

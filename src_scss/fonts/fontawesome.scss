@@ -1,7 +1,10 @@
-@import "font";
 
-
-@include font('FontAwesome', 'webfont', normal, normal);
+@font-face {
+    font-family: 'FontAwesome';
+    src: url('fonts/FontAwesome/FontAwesome.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+}
 
 .fa {
   display: inline-block;

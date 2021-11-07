@@ -5,9 +5,12 @@ opcut
 
 `opcut` is cutting stock problem optimizer
 (`https://en.wikipedia.org/wiki/Cutting_stock_problem`) utilizing multiple
-panels and guillotine cuts (end-to-end cuts). This project includes multiple
-back-end optimizer implementations, command line front-end and single-page web
-application front-end.
+panels and guillotine cuts (end-to-end cuts). This project includes:
+
+    * multiple back-end optimizer implementations
+    * command line front-end
+    * REST service API (OpenAPI definition)
+    * single-page web application front-end
 
 
 Runtime requirements
@@ -30,6 +33,11 @@ Install
 
     $ pip install opcut
 
+.. note::
+
+    on Ubuntu, if pycairo is not available, additional
+    ``apt install pkg-config libcairo2-dev python3-dev`` is required
+
 
 Run
 ---
@@ -41,6 +49,7 @@ Running server (default listening address http://0.0.0.0:8080)::
 Running command line utility::
 
     $ opcut calculate ...
+    $ opcut generate_output ...
 
 Additional command line arguments::
 
@@ -53,7 +62,7 @@ Build
 Build tool used for `opcut` is pydoit (`http://pydoit.org/`). It can be
 installed together with other python dependencies by running::
 
-    $ pip install -r requirements.txt
+    $ pip install -r requirements.pip.dev.txt
 
 For listing available doit tasks, use::
 
@@ -63,7 +72,7 @@ Default task::
 
     $ doit
 
-creates `dist` folder containing `opcut` distribution.
+creates wheel package inside `build` directory.
 
 
 TODO
@@ -81,3 +90,23 @@ TODO
 * back-end
 
     * additional output formats
+
+
+License
+-------
+
+opcut - cutting stock problem optimizer
+Copyright (C) 2017-2021  Bozo Kopic
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.

@@ -1,0 +1,6 @@
+aiohttp ~= 3.8.0
+appdirs ~= 1.4.4
+click ~= 8.0.3
+hat-aio ~= 0.5.1
+hat-json ~= 0.5.2
+pycairo ~= 1.20.1

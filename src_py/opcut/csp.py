@@ -3,30 +3,27 @@ import itertools
 from opcut import common
 
 
-def calculate(params, method):
-    """Calculate cutting stock problem
+def calculate(params: common.Params,
+              method: common.Method
+              ) -> common.Result:
+    """Calculate cutting stock problem"""
+    unused = [common.Unused(panel=panel,
+                            width=panel.width,
+                            height=panel.height,
+                            x=0,
+                            y=0)
+              for panel in params.panels]
+    result = common.Result(params=params,
+                           used=[],
+                           unused=unused)
 
-    Args:
-        params (common.Params): input parameters
-        method (common.Method): calculation method
+    if method == common.Method.GREEDY:
+        return _calculate_greedy(result)
 
-    Returns:
-        Result
+    elif method == common.Method.FORWARD_GREEDY:
+        return _calculate_forward_greedy(result)
 
-    """
-    result = common.Result(
-        params=params,
-        used=[],
-        unused=[common.Unused(panel=panel,
-                              width=panel.width,
-                              height=panel.height,
-                              x=0,
-                              y=0)
-                for panel in params.panels])
-    return {
-        common.Method.GREEDY: _calculate_greedy,
-        common.Method.FORWARD_GREEDY: _calculate_forward_greedy
-    }[method](result)
+    raise ValueError('unsupported method')
 
 
 _fitness_K = 0.03

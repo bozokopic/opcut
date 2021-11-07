@@ -1,6 +1,7 @@
-__pycache__
 /.doit.db
 /build
-/dist
+/cache
 /node_modules
-/yarn-error.log
+/src_py/opcut/json_schema_repo.json
+/src_py/opcut/ui
+__pycache__

@@ -1,10 +1,6 @@
-import asyncio
-import base64
-import functools
-import ssl
-import urllib.parse
+from pathlib import Path
 
-from hat.util import aio
+from hat import aio
 import aiohttp.web
 
 from opcut import common
@@ -12,67 +8,83 @@ import opcut.csp
 import opcut.output
 
 
-async def run(json_schema_repo, addr, pem_path, ui_path):
+static_dir: Path = common.package_path / 'ui'
 
-    executor = aio.create_executor()
 
-    addr = urllib.parse.urlparse(addr)
-    if addr.scheme == 'https':
-        ssl_ctx = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
-        ssl_ctx.load_cert_chain(pem_path)
-    else:
-        ssl_ctx = None
-
-    async def root_handler(request):
-        raise aiohttp.web.HTTPFound('/index.html')
+async def create(host: str,
+                 port: int
+                 ) -> 'Server':
+    server = Server()
+    server._async_group = aio.Group()
+    server._executor = aio.create_executor()
 
     app = aiohttp.web.Application()
-    app.add_routes([aiohttp.web.get('/', root_handler),
-                    aiohttp.web.post('/calculate', functools.partial(
-                        _calculate_handler, json_schema_repo, executor)),
-                    aiohttp.web.post('/generate_output', functools.partial(
-                        _generate_output_handler, json_schema_repo, executor)),
-                    aiohttp.web.static('/', ui_path)])
+    app.add_routes([
+        aiohttp.web.get('/', server._root_handler),
+        aiohttp.web.post('/calculate', server._calculate_handler),
+        aiohttp.web.post('/generate_output', server._generate_output_handler),
+        aiohttp.web.static('/', static_dir)])
 
     runner = aiohttp.web.AppRunner(app)
+    await runner.setup()
+    server.async_group.spawn(aio.call_on_cancel, runner.cleanup)
+
     try:
-        await runner.setup()
-        site = aiohttp.web.TCPSite(runner,
-                                   host=addr.hostname,
-                                   port=addr.port,
-                                   ssl_context=ssl_ctx,
-                                   shutdown_timeout=0.1)
+        site = aiohttp.web.TCPSite(runner=runner,
+                                   host=host,
+                                   port=port,
+                                   shutdown_timeout=0.1,
+                                   reuse_address=True)
         await site.start()
-        await asyncio.Future()
-    finally:
-        await runner.cleanup()
+
+    except BaseException:
+        await aio.uncancellable(server.async_close())
+        raise
+
+    return server
 
 
-async def _calculate_handler(json_schema_repo, executor, request):
-    try:
-        msg = await request.json()
-        json_schema_repo.validate(
-            'opcut://messages.yaml#/definitions/calculate/request', msg)
-        params = common.json_data_to_params(msg['params'])
-        method = common.Method[msg['method']]
-        result = await executor(opcut.csp.calculate, params, method)
-        result_json_data = common.result_to_json_data(result)
-    except Exception:
-        result_json_data = None
-    return aiohttp.web.json_response({'result': result_json_data})
+class Server(aio.Resource):
 
+    @property
+    def async_group(self):
+        return self._async_group
 
-async def _generate_output_handler(json_schema_repo, executor, request):
-    try:
-        msg = await request.json()
-        json_schema_repo.validate(
-            'opcut://messages.yaml#/definitions/generate_output/request', msg)
-        result = common.json_data_to_result(msg['result'])
-        output_type = common.OutputType[msg['output_type']]
-        panel = msg['panel']
-        output = await executor(opcut.output.generate_output, result,
-                                output_type, panel)
-        output_json_data = base64.b64encode(output).decode('utf-8')
-    except Exception:
-        output_json_data = None
-    return aiohttp.web.json_response({'data': output_json_data})
+    async def _root_handler(self, request):
+        raise aiohttp.web.HTTPFound('/index.html')
+
+    async def _calculate_handler(self, request):
+        data = await request.json()
+        common.json_schema_repo.validate(
+            'opcut://opcut.yaml#/definitions/params', data)
+
+        method = common.Method(request.query['method'])
+        params = common.params_from_json(data)
+
+        result = await self._executor(opcut.csp.calculate, params, method)
+
+        return aiohttp.web.json_response(common.result_to_json(result))
+
+    async def _generate_output_handler(self, request):
+        data = await request.json()
+        common.json_schema_repo.validate(
+            'opcut://opcut.yaml#/definitions/result', data)
+
+        output_type = common.OutputType(request.query['output_type'])
+        panel = request.query.get('panel')
+        result = common.result_from_json(data)
+
+        output = await self._executor(opcut.output.generate_output, result,
+                                      output_type, panel)
+
+        if output_type == common.OutputType.PDF:
+            content_type = 'application/pdf'
+
+        elif output_type == common.OutputType.SVG:
+            content_type = 'image/svg+xml'
+
+        else:
+            raise Exception('unsupported output type')
+
+        return aiohttp.web.Response(body=output,
+                                    content_type=content_type)

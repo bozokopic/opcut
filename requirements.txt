@@ -1,7 +1,0 @@
-doit
-aiohttp
-flake8
-pycairo
-wheel
-hat-util
-packaging

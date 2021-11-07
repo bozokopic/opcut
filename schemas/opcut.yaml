@@ -1,0 +1,102 @@
+---
+"$schema": "http://json-schema.org/schema#"
+id: "opcut://opcut.yaml#"
+definitions:
+    params:
+        type: object
+        required:
+            - cut_width
+            - panels
+            - items
+        properties:
+            cut_width:
+                type: number
+            panels:
+                type: object
+                patternProperties:
+                    ".+":
+                        "$ref": "opcut://opcut.yaml#/definitions/panel"
+            items:
+                type: object
+                patternProperties:
+                    ".+":
+                        "$ref": "opcut://opcut.yaml#/definitions/item"
+    result:
+        type: object
+        required:
+            - params
+            - used
+            - unused
+        properties:
+            params:
+                "$ref": "opcut://opcut.yaml#"
+            used:
+                type: array
+                items:
+                    "$ref": "opcut://opcut.yaml#/definitions/used"
+            unused:
+                type: array
+                items:
+                    "$ref": "opcut://opcut.yaml#/definitions/unused"
+    panel:
+        type: object
+        required:
+            - width
+            - height
+        properties:
+            width:
+                type: number
+            height:
+                type: number
+    item:
+        type: object
+        required:
+            - width
+            - height
+            - can_rotate
+        properties:
+            width:
+                type: number
+            height:
+                type: number
+            can_rotate:
+                type: boolean
+    used:
+        type: object
+        required:
+            - panel
+            - item
+            - x
+            - y
+            - rotate
+        properties:
+            panel:
+                type: string
+            item:
+                type: string
+            x:
+                type: number
+            y:
+                type: number
+            rotate:
+                type: boolean
+    unused:
+        type: object
+        required:
+            - panel
+            - width
+            - height
+            - x
+            - y
+        properties:
+            panel:
+                type: string
+            width:
+                type: number
+            height:
+                type: number
+            x:
+                type: number
+            y:
+                type: number
+...

@@ -1,173 +1,204 @@
-@import '~normalize.css/normalize';
 @import '~izitoast/dist/css/iziToast.min';
 
-@import './fonts/fontawesome';
-@import './fonts/roboto';
-@import './color';
-@import './shadow';
-@import './grid';
+@import 'color';
+@import 'shadow';
+@import 'fonts/fontawesome';
+@import 'fonts/inter';
 
+
+html, body, button, input, select {
+    font-family: 'Inter';
+    font-size: 12pt;
+}
 
 html, body {
-    font-size: 10pt;
-    font-family: 'Roboto';
+    margin: 0;
+    user-select: none;
     height: 100%;
-    margin: 0px;
+    overflow: hidden;
 }
 
-
-.window {
-    height: 100%;
-    display: flex;
-}
-
-
-.left-panel {
-    @include shadow-4dp();
-    width: 450px;
-    display: flex;
-    flex-direction: column;
-    background-color: $color-grey-100;
-
-    .header {
-        flex-shrink: 0;
-        margin: 10px;
+body {
+    & > .main {
+        height: 100%;
         display: flex;
-        align-items: center;
 
-        .title {
-            flex-grow: 1;
-            font-size: 18pt;
-            font-weight: 500;
-            color: $color-grey-800;
+        & > .panel-resizer {
+            cursor: ew-resize;
+            width: 0.4rem;
         }
 
-        a {
-            font-size: 24pt;
-            color: $color-grey-800;
+        & > .left-panel {
+            @include shadow-4dp;
+            width: 35rem;
+            display: flex;
+            flex-direction: column;
+            background-color: $color-grey-100;
+            overflow: auto;
 
-            &:visited {
+            & > .header {
+                flex-shrink: 0;
+                margin: 1rem;
+                display: flex;
+                align-items: center;
+
+                & > .title {
+                    flex-grow: 1;
+                    font-size: 18pt;
+                    font-weight: 500;
+                    color: $color-grey-800;
+                }
+
+                & > .github {
+                    font-size: 24pt;
+                    color: $color-grey-800;
+
+                    &:visited {
+                        color: $color-grey-800;
+                    }
+
+                    &:hover {
+                        color: black;
+                    }
+                }
+            }
+
+            & > .group {
+                flex-shrink: 0;
+                display: flex;
+                flex-direction: column;
+                margin: 1rem;
+                margin-bottom: 0;
+            }
+
+            & > .content {
+                flex-grow: 1;
+                display: flex;
+                flex-direction: column;
+                margin: 1rem;
+                margin-bottom: 0;
+                align-items: stretch;
+                overflow: auto;
+
+                & > div {
+                    margin-bottom: 1rem;
+
+                    & > table {
+                        width: 100%;
+
+                        .col-quantity, .col-height, .col-width, .col-rotate {
+                            width: 5rem;
+
+                            input {
+                                text-align: right;
+                            }
+                        }
+
+                        .col-delete {
+                            width: 2rem;
+                        }
+
+                        & > tbody {
+                            td {
+                                div {
+                                    display: flex;
+                                    align-content: stretch;
+
+                                    & > * {
+                                        flex-shrink: 1;
+                                        flex-grow: 1;
+                                        width: 1rem;
+                                    }
+
+                                }
+                            }
+                        }
+
+                        & > tfoot {
+                            td {
+                                & > div {
+                                    display: flex;
+
+                                    & > .spacer {
+                                        flex-grow: 1;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            & > .calculate {
+                flex-shrink: 0;
+                margin: 1rem;
+                padding: 1rem;
+            }
+
+            .invalid {
+                background-color: rgba(red, 0.2);
+            }
+        }
+
+        & > .center-panel {
+            flex-grow: 1;
+            overflow: auto;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        & > .right-panel {
+            @include shadow-4dp;
+            width: 20rem;
+            display: flex;
+            flex-direction: column;
+            background-color: $color-grey-100;
+            overflow: auto;
+
+            .toolbar {
+                display: flex;
+                justify-content: center;
+                margin: 1rem;
+                flex-shrink: 0;
+            }
+
+            .panel {
+                margin: 1.5rem 0;
+
+                & > *:hover {
+                    background-color: $color-grey-400;
+                    cursor: pointer;
+                }
+            }
+
+            .panel-name {
+                padding: 0.4rem 1rem;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                font-weight: 600;
                 color: $color-grey-800;
             }
 
-            &:hover {
-                color: black;
-            }
-        }
-    }
+            .item {
+                padding: 0.4rem 1rem 0.4rem 2rem;
+                display: flex;
 
-    .group {
-        flex-shrink: 0;
-        display: flex;
-        flex-direction: column;
-        margin: 10px;
-        margin-bottom: 0px;
-    }
+                .item-name {
+                    flex-grow: 1;
+                }
 
-    .content {
-        flex-grow: 1;
-        display: flex;
-        flex-direction: column;
-        margin: 10px;
-        margin-bottom: 0px;
-        align-items: stretch;
-        overflow: auto;
-
-        table.grid {
-            width: 100%;
-
-            .fixed {
-                width: 55px
-            }
-
-            tbody td:last-child {
-                text-align: center;
-            }
-
-            .grid-col-width, .grid-col-height, .grid-col-quantity {
-                text-align: right;
-
-                input {
-                    text-align: right;
+                .item-rotate, .item-x, .item-y {
+                    margin-left: 0.4rem;
+                    font-weight: 600;
+                    color: $color-grey-800;
                 }
             }
+
+            .selected {
+                background-color: $color-grey-400;
+            }
         }
-
-        & > *:not(:last-child) {
-            margin-bottom: 10px;
-        }
-    }
-
-    .calculate {
-        flex-shrink: 0;
-        margin: 10px;
-        padding: 10px;
-    }
-
-    .invalid {
-        background-color: rgba(red, 0.2);
-    }
-}
-
-
-.center-panel {
-    flex-grow: 1;
-    overflow: auto;
-    padding: 15px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-
-.right-panel {
-    @include shadow-4dp();
-    width: 200px;
-    display: flex;
-    flex-direction: column;
-    background-color: $color-grey-100;
-    overflow: auto;
-
-    .toolbar {
-        display: flex;
-        justify-content: center;
-        margin: 10px;
-        flex-shrink: 0;
-    }
-
-    .panel {
-        margin: 15px 0px;
-
-        & > *:hover {
-            background-color: $color-grey-400;
-            cursor: pointer;
-        }
-    }
-
-    .panel-name {
-        padding: 3px 10px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        font-weight: 600;
-        color: $color-grey-800;
-    }
-
-    .item {
-        padding: 3px 10px 3px 20px;
-        display: flex;
-
-        .item-name {
-            flex-grow: 1;
-        }
-
-        .item-rotate, .item-x, .item-y {
-            margin-left: 3px;
-            font-weight: 600;
-            color: $color-grey-800;
-        }
-    }
-
-    .selected {
-        background-color: $color-grey-400;
     }
 }

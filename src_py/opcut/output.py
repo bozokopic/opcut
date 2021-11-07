@@ -1,34 +1,38 @@
 import io
+import typing
 
 import cairo
 
 from opcut import common
 
 
-def generate_output(result, output_type, panel_id=None,
-                    settings=common.OutputSettings()):
-    """Generate output
-
-    Args:
-        result (common.Result): result
-        output_type (common.OutputType): output type
-        panel_id (Optional[str]): panel id (None represents all panels)
-        settings (common.OutputSettings): output settings
-
-    Returns:
-        bytes
-
-    """
+def generate_output(result: common.Result,
+                    output_type: common.OutputType,
+                    panel_id: typing.Optional[str] = None,
+                    settings: common.OutputSettings = common.OutputSettings()
+                    ) -> bytes:
+    """Generate output"""
     ret = io.BytesIO()
-    surface_cls = {common.OutputType.PDF: cairo.PDFSurface,
-                   common.OutputType.SVG: cairo.SVGSurface}[output_type]
-    with surface_cls(ret, settings.pagesize[0],
+
+    if output_type == common.OutputType.PDF:
+        surface_cls = cairo.PDFSurface
+
+    elif output_type == common.OutputType.SVG:
+        surface_cls = cairo.SVGSurface
+
+    else:
+        raise ValueError('unsupported output type')
+
+    with surface_cls(ret,
+                     settings.pagesize[0],
                      settings.pagesize[1]) as surface:
         for panel in result.params.panels:
             if panel_id and panel.id != panel_id:
                 continue
+
             _write_panel(surface, settings, result, panel)
             surface.show_page()
+
     return ret.getvalue()
 
 

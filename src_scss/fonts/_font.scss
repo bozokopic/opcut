@@ -1,9 +1,0 @@
-
-@mixin font($variant, $type, $weight, $style) {
-    @font-face {
-        font-family: '#{$variant}';
-        src: url('../../fonts/#{$variant}/#{$variant}-#{$type}.woff2') format('truetype');
-        font-weight: $weight;
-        font-style: $style;
-    }
-}
