@@ -59,15 +59,15 @@ function leftPanel() {
                 ['span.fa.fa-github']
             ]
         ],
-        ['div.group',
+        ['div.form',
             ['label', 'Method'],
             selectInput(r.get('form', 'method'),
-                        ['forward_greedy', 'greedy'],
-                        val => r.set(['form', 'method'], val))
-        ],
-        ['div.group',
+                        [['forward_greedy', 'Forward greedy'],
+                         ['greedy', 'Greedy']],
+                        val => r.set(['form', 'method'], val)),
             ['label', 'Cut width'],
             numberInput(r.get('form', 'cut_width'),
+                        u.isNumber,
                         val => r.set(['form', 'cut_width'], val))
         ],
         ['div.content',
@@ -75,6 +75,9 @@ function leftPanel() {
             leftPanelItems()
         ],
         ['button.calculate', {
+            props: {
+                disabled: r.get('calculating')
+            },
             on: {
                 click: common.calculate
             }},
@@ -86,6 +89,13 @@ function leftPanel() {
 
 function leftPanelPanels() {
     const panelsPath = ['form', 'panels'];
+
+    const panelNames = new Set();
+    const nameValidator = name => {
+        const valid = !panelNames.has(name);
+        panelNames.add(name);
+        return valid;
+    }
 
     return ['div',
         ['table',
@@ -103,24 +113,28 @@ function leftPanelPanels() {
                     ['td.col-name',
                         ['div',
                             textInput(panel.name,
+                                      nameValidator,
                                       val => r.set([panelsPath, index, 'name'], val))
                         ]
                     ],
                     ['td.col-quantity',
                         ['div',
                             numberInput(panel.quantity,
+                                        u.isInteger,
                                         val => r.set([panelsPath, index, 'quantity'], val))
                         ]
                     ],
                     ['td.col-height',
                         ['div',
                             numberInput(panel.height,
+                                        u.isNumber,
                                         val => r.set([panelsPath, index, 'height'], val))
                         ]
                     ],
                     ['td.col-width',
                         ['div',
                             numberInput(panel.width,
+                                        u.isNumber,
                                         val => r.set([panelsPath, index, 'width'], val))
                         ]
                     ],
@@ -175,6 +189,13 @@ function leftPanelPanels() {
 function leftPanelItems() {
     const itemsPath = ['form', 'items'];
 
+    const itemNames = new Set();
+    const nameValidator = name => {
+        const valid = !itemNames.has(name);
+        itemNames.add(name);
+        return valid;
+    }
+
     return ['div',
         ['table',
             ['thead',
@@ -192,24 +213,28 @@ function leftPanelItems() {
                     ['td.col-name',
                         ['div',
                             textInput(item.name,
+                                      nameValidator,
                                       val => r.set([itemsPath, index, 'name'], val))
                         ]
                     ],
                     ['td.col-quantity',
                         ['div',
                             numberInput(item.quantity,
+                                        u.isInteger,
                                         val => r.set([itemsPath, index, 'quantity'], val))
                         ]
                     ],
                     ['td.col-height',
                         ['div',
                             numberInput(item.height,
+                                        u.isNumber,
                                         val => r.set([itemsPath, index, 'height'], val))
                         ]
                     ],
                     ['td.col-width',
                         ['div',
                             numberInput(item.width,
+                                        u.isNumber,
                                         val => r.set([itemsPath, index, 'width'], val))
                         ]
                     ],
@@ -415,11 +440,14 @@ function centerPanel() {
 }
 
 
-function textInput(value, onChange) {
+function textInput(value, validator, onChange) {
     return ['input', {
         props: {
             type: 'text',
             value: value
+        },
+        class: {
+            invalid: validator && !validator(value)
         },
         on: {
             change: evt => onChange(evt.target.value)
@@ -428,11 +456,15 @@ function textInput(value, onChange) {
 }
 
 
-function numberInput(value, onChange) {
+function numberInput(value, validator, onChange) {
+
     return ['input', {
         props: {
             type: 'number',
             value: value
+        },
+        class: {
+            invalid: validator && !validator(value)
         },
         on: {
             change: evt => onChange(evt.target.valueAsNumber)
@@ -459,11 +491,12 @@ function selectInput(selected, values, onChange) {
         on: {
             change: evt => onChange(evt.target.value)
         }},
-        values.map(i => ['option', {
+        values.map(([value, label]) => ['option', {
             props: {
-                selected: i == selected
+                selected: value == selected,
+                value: value
             }},
-            i
+            label
         ])
     ];
 }

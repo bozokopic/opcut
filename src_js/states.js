@@ -11,6 +11,7 @@ export const main = {
         panel: null,
         item: null
     },
+    calculating: false
 };
 
 

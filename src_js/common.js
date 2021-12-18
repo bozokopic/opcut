@@ -17,6 +17,7 @@ let itemCounter = 0;
 
 
 export async function calculate() {
+    r.set('calculating', true);
     try {
         const method = r.get('form', 'method');
         const params = createCalculateParams();
@@ -35,6 +36,8 @@ export async function calculate() {
         showNotification('success', 'New calculation available');
     } catch (e) {
         showNotification('error', e);
+    } finally {
+        r.set('calculating', false);
     }
 }
 
