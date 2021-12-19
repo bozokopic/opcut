@@ -36,7 +36,7 @@ Install
 .. note::
 
     on Ubuntu, if pycairo is not available, additional
-    ``apt install pkg-config libcairo2-dev python3-dev`` is required
+    ``apt install gcc pkg-config libcairo2-dev python3-dev`` is required
 
 .. note::
 

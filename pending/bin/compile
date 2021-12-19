@@ -1,6 +1,0 @@
-#!/bin/sh
-
-cd $1
-doit clean_all
-doit
-pip install ./dist/*.whl

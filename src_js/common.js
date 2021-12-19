@@ -26,6 +26,8 @@ export async function calculate() {
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(params)
         });
+        if (!res.ok)
+            throw await res.text();
         const result = await res.json();
         r.change(u.pipe(
             u.set('result', result),
@@ -50,6 +52,8 @@ export async function generateOutput() {
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(result)
         });
+        if (!res.ok)
+            throw await res.text();
         const blob = await res.blob();
         FileSaver.saveAs(blob, 'output.pdf');
     } catch (e) {

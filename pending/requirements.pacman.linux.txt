@@ -1,5 +1,0 @@
-git
-nodejs
-yarn
-python
-python-pip

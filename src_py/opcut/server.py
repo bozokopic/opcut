@@ -54,21 +54,35 @@ class Server(aio.Resource):
         raise aiohttp.web.HTTPFound('/index.html')
 
     async def _calculate_handler(self, request):
-        data = await request.json()
-        common.json_schema_repo.validate(
-            'opcut://opcut.yaml#/definitions/params', data)
+        try:
+            data = await request.json()
+            common.json_schema_repo.validate(
+                'opcut://opcut.yaml#/definitions/params', data)
+
+        except Exception:
+            return aiohttp.web.Response(status=400,
+                                        text="Invalid request")
 
         method = common.Method(request.query['method'])
         params = common.params_from_json(data)
 
-        result = await self._executor(opcut.csp.calculate, params, method)
+        try:
+            result = await self._executor(opcut.csp.calculate, params, method)
+            return aiohttp.web.json_response(common.result_to_json(result))
 
-        return aiohttp.web.json_response(common.result_to_json(result))
+        except common.UnresolvableError:
+            return aiohttp.web.Response(status=400,
+                                        text='Result is not solvable')
 
     async def _generate_output_handler(self, request):
-        data = await request.json()
-        common.json_schema_repo.validate(
-            'opcut://opcut.yaml#/definitions/result', data)
+        try:
+            data = await request.json()
+            common.json_schema_repo.validate(
+                'opcut://opcut.yaml#/definitions/result', data)
+
+        except Exception:
+            return aiohttp.web.Response(status=400,
+                                        text="Invalid request")
 
         output_type = common.OutputType(request.query['output_type'])
         panel = request.query.get('panel')
