@@ -145,4 +145,17 @@ def _fitness(result):
         fitness -= (_fitness_K *
                     min(used_areas, default=0) * max(unused_areas, default=0) /
                     (total_area * total_area))
-    return fitness
+
+    if not result.params.min_initial_usage:
+        return fitness
+
+    unused_initial_count = sum(1 for unused in result.unused
+                               if _is_unused_initial(unused))
+    return (-unused_initial_count, fitness)
+
+
+def _is_unused_initial(unused):
+    return (unused.x == 0 and
+            unused.y == 0 and
+            unused.width == unused.panel.width and
+            unused.height == unused.panel.height)

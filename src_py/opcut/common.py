@@ -29,6 +29,7 @@ class Item(typing.NamedTuple):
 
 class Params(typing.NamedTuple):
     cut_width: float
+    min_initial_usage: bool
     panels: typing.List[Panel]
     items: typing.List[Item]
 
@@ -81,6 +82,7 @@ def params_to_json(params: Params) -> json.Data:
     """Convert params to json serializable data specified by
     ``opcut://opcut.yaml#/definitions/params``"""
     return {'cut_width': params.cut_width,
+            'min_initial_usage': params.min_initial_usage,
             'panels': {panel.id: {'width': panel.width,
                                   'height': panel.height}
                        for panel in params.panels},
@@ -94,6 +96,7 @@ def params_from_json(data: json.Data) -> Params:
     """Convert json serializable data specified by
     ``opcut://opcut.yaml#/definitions/params`` to params"""
     return Params(cut_width=data['cut_width'],
+                  min_initial_usage=data.get('min_initial_usage', False),
                   panels=[Panel(id=k,
                                 width=v['width'],
                                 height=v['height'])

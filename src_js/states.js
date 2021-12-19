@@ -3,6 +3,7 @@ export const main = {
     form: {
         method: 'forward_greedy',
         cut_width: 0.3,
+        min_initial_usage: false,
         panels: [],
         items: []
     },

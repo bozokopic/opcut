@@ -120,6 +120,8 @@ function createCalculateParams() {
     if (cutWidth < 0)
         throw 'Invalid cut width';
 
+    const minInitialUsage = r.get('form', 'min_initial_usage');
+
     const panels = {};
     for (const panel of r.get('form', 'panels')) {
         if (!panel.name)
@@ -167,6 +169,7 @@ function createCalculateParams() {
 
     return {
         cut_width: cutWidth,
+        min_initial_usage: minInitialUsage,
         panels: panels,
         items: items
     };

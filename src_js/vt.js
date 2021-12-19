@@ -68,7 +68,11 @@ function leftPanel() {
             ['label', 'Cut width'],
             numberInput(r.get('form', 'cut_width'),
                         u.isNumber,
-                        val => r.set(['form', 'cut_width'], val))
+                        val => r.set(['form', 'cut_width'], val)),
+            ['label'],
+            checkboxInput('Minimize initial panel usage',
+                          r.get('form', 'min_initial_usage'),
+                          val => r.set(['form', 'min_initial_usage'], val))
         ],
         ['div.content',
             leftPanelPanels(),
@@ -240,7 +244,8 @@ function leftPanelItems() {
                     ],
                     ['td.col-rotate',
                         ['div',
-                            checkboxInput(item.can_rotate,
+                            checkboxInput(null,
+                                          item.can_rotate,
                                           val => r.set([itemsPath, index, 'can_rotate'], val))
                         ]
                     ],
@@ -473,8 +478,8 @@ function numberInput(value, validator, onChange) {
 }
 
 
-function checkboxInput(value, onChange) {
-    return ['input', {
+function checkboxInput(label, value, onChange) {
+    const input = ['input', {
         props: {
             type: 'checkbox',
             checked: value
@@ -483,6 +488,14 @@ function checkboxInput(value, onChange) {
             change: evt => onChange(evt.target.checked)
         }
     }];
+
+    if (!label)
+        return input;
+
+    return ['label',
+        input,
+        ` ${label}`
+    ];
 }
 
 

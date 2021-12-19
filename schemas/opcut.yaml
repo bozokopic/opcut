@@ -11,6 +11,8 @@ definitions:
         properties:
             cut_width:
                 type: number
+            min_initial_usage:
+                type: boolean
             panels:
                 type: object
                 patternProperties:
