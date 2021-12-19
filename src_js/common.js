@@ -133,7 +133,7 @@ function createCalculateParams() {
         if (panel.height <= 0)
             throw 'Invalid height for panel ' + panel.name;
         for (let i = 1; i <= panel.quantity; ++i) {
-            const name = panel.name + ' ' + String(i);
+            const name = panel.quantity > 1 ? `${panel.name} ${i}` : panel.name;
             if (name in panels)
                 throw 'Duplicate panel name ' + name;
             panels[name] = {width: panel.width, height: panel.height};
@@ -153,7 +153,7 @@ function createCalculateParams() {
         if (item.height <= 0)
             throw 'Invalid height for item ' + item.name;
         for (let i = 1; i <= item.quantity; ++i) {
-            const name = item.name + ' ' + String(i);
+            const name = item.quantity > 1 ? `${item.name} ${i}` : item.name;
             if (name in items) {
                 throw 'Duplicate item name ' + name;
             }
