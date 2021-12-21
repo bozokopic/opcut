@@ -1,5 +1,6 @@
 from pathlib import Path
 import subprocess
+import sys
 import tempfile
 
 from hat import json
@@ -19,6 +20,7 @@ __all__ = ['task_clean_all',
            'task_test',
            'task_ui',
            'task_deps',
+           'task_format',
            'task_json_schema_repo',
            *dist.__all__]
 
@@ -104,7 +106,18 @@ def task_ui():
 
 def task_deps():
     """Install dependencies"""
-    return {'actions': ['yarn install --silent']}
+    return {'actions': ['yarn install --silent',
+                        f'{sys.executable} -m peru sync']}
+
+
+def task_format():
+    """Format"""
+    files = [*Path('src_c').rglob('*.c'),
+             *Path('src_c').rglob('*.h')]
+    for f in files:
+        yield {'name': str(f),
+               'actions': [f'clang-format -style=file -i {f}'],
+               'file_dep': [f]}
 
 
 def task_json_schema_repo():

@@ -1,0 +1,6 @@
+imports:
+    jsmn: deps/jsmn
+
+git module jsmn:
+    url: https://github.com/zserge/jsmn
+    pick: jsmn.h

@@ -1,6 +1,8 @@
 /.doit.db
+/.peru
 /build
 /cache
+/deps
 /node_modules
 /src_py/opcut/json_schema_repo.json
 /src_py/opcut/ui
