@@ -10,18 +10,21 @@ from hat.doit.py import (build_wheel,
                          run_flake8)
 from hat.doit.js import run_eslint
 
+from .c import *  # NOQA
 from .dist import *  # NOQA
+from . import c
 from . import dist
 
 
 __all__ = ['task_clean_all',
-           'task_build',
+           'task_wheel',
            'task_check',
            'task_test',
            'task_ui',
            'task_deps',
            'task_format',
            'task_json_schema_repo',
+           *c.__all__,
            *dist.__all__]
 
 
@@ -34,6 +37,7 @@ docs_dir = Path('docs')
 schemas_dir = Path('schemas')
 node_modules_dir = Path('node_modules')
 
+build_py_dir = build_dir / 'py'
 ui_dir = src_py_dir / 'opcut/ui'
 json_schema_repo_path = src_py_dir / 'opcut/json_schema_repo.json'
 
@@ -45,13 +49,13 @@ def task_clean_all():
                                         json_schema_repo_path])]}
 
 
-def task_build():
-    """Build"""
+def task_wheel():
+    """Build wheel"""
 
     def build():
         build_wheel(
             src_dir=src_py_dir,
-            dst_dir=build_dir,
+            dst_dir=build_py_dir,
             name='opcut',
             description='Cutting stock problem optimizer',
             url='https://github.com/bozokopic/opcut',

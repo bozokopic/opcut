@@ -1,14 +1,12 @@
 #ifndef OPCUT_COMMON_H
 #define OPCUT_COMMON_H
 
-
-#import <stdbool.h>
-#import <stdio.h>
+#include <stdbool.h>
+#include <stdio.h>
 
 #define OPCUT_SUCCESS 0
-#define OPCUT_ERROR -1
-#define OPCUT_UNSOLVABLE 1
-
+#define OPCUT_ERROR 1
+#define OPCUT_UNSOLVABLE 2
 
 #ifdef __cplusplus
 extern "C" {

@@ -7,187 +7,7 @@
 
 
 static inline bool is_token_val(char *json, jsmntok_t *token, char *val) {
-    return strncmp(val, json + token->start, token->end - tokens->start) == 0;
-}
-
-
-static int write_params(opcut_params_t *params, FILE *stream) {
-    if (fputs("{\"cut_width\":", fputs) < 0)
-        return OPCUT_ERROR;
-
-    if (write_number(params->cut_width, stream))
-        return OPCUT_ERROR;
-
-    if (fputs(",\"min_initial_usage\":", stream) < 0)
-        return OPCUT_ERROR;
-
-    if (write_bool(params->min_initial_usage, stream))
-        return OPCUT_ERROR;
-
-    if (fputs("\"panels\":[", stream) < 0)
-        return OPCUT_ERROR;
-
-    for (size_t i = 0; i < params->panels_len; ++i) {
-        if (write_panel(result->panels + i, stream))
-            return OPCUT_ERROR;
-
-        if (i < result->panels_len - 1) {
-            if (fputs(",", stream) < 0)
-                return OPCUT_ERROR
-        }
-    }
-
-    if (fputs("],\"items\":[", stream) < 0)
-        return OPCUT_ERROR;
-
-    for (size_t i = 0; i < params->items_len; ++i) {
-        if (write_item(result->items + i, stream))
-            return OPCUT_ERROR;
-
-        if (i < result->items_len - 1) {
-            if (fputs(",", stream) < 0)
-                return OPCUT_ERROR
-        }
-    }
-
-    if (fputs("]}", stream) < 0)
-        return OPCUT_ERROR;
-
-    return OPCUT_SUCCESS;
-}
-
-
-static int write_used(opcut_used_t *used, FILE *stream) {
-    if (fputs("{\"panel\":", fputs) < 0)
-        return OPCUT_ERROR;
-
-    if (write_str(&(used->panel->id), stream))
-        return OPCUT_ERROR;
-
-    if (fputs(",\"item\":", fputs) < 0)
-        return OPCUT_ERROR;
-
-    if (write_str(&(used->item->id), stream))
-        return OPCUT_ERROR;
-
-    if (fputs(",\"x\":", fputs) < 0)
-        return OPCUT_ERROR;
-
-    if (write_number(used->x, stream))
-        return OPCUT_ERROR;
-
-    if (fputs(",\"y\":", fputs) < 0)
-        return OPCUT_ERROR;
-
-    if (write_number(used->y, stream))
-        return OPCUT_ERROR;
-
-    if (fputs(",\"rotate\":", fputs) < 0)
-        return OPCUT_ERROR;
-
-    if (write_bool(used->rotate, stream))
-        return OPCUT_ERROR;
-
-    if (fputs("}", stream) < 0)
-        return OPCUT_ERROR;
-
-    return OPCUT_SUCCESS;
-}
-
-
-static int write_unused(opcut_unused_t *unused, FILE *stream) {
-    if (fputs("{\"panel\":", fputs) < 0)
-        return OPCUT_ERROR;
-
-    if (write_str(&(unused->panel->id), stream))
-        return OPCUT_ERROR;
-
-    if (fputs(",\"width\":", fputs) < 0)
-        return OPCUT_ERROR;
-
-    if (write_number(unused->width, stream))
-        return OPCUT_ERROR;
-
-    if (fputs(",\"height\":", fputs) < 0)
-        return OPCUT_ERROR;
-
-    if (write_number(unused->height, stream))
-        return OPCUT_ERROR;
-
-    if (fputs(",\"x\":", fputs) < 0)
-        return OPCUT_ERROR;
-
-    if (write_number(unused->x, stream))
-        return OPCUT_ERROR;
-
-    if (fputs(",\"y\":", fputs) < 0)
-        return OPCUT_ERROR;
-
-    if (write_number(unused->y, stream))
-        return OPCUT_ERROR;
-
-    if (fputs("}", stream) < 0)
-        return OPCUT_ERROR;
-
-    return OPCUT_SUCCESS;
-}
-
-
-static int write_panel(opcut_panel_t *panel, FILE *stream) {
-    if (fputs("{\"id\":", fputs) < 0)
-        return OPCUT_ERROR;
-
-    if (write_str(&(panel->id), stream))
-        return OPCUT_ERROR;
-
-    if (fputs(",\"width\":", fputs) < 0)
-        return OPCUT_ERROR;
-
-    if (write_number(panel->width, stream))
-        return OPCUT_ERROR;
-
-    if (fputs(",\"height\":", fputs) < 0)
-        return OPCUT_ERROR;
-
-    if (write_number(panel->height, stream))
-        return OPCUT_ERROR;
-
-    if (fputs("}", stream) < 0)
-        return OPCUT_ERROR;
-
-    return OPCUT_SUCCESS;
-}
-
-
-static int write_item(opcut_item_t *item, FILE *stream) {
-    if (fputs("{\"id\":", fputs) < 0)
-        return OPCUT_ERROR;
-
-    if (write_str(&(item->id), stream))
-        return OPCUT_ERROR;
-
-    if (fputs(",\"width\":", fputs) < 0)
-        return OPCUT_ERROR;
-
-    if (write_number(item->width, stream))
-        return OPCUT_ERROR;
-
-    if (fputs(",\"height\":", fputs) < 0)
-        return OPCUT_ERROR;
-
-    if (write_number(item->height, stream))
-        return OPCUT_ERROR;
-
-    if (fputs(",\"can_rotate\":", fputs) < 0)
-        return OPCUT_ERROR;
-
-    if (write_bool(item->can_rotate, stream))
-        return OPCUT_ERROR;
-
-    if (fputs("}", stream) < 0)
-        return OPCUT_ERROR;
-
-    return OPCUT_SUCCESS;
+    return strncmp(val, json + token->start, token->end - token->start) == 0;
 }
 
 
@@ -215,10 +35,300 @@ static int write_str(opcut_str_t *str, FILE *stream) {
 }
 
 
+static int write_panel(opcut_panel_t *panel, FILE *stream) {
+    if (fputs("{\"id\":", stream) < 0)
+        return OPCUT_ERROR;
+
+    if (write_str(&(panel->id), stream))
+        return OPCUT_ERROR;
+
+    if (fputs(",\"width\":", stream) < 0)
+        return OPCUT_ERROR;
+
+    if (write_number(panel->width, stream))
+        return OPCUT_ERROR;
+
+    if (fputs(",\"height\":", stream) < 0)
+        return OPCUT_ERROR;
+
+    if (write_number(panel->height, stream))
+        return OPCUT_ERROR;
+
+    if (fputs("}", stream) < 0)
+        return OPCUT_ERROR;
+
+    return OPCUT_SUCCESS;
+}
+
+
+static int write_item(opcut_item_t *item, FILE *stream) {
+    if (fputs("{\"id\":", stream) < 0)
+        return OPCUT_ERROR;
+
+    if (write_str(&(item->id), stream))
+        return OPCUT_ERROR;
+
+    if (fputs(",\"width\":", stream) < 0)
+        return OPCUT_ERROR;
+
+    if (write_number(item->width, stream))
+        return OPCUT_ERROR;
+
+    if (fputs(",\"height\":", stream) < 0)
+        return OPCUT_ERROR;
+
+    if (write_number(item->height, stream))
+        return OPCUT_ERROR;
+
+    if (fputs(",\"can_rotate\":", stream) < 0)
+        return OPCUT_ERROR;
+
+    if (write_bool(item->can_rotate, stream))
+        return OPCUT_ERROR;
+
+    if (fputs("}", stream) < 0)
+        return OPCUT_ERROR;
+
+    return OPCUT_SUCCESS;
+}
+
+
+static int write_params(opcut_params_t *params, FILE *stream) {
+    if (fputs("{\"cut_width\":", stream) < 0)
+        return OPCUT_ERROR;
+
+    if (write_number(params->cut_width, stream))
+        return OPCUT_ERROR;
+
+    if (fputs(",\"min_initial_usage\":", stream) < 0)
+        return OPCUT_ERROR;
+
+    if (write_bool(params->min_initial_usage, stream))
+        return OPCUT_ERROR;
+
+    if (fputs("\"panels\":[", stream) < 0)
+        return OPCUT_ERROR;
+
+    for (size_t i = 0; i < params->panels_len; ++i) {
+        if (write_panel(params->panels + i, stream))
+            return OPCUT_ERROR;
+
+        if (i < params->panels_len - 1) {
+            if (fputs(",", stream) < 0)
+                return OPCUT_ERROR;
+        }
+    }
+
+    if (fputs("],\"items\":[", stream) < 0)
+        return OPCUT_ERROR;
+
+    for (size_t i = 0; i < params->items_len; ++i) {
+        if (write_item(params->items + i, stream))
+            return OPCUT_ERROR;
+
+        if (i < params->items_len - 1) {
+            if (fputs(",", stream) < 0)
+                return OPCUT_ERROR;
+        }
+    }
+
+    if (fputs("]}", stream) < 0)
+        return OPCUT_ERROR;
+
+    return OPCUT_SUCCESS;
+}
+
+
+static int write_used(opcut_used_t *used, FILE *stream) {
+    if (fputs("{\"panel\":", stream) < 0)
+        return OPCUT_ERROR;
+
+    if (write_str(&(used->panel->id), stream))
+        return OPCUT_ERROR;
+
+    if (fputs(",\"item\":", stream) < 0)
+        return OPCUT_ERROR;
+
+    if (write_str(&(used->item->id), stream))
+        return OPCUT_ERROR;
+
+    if (fputs(",\"x\":", stream) < 0)
+        return OPCUT_ERROR;
+
+    if (write_number(used->x, stream))
+        return OPCUT_ERROR;
+
+    if (fputs(",\"y\":", stream) < 0)
+        return OPCUT_ERROR;
+
+    if (write_number(used->y, stream))
+        return OPCUT_ERROR;
+
+    if (fputs(",\"rotate\":", stream) < 0)
+        return OPCUT_ERROR;
+
+    if (write_bool(used->rotate, stream))
+        return OPCUT_ERROR;
+
+    if (fputs("}", stream) < 0)
+        return OPCUT_ERROR;
+
+    return OPCUT_SUCCESS;
+}
+
+
+static int write_unused(opcut_unused_t *unused, FILE *stream) {
+    if (fputs("{\"panel\":", stream) < 0)
+        return OPCUT_ERROR;
+
+    if (write_str(&(unused->panel->id), stream))
+        return OPCUT_ERROR;
+
+    if (fputs(",\"width\":", stream) < 0)
+        return OPCUT_ERROR;
+
+    if (write_number(unused->width, stream))
+        return OPCUT_ERROR;
+
+    if (fputs(",\"height\":", stream) < 0)
+        return OPCUT_ERROR;
+
+    if (write_number(unused->height, stream))
+        return OPCUT_ERROR;
+
+    if (fputs(",\"x\":", stream) < 0)
+        return OPCUT_ERROR;
+
+    if (write_number(unused->x, stream))
+        return OPCUT_ERROR;
+
+    if (fputs(",\"y\":", stream) < 0)
+        return OPCUT_ERROR;
+
+    if (write_number(unused->y, stream))
+        return OPCUT_ERROR;
+
+    if (fputs("}", stream) < 0)
+        return OPCUT_ERROR;
+
+    return OPCUT_SUCCESS;
+}
+
+
+static int read_number(char *json, double *val, jsmntok_t *token) {
+    if (token->type != JSMN_PRIMITIVE)
+        return OPCUT_ERROR;
+
+    if (sscanf(json + token->start, "%lf", val) < 0)
+        return OPCUT_ERROR;
+
+    return OPCUT_SUCCESS;
+}
+
+
+static int read_bool(char *json, bool *val, jsmntok_t *token) {
+    if (token->type != JSMN_PRIMITIVE)
+        return OPCUT_ERROR;
+
+    if (json[token->start] == 't') {
+        *val = true;
+        return OPCUT_SUCCESS;
+    }
+
+    if (json[token->start] == 'f') {
+        *val = false;
+        return OPCUT_SUCCESS;
+    }
+
+    return OPCUT_ERROR;
+}
+
+
+static int read_string(char *json, opcut_str_t *str, jsmntok_t *token) {
+    if (token->type != JSMN_STRING)
+        return OPCUT_ERROR;
+
+    str->data = json + token->start;
+    str->len = token->end - token->start;
+    return OPCUT_SUCCESS;
+}
+
+
+static int read_panel(char *json, opcut_panel_t *panel, jsmntok_t *tokens,
+                      size_t *pos) {
+    jsmntok_t *id_token = tokens + ((*pos)++);
+    jsmntok_t *panel_token = tokens + ((*pos)++);
+    if (panel_token->type != JSMN_OBJECT)
+        return OPCUT_ERROR;
+
+    if (!read_string(json, &(panel->id), id_token))
+        return OPCUT_ERROR;
+
+    panel->width = 0;
+    panel->height = 0;
+
+    for (size_t i = 0; i < panel_token->size; ++i) {
+        jsmntok_t *key_token = tokens + ((*pos)++);
+        jsmntok_t *value_token = tokens + ((*pos)++);
+        if (key_token->type != JSMN_STRING)
+            return OPCUT_ERROR;
+
+        if (is_token_val(json, key_token, "width")) {
+            if (read_number(json, &(panel->width), value_token))
+                return OPCUT_ERROR;
+
+        } else if (is_token_val(json, key_token, "height")) {
+            if (read_number(json, &(panel->height), value_token))
+                return OPCUT_ERROR;
+        }
+    }
+
+    return OPCUT_SUCCESS;
+}
+
+
+static int read_item(char *json, opcut_item_t *item, jsmntok_t *tokens,
+                     size_t *pos) {
+    jsmntok_t *id_token = tokens + ((*pos)++);
+    jsmntok_t *item_token = tokens + ((*pos)++);
+    if (item_token->type != JSMN_OBJECT)
+        return OPCUT_ERROR;
+
+    if (!read_string(json, &(item->id), id_token))
+        return OPCUT_ERROR;
+
+    item->width = 0;
+    item->height = 0;
+    item->can_rotate = false;
+
+    for (size_t i = 0; i < item_token->size; ++i) {
+        jsmntok_t *key_token = tokens + ((*pos)++);
+        jsmntok_t *value_token = tokens + ((*pos)++);
+        if (key_token->type != JSMN_STRING)
+            return OPCUT_ERROR;
+
+        if (is_token_val(json, key_token, "width")) {
+            if (read_number(json, &(item->width), value_token))
+                return OPCUT_ERROR;
+
+        } else if (is_token_val(json, key_token, "height")) {
+            if (read_number(json, &(item->height), value_token))
+                return OPCUT_ERROR;
+
+        } else if (is_token_val(json, key_token, "can_rotate")) {
+            if (read_bool(json, &(item->can_rotate), value_token))
+                return OPCUT_ERROR;
+        }
+    }
+
+    return OPCUT_SUCCESS;
+}
+
+
 static int read_params(char *json, opcut_params_t *params, jsmntok_t *tokens,
                        size_t *pos) {
     jsmntok_t *params_token = tokens + ((*pos)++);
-    if (tokens_len < 1 || params_token->type != JSMN_OBJECT)
+    if (params_token->type != JSMN_OBJECT)
         return OPCUT_ERROR;
 
     params->cut_width = 0;
@@ -243,7 +353,7 @@ static int read_params(char *json, opcut_params_t *params, jsmntok_t *tokens,
                 goto error_cleanup;
 
         } else if (is_token_val(json, key_token, "panels")) {
-            if (value_token->type != JSMN_ARRAY)
+            if (value_token->type != JSMN_OBJECT)
                 goto error_cleanup;
 
             if (params->panels) {
@@ -262,7 +372,7 @@ static int read_params(char *json, opcut_params_t *params, jsmntok_t *tokens,
             }
 
         } else if (is_token_val(json, key_token, "items")) {
-            if (value_token->type != JSMN_ARRAY)
+            if (value_token->type != JSMN_OBJECT)
                 goto error_cleanup;
 
             if (params->items) {
@@ -299,29 +409,12 @@ error_cleanup:
 }
 
 
-static int read_panel(char *json, opcut_panel_t *panel, jsmntok_t *tokens,
-                      size_t *pos) {}
-
-
-static int read_item(char *json, opcut_item_t *item, jsmntok_t *tokens,
-                     size_t *pos) {}
-
-
-static int read_number(char *json, double *val, jsmntok_t *token) {}
-
-
-static int read_bool(char *json, bool *val, jsmntok_t *token) {}
-
-
-static int read_string(char *json, opcut_str_t *str, jsmntok_t *token) {}
-
-
 int opcut_params_init(opcut_params_t *params, opcut_str_t *json) {
     jsmn_parser parser;
     int tokens_len;
 
     jsmn_init(&parser);
-    tokens_len = jsmn_parse(&parser, json, json_len, NULL, 0);
+    tokens_len = jsmn_parse(&parser, json->data, json->len, NULL, 0);
     if (tokens_len < 0)
         return OPCUT_ERROR;
 
@@ -352,7 +445,7 @@ int opcut_result_write(opcut_result_t *result, FILE *stream) {
     if (fputs("{\"params\":", stream) < 0)
         return OPCUT_ERROR;
 
-    if (write_params(result->params + i, stream))
+    if (write_params(result->params, stream))
         return OPCUT_ERROR;
 
     if (fputs(",\"used\":[", stream) < 0)
@@ -364,7 +457,7 @@ int opcut_result_write(opcut_result_t *result, FILE *stream) {
 
         if (i < result->used_len - 1) {
             if (fputs(",", stream) < 0)
-                return OPCUT_ERROR
+                return OPCUT_ERROR;
         }
     }
 
