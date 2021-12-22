@@ -13,6 +13,6 @@ RUN apt install -qy nodejs yarnpkg git && \
 
 FROM opcut-base as opcut-run
 WORKDIR /opcut
-COPY --from=opcut-build /opcut/build/dist/*.whl .
+COPY --from=opcut-build /opcut/build/py/dist/*.whl .
 RUN pip install -qq *.whl && \
     rm *.whl
