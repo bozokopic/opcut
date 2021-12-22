@@ -33,8 +33,10 @@ def task_c_dep():
 
 
 _build = CBuild(
-    src_paths=[*src_c_dir.rglob('*.c')],
-    src_dir=src_c_dir,
+    src_paths=[*src_c_dir.rglob('*.c'),
+               *(deps_dir / 'argparse').rglob('*.c')],
     build_dir=build_c_dir,
-    cc_flags=['-fPIC', '-O2', f'-I{deps_dir / "jsmn"}'],
+    cc_flags=['-fPIC', '-O2',
+              f'-I{deps_dir / "jsmn"}',
+              f'-I{deps_dir / "argparse"}'],
     task_dep=['deps'])

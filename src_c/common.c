@@ -28,7 +28,7 @@ static int write_bool(bool val, FILE *stream) {
 
 
 static int write_str(opcut_str_t *str, FILE *stream) {
-    if (fprintf(stream, "\"%*s\"", str->len, str->data) < 0)
+    if (fprintf(stream, "\"%.*s\"", str->len, str->data) < 0)
         return OPCUT_ERROR;
 
     return OPCUT_SUCCESS;
@@ -36,13 +36,10 @@ static int write_str(opcut_str_t *str, FILE *stream) {
 
 
 static int write_panel(opcut_panel_t *panel, FILE *stream) {
-    if (fputs("{\"id\":", stream) < 0)
-        return OPCUT_ERROR;
-
     if (write_str(&(panel->id), stream))
         return OPCUT_ERROR;
 
-    if (fputs(",\"width\":", stream) < 0)
+    if (fputs(":{\"width\":", stream) < 0)
         return OPCUT_ERROR;
 
     if (write_number(panel->width, stream))
@@ -62,13 +59,10 @@ static int write_panel(opcut_panel_t *panel, FILE *stream) {
 
 
 static int write_item(opcut_item_t *item, FILE *stream) {
-    if (fputs("{\"id\":", stream) < 0)
-        return OPCUT_ERROR;
-
     if (write_str(&(item->id), stream))
         return OPCUT_ERROR;
 
-    if (fputs(",\"width\":", stream) < 0)
+    if (fputs(":{\"width\":", stream) < 0)
         return OPCUT_ERROR;
 
     if (write_number(item->width, stream))
@@ -106,7 +100,7 @@ static int write_params(opcut_params_t *params, FILE *stream) {
     if (write_bool(params->min_initial_usage, stream))
         return OPCUT_ERROR;
 
-    if (fputs("\"panels\":[", stream) < 0)
+    if (fputs(",\"panels\":{", stream) < 0)
         return OPCUT_ERROR;
 
     for (size_t i = 0; i < params->panels_len; ++i) {
@@ -119,7 +113,7 @@ static int write_params(opcut_params_t *params, FILE *stream) {
         }
     }
 
-    if (fputs("],\"items\":[", stream) < 0)
+    if (fputs("},\"items\":{", stream) < 0)
         return OPCUT_ERROR;
 
     for (size_t i = 0; i < params->items_len; ++i) {
@@ -132,7 +126,7 @@ static int write_params(opcut_params_t *params, FILE *stream) {
         }
     }
 
-    if (fputs("]}", stream) < 0)
+    if (fputs("}}", stream) < 0)
         return OPCUT_ERROR;
 
     return OPCUT_SUCCESS;
@@ -261,7 +255,7 @@ static int read_panel(char *json, opcut_panel_t *panel, jsmntok_t *tokens,
     if (panel_token->type != JSMN_OBJECT)
         return OPCUT_ERROR;
 
-    if (!read_string(json, &(panel->id), id_token))
+    if (read_string(json, &(panel->id), id_token))
         return OPCUT_ERROR;
 
     panel->width = 0;
@@ -294,7 +288,7 @@ static int read_item(char *json, opcut_item_t *item, jsmntok_t *tokens,
     if (item_token->type != JSMN_OBJECT)
         return OPCUT_ERROR;
 
-    if (!read_string(json, &(item->id), id_token))
+    if (read_string(json, &(item->id), id_token))
         return OPCUT_ERROR;
 
     item->width = 0;
@@ -367,7 +361,7 @@ static int read_params(char *json, opcut_params_t *params, jsmntok_t *tokens,
                 goto error_cleanup;
 
             for (size_t j = 0; j < params->panels_len; ++j) {
-                if (!read_panel(json, params->panels + j, tokens, pos))
+                if (read_panel(json, params->panels + j, tokens, pos))
                     goto error_cleanup;
             }
 
@@ -386,7 +380,7 @@ static int read_params(char *json, opcut_params_t *params, jsmntok_t *tokens,
                 goto error_cleanup;
 
             for (size_t j = 0; j < params->items_len; ++j) {
-                if (!read_item(json, params->items + j, tokens, pos))
+                if (read_item(json, params->items + j, tokens, pos))
                     goto error_cleanup;
             }
         }
@@ -406,6 +400,16 @@ error_cleanup:
     }
 
     return OPCUT_ERROR;
+}
+
+
+int opcut_str_resize(opcut_str_t *str, size_t size) {
+    char *data = realloc(str->data, size);
+    if (!data)
+        return OPCUT_ERROR;
+
+    str->data = data;
+    return OPCUT_SUCCESS;
 }
 
 
@@ -429,15 +433,6 @@ int opcut_params_init(opcut_params_t *params, opcut_str_t *json) {
 
     size_t pos = 0;
     return read_params(json->data, params, tokens, &pos);
-}
-
-
-void opcut_params_destroy(opcut_params_t *params) {
-    if (params->panels)
-        free(params->panels);
-
-    if (params->items)
-        free(params->items);
 }
 
 
@@ -478,4 +473,28 @@ int opcut_result_write(opcut_result_t *result, FILE *stream) {
         return OPCUT_ERROR;
 
     return OPCUT_SUCCESS;
+}
+
+
+void opcut_str_destroy(opcut_str_t *str) {
+    if (str->data)
+        free(str->data);
+}
+
+
+void opcut_params_destroy(opcut_params_t *params) {
+    if (params->panels)
+        free(params->panels);
+
+    if (params->items)
+        free(params->items);
+}
+
+
+void opcut_result_destroy(opcut_result_t *result) {
+    if (result->used)
+        free(result->used);
+
+    if (result->unused)
+        free(result->unused);
 }

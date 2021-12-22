@@ -4,6 +4,6 @@
 
 exec $PYTHON -m opcut generate_output \
     --output-type pdf \
-    --result $RUN_PATH/result.yaml \
+    --result $RUN_PATH/result.json \
     --output $RUN_PATH/output.pdf \
     "$@"

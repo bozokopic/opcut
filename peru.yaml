@@ -1,6 +1,13 @@
 imports:
     jsmn: deps/jsmn
+    argparse: deps/argparse
 
 git module jsmn:
     url: https://github.com/zserge/jsmn
     pick: jsmn.h
+
+git module argparse:
+    url: https://github.com/cofyc/argparse
+    pick:
+        - argparse.c
+        - argparse.h
