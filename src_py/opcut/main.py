@@ -116,7 +116,7 @@ def generate_output(output_type: common.OutputType,
 def server(host: str,
            port: int):
     """Run server"""
-    aio.init_asyncio()
+    loop = aio.init_asyncio()
 
     async def run():
         server = await opcut.server.create(host, port)
@@ -128,7 +128,7 @@ def server(host: str,
             await aio.uncancellable(server.async_close())
 
     with contextlib.suppress(asyncio.CancelledError):
-        aio.run_asyncio(run())
+        aio.run_asyncio(run(), loop=loop)
 
 
 if __name__ == '__main__':

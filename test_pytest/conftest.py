@@ -1,16 +1,17 @@
-import asyncio
-
 import pytest
 
 from hat import aio
 
 
+loop = None
+
+
 @pytest.fixture(scope='session')
 def event_loop():
-    loop = asyncio.get_event_loop()
     yield loop
     loop.close()
 
 
 def pytest_configure(config):
-    aio.init_asyncio()
+    global loop
+    loop = aio.init_asyncio()
