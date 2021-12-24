@@ -103,11 +103,11 @@ static int write_params(opcut_params_t *params, FILE *stream) {
     if (fputs(",\"panels\":{", stream) < 0)
         return OPCUT_ERROR;
 
-    for (size_t i = 0; i < params->panels_len; ++i) {
-        if (write_panel(params->panels + i, stream))
+    for (opcut_panel_t *panel = params->panels; panel; panel = panel->next) {
+        if (write_panel(panel, stream))
             return OPCUT_ERROR;
 
-        if (i < params->panels_len - 1) {
+        if (panel->next) {
             if (fputs(",", stream) < 0)
                 return OPCUT_ERROR;
         }
@@ -116,11 +116,11 @@ static int write_params(opcut_params_t *params, FILE *stream) {
     if (fputs("},\"items\":{", stream) < 0)
         return OPCUT_ERROR;
 
-    for (size_t i = 0; i < params->items_len; ++i) {
-        if (write_item(params->items + i, stream))
+    for (opcut_item_t *item = params->items; item; item = item->next) {
+        if (write_item(item, stream))
             return OPCUT_ERROR;
 
-        if (i < params->items_len - 1) {
+        if (item->next) {
             if (fputs(",", stream) < 0)
                 return OPCUT_ERROR;
         }
@@ -336,9 +336,7 @@ static int read_params(char *json, opcut_params_t *params, jsmntok_t *tokens,
     params->cut_width = 0;
     params->min_initial_usage = false;
     params->panels = NULL;
-    params->panels_len = 0;
     params->items = NULL;
-    params->items_len = 0;
 
     for (size_t i = 0; i < params_token->size; ++i) {
         jsmntok_t *key_token = tokens + ((*pos)++);
@@ -358,38 +356,36 @@ static int read_params(char *json, opcut_params_t *params, jsmntok_t *tokens,
             if (value_token->type != JSMN_OBJECT)
                 goto error_cleanup;
 
-            if (params->panels) {
-                free(params->panels);
-                params->panels = NULL;
-            }
-
-            params->panels_len = value_token->size;
-            params->panels = malloc(value_token->size * sizeof(opcut_panel_t));
-            if (!params->panels)
-                goto error_cleanup;
-
-            for (size_t j = 0; j < params->panels_len; ++j) {
-                if (read_panel(json, params->panels + j, tokens, pos))
+            for (size_t j = 0; j < value_token->size; ++j) {
+                opcut_panel_t *panel = malloc(sizeof(opcut_panel_t));
+                if (!panel)
                     goto error_cleanup;
+
+                if (read_panel(json, panel, tokens, pos)) {
+                    free(panel);
+                    goto error_cleanup;
+                }
+
+                panel->next = params->panels;
+                params->panels = panel;
             }
 
         } else if (is_token_val(json, key_token, "items")) {
             if (value_token->type != JSMN_OBJECT)
                 goto error_cleanup;
 
-            if (params->items) {
-                free(params->items);
-                params->items = NULL;
-            }
-
-            params->items_len = value_token->size;
-            params->items = malloc(value_token->size * sizeof(opcut_item_t));
-            if (!params->items)
-                goto error_cleanup;
-
-            for (size_t j = 0; j < params->items_len; ++j) {
-                if (read_item(json, params->items + j, tokens, pos))
+            for (size_t j = 0; j < value_token->size; ++j) {
+                opcut_item_t *item = malloc(sizeof(opcut_item_t));
+                if (!item)
                     goto error_cleanup;
+
+                if (read_item(json, item, tokens, pos)) {
+                    free(item);
+                    goto error_cleanup;
+                }
+
+                item->next = params->items;
+                params->items = item;
             }
         }
     }
@@ -397,16 +393,7 @@ static int read_params(char *json, opcut_params_t *params, jsmntok_t *tokens,
     return OPCUT_SUCCESS;
 
 error_cleanup:
-    if (params->panels) {
-        free(params->panels);
-        params->panels = NULL;
-    }
-
-    if (params->items) {
-        free(params->items);
-        params->items = NULL;
-    }
-
+    opcut_params_destroy(params);
     return OPCUT_ERROR;
 }
 
@@ -436,11 +423,16 @@ int opcut_params_init(opcut_params_t *params, opcut_str_t *json) {
 
     jsmn_init(&parser);
     tokens_len = jsmn_parse(&parser, json->data, json->len, tokens, tokens_len);
-    if (tokens_len < 0)
+    if (tokens_len < 0) {
+        free(tokens);
         return OPCUT_ERROR;
+    }
 
     size_t pos = 0;
-    return read_params(json->data, params, tokens, &pos);
+    int result = read_params(json->data, params, tokens, &pos);
+
+    free(tokens);
+    return result;
 }
 
 
@@ -454,11 +446,11 @@ int opcut_result_write(opcut_result_t *result, FILE *stream) {
     if (fputs(",\"used\":[", stream) < 0)
         return OPCUT_ERROR;
 
-    for (size_t i = 0; i < result->used_len; ++i) {
-        if (write_used(result->used + i, stream))
+    for (opcut_used_t *used; used; used = used->next) {
+        if (write_used(used, stream))
             return OPCUT_ERROR;
 
-        if (i < result->used_len - 1) {
+        if (used->next) {
             if (fputs(",", stream) < 0)
                 return OPCUT_ERROR;
         }
@@ -467,11 +459,11 @@ int opcut_result_write(opcut_result_t *result, FILE *stream) {
     if (fputs("],\"unused\":[", stream) < 0)
         return OPCUT_ERROR;
 
-    for (size_t i = 0; i < result->unused_len; ++i) {
-        if (write_unused(result->unused + i, stream))
+    for (opcut_unused_t *unused; unused; unused = unused->next) {
+        if (write_unused(unused, stream))
             return OPCUT_ERROR;
 
-        if (i < result->unused_len - 1) {
+        if (unused->next) {
             if (fputs(",", stream) < 0)
                 return OPCUT_ERROR;
         }
@@ -491,18 +483,34 @@ void opcut_str_destroy(opcut_str_t *str) {
 
 
 void opcut_params_destroy(opcut_params_t *params) {
-    if (params->panels)
-        free(params->panels);
+    opcut_panel_t *panel = params->panels;
+    while (panel) {
+        opcut_panel_t *next_panel = panel->next;
+        free(panel);
+        panel = next_panel;
+    }
 
-    if (params->items)
-        free(params->items);
+    opcut_item_t *item = params->items;
+    while (item) {
+        opcut_item_t *next_item = item->next;
+        free(item);
+        item = next_item;
+    }
 }
 
 
 void opcut_result_destroy(opcut_result_t *result) {
-    if (result->used)
-        free(result->used);
+    opcut_used_t *used = result->used;
+    while (used) {
+        opcut_used_t *next_used = used->next;
+        free(used);
+        used = next_used;
+    }
 
-    if (result->unused)
-        free(result->unused);
+    opcut_unused_t *unused = result->unused;
+    while (unused) {
+        opcut_unused_t *next_unused = unused->next;
+        free(unused);
+        unused = next_unused;
+    }
 }

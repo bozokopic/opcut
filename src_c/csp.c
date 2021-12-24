@@ -10,6 +10,88 @@ typedef struct {
 } fitness_t;
 
 
+static void sort_panels(opcut_panel_t **first, opcut_panel_t **last) {
+    if (!*first) {
+        if (last)
+            *last = NULL;
+        return;
+    }
+
+    opcut_panel_t *pivot_first = *first;
+    opcut_panel_t *pivot_last = *first;
+    opcut_panel_t *left_first = NULL;
+    opcut_panel_t *right_first = NULL;
+
+    for (opcut_panel_t *panel = (*first)->next; panel;) {
+        opcut_panel_t *next = panel->next;
+        if (panel->area < pivot_first->area) {
+            panel->next = left_first;
+            left_first = panel;
+        } else if (panel->area > pivot_first->area) {
+            panel->next = right_first;
+            right_first = panel;
+        } else {
+            pivot_last->next = panel;
+            pivot_last = panel;
+        }
+        panel = next;
+    }
+
+    opcut_panel_t *left_last;
+    opcut_panel_t *right_last;
+    sort_panels(&left_first, &left_last);
+    sort_panels(&right_first, &right_last);
+
+    *first = (left_first ? left_first : pivot_first);
+    if (left_last)
+        left_last->next = pivot_first;
+    pivot_last->next = right_first;
+    if (last)
+        *last = (right_last ? right_last : pivot_last);
+}
+
+
+static void sort_items(opcut_item_t **first, opcut_item_t **last) {
+    if (!*first) {
+        if (last)
+            *last = NULL;
+        return;
+    }
+
+    opcut_item_t *pivot_first = *first;
+    opcut_item_t *pivot_last = *first;
+    opcut_item_t *left_first = NULL;
+    opcut_item_t *right_first = NULL;
+
+    for (opcut_item_t *item = (*first)->next; item;) {
+        opcut_item_t *next = item->next;
+        if (item->area > pivot_first->area) {
+            item->next = left_first;
+            left_first = item;
+        } else if (item->area < pivot_first->area) {
+            item->next = right_first;
+            right_first = item;
+        } else {
+            pivot_last->next = item;
+            pivot_last = item;
+        }
+        item = next;
+    }
+
+    opcut_item_t *left_last;
+    opcut_item_t *right_last;
+    sort_items(&left_first, &left_last);
+    sort_items(&right_first, &right_last);
+
+    *first = (left_first ? left_first : pivot_first);
+    if (left_last)
+        left_last->next = pivot_first;
+    pivot_last->next = right_first;
+    if (last)
+        *last = (right_last ? right_last : pivot_last);
+}
+
+
 static inline int compare_fitness(fitness_t *f1, fitness_t *f2) {
     return (f1->unused_initial_count == f2->unused_initial_count
                 ? f1->fitness - f2->fitness
@@ -20,13 +102,11 @@ static inline int compare_fitness(fitness_t *f1, fitness_t *f2) {
 static void calculate_fitness(opcut_result_t *result, fitness_t *fitness) {
     fitness->fitness = 0;
 
-    for (size_t i = 0; i < result->params->panels_len; ++i) {
-        opcut_panel_t *panel = result->params->panels + i;
-
+    for (opcut_panel_t *panel = result->params->panels; panel;
+         panel = panel->next) {
         double min_used_area = 0;
         double used_areas = 0;
-        for (size_t j = 0; j < result->used_len; ++j) {
-            opcut_used_t *used = result->used + i;
+        for (opcut_used_t *used = result->used; used; used = used->next) {
             if (used->panel != panel)
                 continue;
             if (min_used_area == 0 || used->item->area < min_used_area)
@@ -35,8 +115,8 @@ static void calculate_fitness(opcut_result_t *result, fitness_t *fitness) {
         }
 
         double max_unused_area = 0;
-        for (size_t j = 0; j < result->unused_len; ++j) {
-            opcut_unused_t *unused = result->unused + i;
+        for (opcut_unused_t *unused = result->unused; unused;
+             unused = unused->next) {
             if (unused->panel != panel)
                 continue;
             if (max_unused_area == 0 || unused->area > max_unused_area)
@@ -50,8 +130,8 @@ static void calculate_fitness(opcut_result_t *result, fitness_t *fitness) {
 
     fitness->unused_initial_count = 0;
     if (result->params->min_initial_usage) {
-        for (size_t i = 0; i < result->unused_len; ++i) {
-            opcut_unused_t *unused = result->unused + i;
+        for (opcut_unused_t *unused = result->unused; unused;
+             unused = unused->next) {
             if (unused->initial)
                 fitness->unused_initial_count += 1;
         }
@@ -109,14 +189,18 @@ static int cut_item_from_unused(opcut_item_t *item, opcut_unused_t *unused,
 }
 
 
+void opcut_sort_params(opcut_params_t *params) {
+    sort_panels(&(params->panels), NULL);
+    sort_items(&(params->items), NULL);
+}
+
+
 int opcut_calculate(opcut_method_t method, opcut_params_t *params,
                     opcut_result_t *result) {
 
     result->params = params;
     result->used = NULL;
-    result->used_len = 0;
     result->unused = NULL;
-    result->unused_len = 0;
     result->panels_area = 0;
 
     return OPCUT_SUCCESS;

@@ -116,6 +116,8 @@ int main(int argc, char **argv) {
         goto cleanup;
     }
 
+    opcut_sort_params(&params);
+
     exit_code = opcut_calculate(args.method, &params, &result);
     if (exit_code) {
         fprintf(stderr, "calculation error\n");
