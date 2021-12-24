@@ -36,6 +36,9 @@ typedef struct {
     opcut_str_t id;
     double width;
     double height;
+
+    // internal
+    double area;
 } opcut_panel_t;
 
 typedef struct {
@@ -43,6 +46,9 @@ typedef struct {
     double width;
     double height;
     bool can_rotate;
+
+    // internal
+    double area;
 } opcut_item_t;
 
 typedef struct {
@@ -68,6 +74,10 @@ typedef struct {
     double height;
     double x;
     double y;
+
+    // internal
+    double area;
+    bool initial;
 } opcut_unused_t;
 
 typedef struct {
@@ -76,6 +86,9 @@ typedef struct {
     size_t used_len;
     opcut_unused_t *unused;
     size_t unused_len;
+
+    // internal
+    double panels_area;
 } opcut_result_t;
 
 

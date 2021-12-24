@@ -277,6 +277,10 @@ static int read_panel(char *json, opcut_panel_t *panel, jsmntok_t *tokens,
         }
     }
 
+    if (panel->width <= 0 || panel->height <= 0)
+        return OPCUT_ERROR;
+    panel->area = panel->width * panel->height;
+
     return OPCUT_SUCCESS;
 }
 
@@ -314,6 +318,10 @@ static int read_item(char *json, opcut_item_t *item, jsmntok_t *tokens,
                 return OPCUT_ERROR;
         }
     }
+
+    if (item->width <= 0 || item->height <= 0)
+        return OPCUT_ERROR;
+    item->area = item->width * item->height;
 
     return OPCUT_SUCCESS;
 }
