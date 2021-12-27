@@ -9,11 +9,10 @@ extern "C" {
 
 typedef struct opcut_pool_t opcut_pool_t;
 
-
 opcut_pool_t *opcut_pool_create(size_t item_size);
 void opcut_pool_destroy(opcut_pool_t *pool);
-void *opcut_pool_get(opcut_pool_t *pool);
-void opcut_pool_return(opcut_pool_t *pool, void *item);
+void *opcut_pool_alloc(opcut_pool_t *pool);
+void opcut_pool_free(opcut_pool_t *pool, void *item);
 
 #ifdef __cplusplus
 }

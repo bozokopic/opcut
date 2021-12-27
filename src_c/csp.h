@@ -1,5 +1,5 @@
-#ifndef OPCUT_POOL_H
-#define OPCUT_POOL_H
+#ifndef OPCUT_CSP_H
+#define OPCUT_CSP_H
 
 #include <stddef.h>
 #include "common.h"
@@ -13,8 +13,9 @@ typedef enum {
     OPCUT_METHOD_FORWARD_GREEDY
 } opcut_method_t;
 
-void opcut_sort_params(opcut_params_t *params);
-int opcut_calculate(opcut_method_t method, opcut_params_t *params,
+
+int opcut_calculate(opcut_pool_t *used_pool, opcut_pool_t *unused_pool,
+                    opcut_method_t method, opcut_params_t *params,
                     opcut_result_t *result);
 
 #ifdef __cplusplus

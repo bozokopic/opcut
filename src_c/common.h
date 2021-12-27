@@ -3,19 +3,11 @@
 
 #include <stdbool.h>
 #include <stdio.h>
+#include "pool.h"
 
 #define OPCUT_SUCCESS 0
 #define OPCUT_ERROR 1
 #define OPCUT_UNSOLVABLE 2
-
-#define OPCUT_STR_EMPTY ((opcut_str_t){.data = NULL, .len = 0})
-#define OPCUT_PARAMS_EMPTY                                                     \
-    ((opcut_params_t){.cut_width = 0,                                          \
-                      .min_initial_usage = false,                              \
-                      .panels = NULL,                                          \
-                      .items = NULL})
-#define OPCUT_RESULT_EMPTY                                                     \
-    ((opcut_result_t){.params = NULL, .used = NULL, .unused = NULL})
 
 #ifdef __cplusplus
 extern "C" {
@@ -52,6 +44,11 @@ typedef struct {
     bool min_initial_usage;
     opcut_panel_t *panels;
     opcut_item_t *items;
+
+    // internal
+    opcut_pool_t *panel_pool;
+    opcut_pool_t *item_pool;
+    double panels_area;
 } opcut_params_t;
 
 typedef struct opcut_used_t {
@@ -84,17 +81,14 @@ typedef struct {
     opcut_unused_t *unused;
 
     // internal
-    double panels_area;
+    opcut_pool_t *used_pool;
+    opcut_pool_t *unused_pool;
 } opcut_result_t;
 
 
-int opcut_str_resize(opcut_str_t *str, size_t size);
-int opcut_params_init(opcut_params_t *params, opcut_str_t *json);
+int opcut_params_init(opcut_params_t *params, opcut_pool_t *panel_pool,
+                      opcut_pool_t *item_pool, opcut_str_t *json);
 int opcut_result_write(opcut_result_t *result, FILE *stream);
-
-void opcut_str_destroy(opcut_str_t *str);
-void opcut_params_destroy(opcut_params_t *params);
-void opcut_result_destroy(opcut_result_t *result);
 
 #ifdef __cplusplus
 }

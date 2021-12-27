@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <argparse.h>
-#include "common.h"
 #include "csp.h"
 
 
@@ -65,9 +64,11 @@ static int read_stream(FILE *stream, opcut_str_t *json) {
 
     while (!(json->len < size)) {
         size += 4096;
-        if (opcut_str_resize(json, size))
+        char *data = realloc(json->data, size);
+        if (!data)
             return OPCUT_ERROR;
 
+        json->data = data;
         json->len += fread(json->data + json->len, 1, size - json->len, stream);
     }
 
@@ -76,13 +77,23 @@ static int read_stream(FILE *stream, opcut_str_t *json) {
 
 
 int main(int argc, char **argv) {
+    opcut_pool_t *panel_pool = opcut_pool_create(sizeof(opcut_panel_t));
+    opcut_pool_t *item_pool = opcut_pool_create(sizeof(opcut_item_t));
+    opcut_pool_t *used_pool = opcut_pool_create(sizeof(opcut_used_t));
+    opcut_pool_t *unused_pool = opcut_pool_create(sizeof(opcut_unused_t));
+
     args_t args;
     FILE *input_stream = NULL;
     FILE *output_stream = NULL;
-    opcut_str_t json = OPCUT_STR_EMPTY;
-    opcut_params_t params = OPCUT_PARAMS_EMPTY;
-    opcut_result_t result = OPCUT_RESULT_EMPTY;
+    opcut_str_t json = {.data = NULL, .len = 0};
+    opcut_params_t params;
+    opcut_result_t result;
     int exit_code;
+
+    if (!panel_pool || !item_pool || !used_pool || !unused_pool) {
+        fprintf(stderr, "error creating memory pools\n");
+        goto cleanup;
+    }
 
     exit_code = parse_args(&args, argc, argv);
     if (exit_code) {
@@ -110,15 +121,14 @@ int main(int argc, char **argv) {
         goto cleanup;
     }
 
-    exit_code = opcut_params_init(&params, &json);
+    exit_code = opcut_params_init(&params, panel_pool, item_pool, &json);
     if (exit_code) {
         fprintf(stderr, "error parsing calculation parameters\n");
         goto cleanup;
     }
 
-    opcut_sort_params(&params);
-
-    exit_code = opcut_calculate(args.method, &params, &result);
+    exit_code =
+        opcut_calculate(used_pool, unused_pool, args.method, &params, &result);
     if (exit_code) {
         fprintf(stderr, "calculation error\n");
         goto cleanup;
@@ -128,13 +138,20 @@ int main(int argc, char **argv) {
 
 cleanup:
 
-    opcut_result_destroy(&result);
-    opcut_params_destroy(&params);
-    opcut_str_destroy(&json);
+    if (json.data)
+        free(json.data);
     if (output_stream)
         fclose(output_stream);
     if (input_stream)
         fclose(input_stream);
+    if (unused_pool)
+        opcut_pool_destroy(unused_pool);
+    if (used_pool)
+        opcut_pool_destroy(used_pool);
+    if (item_pool)
+        opcut_pool_destroy(item_pool);
+    if (panel_pool)
+        opcut_pool_destroy(panel_pool);
 
     return exit_code;
 }

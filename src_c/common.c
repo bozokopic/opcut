@@ -327,7 +327,7 @@ static int read_item(char *json, opcut_item_t *item, jsmntok_t *tokens,
 }
 
 
-static int read_params(char *json, opcut_params_t *params, jsmntok_t *tokens,
+static int read_params(opcut_params_t *params, char *json, jsmntok_t *tokens,
                        size_t *pos) {
     jsmntok_t *params_token = tokens + ((*pos)++);
     if (params_token->type != JSMN_OBJECT)
@@ -337,52 +337,50 @@ static int read_params(char *json, opcut_params_t *params, jsmntok_t *tokens,
     params->min_initial_usage = false;
     params->panels = NULL;
     params->items = NULL;
+    params->panels_area = 0;
 
     for (size_t i = 0; i < params_token->size; ++i) {
         jsmntok_t *key_token = tokens + ((*pos)++);
         jsmntok_t *value_token = tokens + ((*pos)++);
         if (key_token->type != JSMN_STRING)
-            goto error_cleanup;
+            return OPCUT_ERROR;
 
         if (is_token_val(json, key_token, "cut_width")) {
             if (read_number(json, &(params->cut_width), value_token))
-                goto error_cleanup;
+                return OPCUT_ERROR;
 
         } else if (is_token_val(json, key_token, "min_initial_usage")) {
             if (read_bool(json, &(params->min_initial_usage), value_token))
-                goto error_cleanup;
+                return OPCUT_ERROR;
 
         } else if (is_token_val(json, key_token, "panels")) {
             if (value_token->type != JSMN_OBJECT)
-                goto error_cleanup;
+                return OPCUT_ERROR;
 
             for (size_t j = 0; j < value_token->size; ++j) {
-                opcut_panel_t *panel = malloc(sizeof(opcut_panel_t));
+                opcut_panel_t *panel = opcut_pool_alloc(params->panel_pool);
                 if (!panel)
-                    goto error_cleanup;
+                    return OPCUT_ERROR;
 
-                if (read_panel(json, panel, tokens, pos)) {
-                    free(panel);
-                    goto error_cleanup;
-                }
+                if (read_panel(json, panel, tokens, pos))
+                    return OPCUT_ERROR;
 
                 panel->next = params->panels;
                 params->panels = panel;
+                params->panels_area += panel->area;
             }
 
         } else if (is_token_val(json, key_token, "items")) {
             if (value_token->type != JSMN_OBJECT)
-                goto error_cleanup;
+                return OPCUT_ERROR;
 
             for (size_t j = 0; j < value_token->size; ++j) {
-                opcut_item_t *item = malloc(sizeof(opcut_item_t));
+                opcut_item_t *item = opcut_pool_alloc(params->item_pool);
                 if (!item)
-                    goto error_cleanup;
+                    return OPCUT_ERROR;
 
-                if (read_item(json, item, tokens, pos)) {
-                    free(item);
-                    goto error_cleanup;
-                }
+                if (read_item(json, item, tokens, pos))
+                    return OPCUT_ERROR;
 
                 item->next = params->items;
                 params->items = item;
@@ -391,24 +389,14 @@ static int read_params(char *json, opcut_params_t *params, jsmntok_t *tokens,
     }
 
     return OPCUT_SUCCESS;
-
-error_cleanup:
-    opcut_params_destroy(params);
-    return OPCUT_ERROR;
 }
 
 
-int opcut_str_resize(opcut_str_t *str, size_t size) {
-    char *data = realloc(str->data, size);
-    if (!data)
-        return OPCUT_ERROR;
+int opcut_params_init(opcut_params_t *params, opcut_pool_t *panel_pool,
+                      opcut_pool_t *item_pool, opcut_str_t *json) {
+    params->panel_pool = panel_pool;
+    params->item_pool = item_pool;
 
-    str->data = data;
-    return OPCUT_SUCCESS;
-}
-
-
-int opcut_params_init(opcut_params_t *params, opcut_str_t *json) {
     jsmn_parser parser;
     int tokens_len;
 
@@ -429,10 +417,10 @@ int opcut_params_init(opcut_params_t *params, opcut_str_t *json) {
     }
 
     size_t pos = 0;
-    int result = read_params(json->data, params, tokens, &pos);
+    int err = read_params(params, json->data, tokens, &pos);
 
     free(tokens);
-    return result;
+    return err;
 }
 
 
@@ -473,44 +461,4 @@ int opcut_result_write(opcut_result_t *result, FILE *stream) {
         return OPCUT_ERROR;
 
     return OPCUT_SUCCESS;
-}
-
-
-void opcut_str_destroy(opcut_str_t *str) {
-    if (str->data)
-        free(str->data);
-}
-
-
-void opcut_params_destroy(opcut_params_t *params) {
-    opcut_panel_t *panel = params->panels;
-    while (panel) {
-        opcut_panel_t *next_panel = panel->next;
-        free(panel);
-        panel = next_panel;
-    }
-
-    opcut_item_t *item = params->items;
-    while (item) {
-        opcut_item_t *next_item = item->next;
-        free(item);
-        item = next_item;
-    }
-}
-
-
-void opcut_result_destroy(opcut_result_t *result) {
-    opcut_used_t *used = result->used;
-    while (used) {
-        opcut_used_t *next_used = used->next;
-        free(used);
-        used = next_used;
-    }
-
-    opcut_unused_t *unused = result->unused;
-    while (unused) {
-        opcut_unused_t *next_unused = unused->next;
-        free(unused);
-        unused = next_unused;
-    }
 }

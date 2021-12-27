@@ -66,7 +66,7 @@ void opcut_pool_destroy(opcut_pool_t *pool) {
 }
 
 
-void *opcut_pool_get(opcut_pool_t *pool) {
+void *opcut_pool_alloc(opcut_pool_t *pool) {
     if (!pool->items)
         allocate_block(pool);
 
@@ -78,7 +78,8 @@ void *opcut_pool_get(opcut_pool_t *pool) {
     return header + 1;
 }
 
-void opcut_pool_return(opcut_pool_t *pool, void *item) {
+
+void opcut_pool_free(opcut_pool_t *pool, void *item) {
     header_t *header = (header_t *)item - 1;
     header->next = pool->items;
     pool->items = header;
