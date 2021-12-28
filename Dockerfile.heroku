@@ -8,7 +8,7 @@ WORKDIR /opcut
 COPY . .
 RUN apt install -qy nodejs yarnpkg git gcc-mingw-w64-x86-64-win32 && \
     ln -sT /usr/bin/yarnpkg /usr/bin/yarn && \
-    ln -sT /usr/bin/x86_64-w64-mingw32-cc-win32 /usr/bin/x86_64-w64-mingw32-cc && \
+    ln -sT /usr/bin/x86_64-w64-mingw32-gcc /usr/bin/x86_64-w64-mingw32-cc && \
     pip install -qq -r requirements.pip.dev.txt && \
     doit
 

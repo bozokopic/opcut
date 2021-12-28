@@ -23,7 +23,7 @@ if local_platform == Platform.LINUX:
     platforms.append(Platform.WINDOWS)
 
 builds = [CBuild(src_paths=[*src_c_dir.rglob('*.c'),
-                            *(deps_dir / 'argparse').rglob('*.c')],
+                            deps_dir / 'argparse/argparse.c'],
                  build_dir=build_c_dir / platform.name.lower(),
                  platform=platform,
                  cc_flags=['-fPIC', '-O2',
