@@ -6,8 +6,10 @@ RUN apt update -qy && \
 FROM opcut-base as opcut-build
 WORKDIR /opcut
 COPY . .
-RUN apt install -qy nodejs yarnpkg git && \
+RUN apt install -qy nodejs yarnpkg git gcc-mingw-w64-x86-64-win32 && \
     ln -sT /usr/bin/yarnpkg /usr/bin/yarn && \
+    ln -sT /usr/bin/x86_64-w64-mingw32-cpp-win32 /usr/bin/x86_64-w64-mingw32-cpp && \
+    ln -sT /usr/bin/x86_64-w64-mingw32-cc-win32 /usr/bin/x86_64-w64-mingw32-cc && \
     pip install -qq -r requirements.pip.dev.txt && \
     doit
 
