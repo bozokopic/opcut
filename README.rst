@@ -18,12 +18,10 @@ Runtime requirements
 
 * python >=3.8
 
+.. note::
 
-Development requirements
-------------------------
-
-* nodejs >=7
-* yarn
+    on Ubuntu, if pycairo is not available, additional
+    ``apt install gcc pkg-config libcairo2-dev python3-dev`` is required
 
 
 Install
@@ -32,11 +30,6 @@ Install
 ::
 
     $ pip install opcut
-
-.. note::
-
-    on Ubuntu, if pycairo is not available, additional
-    ``apt install gcc pkg-config libcairo2-dev python3-dev`` is required
 
 .. note::
 
@@ -59,6 +52,13 @@ Running command line utility::
 Additional command line arguments::
 
     $ opcut --help
+
+
+Development requirements
+------------------------
+
+* nodejs >=7
+* yarn
 
 
 Build

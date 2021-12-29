@@ -4,7 +4,7 @@
 /cache
 /deps
 /node_modules
+/src_py/opcut/bin
 /src_py/opcut/json_schema_repo.json
 /src_py/opcut/ui
-/src_py/opcut/*-opcut-calculate*
 __pycache__
