@@ -436,7 +436,7 @@ int opcut_result_write(opcut_result_t *result, FILE *stream) {
     if (fputs(",\"used\":[", stream) < 0)
         return OPCUT_ERROR;
 
-    for (opcut_used_t *used; used; used = used->next) {
+    for (opcut_used_t *used = result->used; used; used = used->next) {
         if (write_used(used, stream))
             return OPCUT_ERROR;
 
@@ -449,7 +449,8 @@ int opcut_result_write(opcut_result_t *result, FILE *stream) {
     if (fputs("],\"unused\":[", stream) < 0)
         return OPCUT_ERROR;
 
-    for (opcut_unused_t *unused; unused; unused = unused->next) {
+    for (opcut_unused_t *unused = result->unused; unused;
+         unused = unused->next) {
         if (write_unused(unused, stream))
             return OPCUT_ERROR;
 
