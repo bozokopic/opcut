@@ -11,6 +11,7 @@ typedef struct header_t {
 
 
 struct opcut_pool_t {
+    hat_allocator_t *a;
     size_t item_size;
     header_t *blocks;
     header_t *items;
@@ -23,9 +24,11 @@ static void allocate_block(opcut_pool_t *pool) {
     if (items_per_block < 1)
         items_per_block = 1;
 
-    header_t *block =
-        malloc(sizeof(header_t) +
-               items_per_block * (sizeof(header_t) + pool->item_size));
+    header_t *block = hat_allocator_alloc(
+        pool->a,
+        sizeof(header_t) +
+            items_per_block * (sizeof(header_t) + pool->item_size),
+        NULL);
     if (!block)
         return;
     block->next = pool->blocks;
@@ -40,14 +43,15 @@ static void allocate_block(opcut_pool_t *pool) {
 }
 
 
-opcut_pool_t *opcut_pool_create(size_t item_size) {
-    opcut_pool_t *pool = malloc(sizeof(opcut_pool_t));
+opcut_pool_t *opcut_pool_create(hat_allocator_t *a, size_t item_size) {
+    opcut_pool_t *pool = hat_allocator_alloc(a, sizeof(opcut_pool_t), NULL);
     if (!pool)
         return NULL;
 
     if (item_size % sizeof(void *) != 0)
         item_size += sizeof(void *) - (item_size % sizeof(void *));
 
+    pool->a = a;
     pool->item_size = item_size;
     pool->blocks = NULL;
     pool->items = NULL;
@@ -60,9 +64,9 @@ void opcut_pool_destroy(opcut_pool_t *pool) {
     while (pool->blocks) {
         header_t *block = pool->blocks;
         pool->blocks = block->next;
-        free(block);
+        hat_allocator_free(pool->a, block);
     }
-    free(pool);
+    hat_allocator_free(pool->a, pool);
 }
 
 

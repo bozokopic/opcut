@@ -59,12 +59,12 @@ static int parse_args(args_t *args, int argc, char **argv) {
 }
 
 
-static int read_stream(FILE *stream, opcut_str_t *json) {
+static int read_stream(hat_allocator_t *a, FILE *stream, opcut_str_t *json) {
     size_t size = 0;
 
     while (!(json->len < size)) {
         size += 4096;
-        char *data = realloc(json->data, size);
+        char *data = hat_allocator_alloc(a, size, json->data);
         if (!data)
             return OPCUT_ERROR;
 
@@ -77,10 +77,11 @@ static int read_stream(FILE *stream, opcut_str_t *json) {
 
 
 int main(int argc, char **argv) {
-    opcut_pool_t *panel_pool = opcut_pool_create(sizeof(opcut_panel_t));
-    opcut_pool_t *item_pool = opcut_pool_create(sizeof(opcut_item_t));
-    opcut_pool_t *used_pool = opcut_pool_create(sizeof(opcut_used_t));
-    opcut_pool_t *unused_pool = opcut_pool_create(sizeof(opcut_unused_t));
+    hat_allocator_t *a = &hat_allocator_libc;
+    opcut_pool_t *panel_pool = opcut_pool_create(a, sizeof(opcut_panel_t));
+    opcut_pool_t *item_pool = opcut_pool_create(a, sizeof(opcut_item_t));
+    opcut_pool_t *used_pool = opcut_pool_create(a, sizeof(opcut_used_t));
+    opcut_pool_t *unused_pool = opcut_pool_create(a, sizeof(opcut_unused_t));
 
     args_t args;
     FILE *input_stream = NULL;
@@ -115,13 +116,13 @@ int main(int argc, char **argv) {
         goto cleanup;
     }
 
-    exit_code = read_stream(input_stream, &json);
+    exit_code = read_stream(a, input_stream, &json);
     if (exit_code) {
         fprintf(stderr, "error reading input stream\n");
         goto cleanup;
     }
 
-    exit_code = opcut_params_init(&params, panel_pool, item_pool, &json);
+    exit_code = opcut_params_init(a, &params, panel_pool, item_pool, &json);
     if (exit_code) {
         fprintf(stderr, "error parsing calculation parameters\n");
         goto cleanup;
@@ -139,7 +140,7 @@ int main(int argc, char **argv) {
 cleanup:
 
     if (json.data)
-        free(json.data);
+        hat_allocator_free(a, json.data);
     if (output_stream)
         fclose(output_stream);
     if (input_stream)

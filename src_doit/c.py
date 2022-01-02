@@ -22,12 +22,14 @@ if common.local_platform == common.Platform.LINUX:
     platforms.append(common.Platform.WINDOWS)
 
 builds = [CBuild(src_paths=[*src_c_dir.rglob('*.c'),
-                            deps_dir / 'argparse/argparse.c'],
+                            deps_dir / 'argparse/argparse.c',
+                            deps_dir / 'hat-util/src_c/hat/allocator.c'],
                  build_dir=build_c_dir / platform.name.lower(),
                  platform=platform,
                  cc_flags=['-fPIC', '-O2',
                            f'-I{deps_dir / "jsmn"}',
-                           f'-I{deps_dir / "argparse"}'],
+                           f'-I{deps_dir / "argparse"}',
+                           f'-I{deps_dir / "hat-util/src_c"}'],
                  task_dep=['deps'])
           for platform in platforms]
 

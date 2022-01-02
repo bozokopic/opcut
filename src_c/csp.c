@@ -1,4 +1,5 @@
 #include "csp.h"
+#include "common.h"
 
 
 #define FITNESS_K 0.03
@@ -252,12 +253,17 @@ static void free_unused(opcut_result_t *result) {
 }
 
 
-static void free_last_used(opcut_result_t *result) {
-    opcut_pool_free(result->used_pool, result->used);
+static void free_used(opcut_result_t *result, opcut_used_t *last_used) {
+    while (result->used && result->used != last_used) {
+        opcut_used_t *next = result->used->next;
+        opcut_pool_free(result->used_pool, result->used);
+        result->used = next;
+    }
 }
 
 
-static int calculate_greedy(opcut_result_t *result, opcut_item_t *items) {
+static int calculate_greedy(opcut_result_t *result, opcut_item_t *items,
+                            bool forward_greedy) {
     for (opcut_item_t *item = items; item; item = item->next) {
         opcut_result_t best_result;
         fitness_t best_fitness;
@@ -279,7 +285,33 @@ static int calculate_greedy(opcut_result_t *result, opcut_item_t *items) {
                         return OPCUT_ERROR;
 
                     fitness_t temp_fitness;
-                    calculate_fitness(&temp_result, &temp_fitness);
+                    if (!forward_greedy) {
+                        calculate_fitness(&temp_result, &temp_fitness);
+
+                    } else {
+                        opcut_result_t greedy_result = temp_result;
+                        if (copy_unused(&greedy_result, temp_result.unused))
+                            return OPCUT_ERROR;
+
+                        int err =
+                            calculate_greedy(&greedy_result, item->next, false);
+
+                        if (!err) {
+                            calculate_fitness(&greedy_result, &temp_fitness);
+                            free_used(&greedy_result, temp_result.used);
+                            free_unused(&greedy_result);
+
+                        } else if (err == OPCUT_UNSOLVABLE) {
+                            free_used(&greedy_result, temp_result.used);
+                            free_used(&temp_result, result->used);
+                            free_unused(&greedy_result);
+                            free_unused(&temp_result);
+                            continue;
+
+                        } else {
+                            return err;
+                        }
+                    }
 
                     if (!solvable) {
                         best_result = temp_result;
@@ -288,13 +320,13 @@ static int calculate_greedy(opcut_result_t *result, opcut_item_t *items) {
 
                     } else if (compare_fitness(&temp_fitness, &best_fitness) <
                                0) {
-                        free_last_used(&best_result);
+                        free_used(&best_result, result->used);
                         free_unused(&best_result);
                         best_result = temp_result;
                         best_fitness = temp_fitness;
 
                     } else {
-                        free_last_used(&temp_result);
+                        free_used(&temp_result, result->used);
                         free_unused(&temp_result);
                     }
                 }
@@ -306,15 +338,6 @@ static int calculate_greedy(opcut_result_t *result, opcut_item_t *items) {
 
         free_unused(result);
         *result = best_result;
-    }
-
-    return OPCUT_SUCCESS;
-}
-
-
-static int calculate_forward_greedy(opcut_result_t *result,
-                                    opcut_item_t *items) {
-    for (opcut_item_t *item = items; item; item = item->next) {
     }
 
     return OPCUT_SUCCESS;
@@ -350,10 +373,10 @@ int opcut_calculate(opcut_pool_t *used_pool, opcut_pool_t *unused_pool,
     }
 
     if (method == OPCUT_METHOD_GREEDY)
-        return calculate_greedy(result, params->items);
+        return calculate_greedy(result, params->items, false);
 
     if (method == OPCUT_METHOD_FORWARD_GREEDY)
-        return calculate_forward_greedy(result, params->items);
+        return calculate_greedy(result, params->items, true);
 
     return OPCUT_ERROR;
 }

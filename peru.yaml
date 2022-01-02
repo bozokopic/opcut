@@ -1,6 +1,7 @@
 imports:
     jsmn: deps/jsmn
     argparse: deps/argparse
+    hat-util: deps/hat-util
 
 git module jsmn:
     url: https://github.com/zserge/jsmn
@@ -11,3 +12,7 @@ git module argparse:
     pick:
         - argparse.c
         - argparse.h
+
+git module hat-util:
+    url: https://github.com/hat-open/hat-util
+    pick: src_c

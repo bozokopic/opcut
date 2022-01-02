@@ -392,8 +392,9 @@ static int read_params(opcut_params_t *params, char *json, jsmntok_t *tokens,
 }
 
 
-int opcut_params_init(opcut_params_t *params, opcut_pool_t *panel_pool,
-                      opcut_pool_t *item_pool, opcut_str_t *json) {
+int opcut_params_init(hat_allocator_t *a, opcut_params_t *params,
+                      opcut_pool_t *panel_pool, opcut_pool_t *item_pool,
+                      opcut_str_t *json) {
     params->panel_pool = panel_pool;
     params->item_pool = item_pool;
 
@@ -405,21 +406,22 @@ int opcut_params_init(opcut_params_t *params, opcut_pool_t *panel_pool,
     if (tokens_len < 0)
         return OPCUT_ERROR;
 
-    jsmntok_t *tokens = malloc(tokens_len * sizeof(jsmntok_t));
+    jsmntok_t *tokens =
+        hat_allocator_alloc(a, tokens_len * sizeof(jsmntok_t), NULL);
     if (!tokens)
         return OPCUT_ERROR;
 
     jsmn_init(&parser);
     tokens_len = jsmn_parse(&parser, json->data, json->len, tokens, tokens_len);
     if (tokens_len < 0) {
-        free(tokens);
+        hat_allocator_free(a, tokens);
         return OPCUT_ERROR;
     }
 
     size_t pos = 0;
     int err = read_params(params, json->data, tokens, &pos);
 
-    free(tokens);
+    hat_allocator_free(a, tokens);
     return err;
 }
 

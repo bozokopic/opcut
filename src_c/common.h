@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include <stdio.h>
+#include <hat/allocator.h>
 #include "pool.h"
 
 #define OPCUT_SUCCESS 0
@@ -86,8 +87,9 @@ typedef struct {
 } opcut_result_t;
 
 
-int opcut_params_init(opcut_params_t *params, opcut_pool_t *panel_pool,
-                      opcut_pool_t *item_pool, opcut_str_t *json);
+int opcut_params_init(hat_allocator_t *a, opcut_params_t *params,
+                      opcut_pool_t *panel_pool, opcut_pool_t *item_pool,
+                      opcut_str_t *json);
 int opcut_result_write(opcut_result_t *result, FILE *stream);
 
 #ifdef __cplusplus
