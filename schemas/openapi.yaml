@@ -7,6 +7,11 @@ paths:
     '/calculate':
         post:
             parameters:
+              - name: native
+                in: query
+                required: false
+                schema:
+                    type: boolean
               - name: method
                 in: query
                 required: true

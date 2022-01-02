@@ -8,7 +8,7 @@
 
 #define OPCUT_SUCCESS 0
 #define OPCUT_ERROR 1
-#define OPCUT_UNSOLVABLE 2
+#define OPCUT_UNSOLVABLE 42
 
 #ifdef __cplusplus
 extern "C" {

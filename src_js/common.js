@@ -20,8 +20,9 @@ export async function calculate() {
     r.set('calculating', true);
     try {
         const method = r.get('form', 'method');
+        const native = r.get('form', 'native');
         const params = createCalculateParams();
-        const res = await fetch(`${calculateUrl}?method=${method}`, {
+        const res = await fetch(`${calculateUrl}?method=${method}&native=${native}`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(params)
@@ -159,7 +160,7 @@ function createCalculateParams() {
             }
             items[name] = {
                 width: item.width,
-                height: item.width,
+                height: item.height,
                 can_rotate: item.can_rotate
             };
         }

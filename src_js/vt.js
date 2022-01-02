@@ -3,7 +3,6 @@ import * as u from '@hat-open/util';
 
 import * as common from './common';
 import * as dragger from './dragger';
-import * as states from './states';
 
 
 export function main() {
@@ -23,7 +22,7 @@ function leftPanelResizer() {
             mousedown: dragger.mouseDownHandler(evt => {
                 const panel = evt.target.parentNode.querySelector('.left-panel');
                 const width = panel.clientWidth;
-                return (_, dx, __) => {
+                return (_, dx) => {
                     panel.style.width = `${width + dx}px`;
                 };
             })
@@ -38,7 +37,7 @@ function rightPanelResizer() {
             mousedown: dragger.mouseDownHandler(evt => {
                 const panel = evt.target.parentNode.querySelector('.right-panel');
                 const width = panel.clientWidth;
-                return (_, dx, __) => {
+                return (_, dx) => {
                     panel.style.width = `${width - dx}px`;
                 };
             })
@@ -72,7 +71,11 @@ function leftPanel() {
             ['label'],
             checkboxInput('Minimize initial panel usage',
                           r.get('form', 'min_initial_usage'),
-                          val => r.set(['form', 'min_initial_usage'], val))
+                          val => r.set(['form', 'min_initial_usage'], val)),
+            ['label'],
+            checkboxInput('Use native implementation',
+                          r.get('form', 'native'),
+                          val => r.set(['form', 'native'], val))
         ],
         ['div.content',
             leftPanelPanels(),
@@ -99,7 +102,7 @@ function leftPanelPanels() {
         const valid = !panelNames.has(name);
         panelNames.add(name);
         return valid;
-    }
+    };
 
     return ['div',
         ['table',
@@ -198,7 +201,7 @@ function leftPanelItems() {
         const valid = !itemNames.has(name);
         itemNames.add(name);
         return valid;
-    }
+    };
 
     return ['div',
         ['table',

@@ -15,25 +15,13 @@ import opcut.output
 import opcut.server
 
 
-log_schema_id: str = 'hat-json://logging.yaml#'
 params_schema_id: str = 'opcut://opcut.yaml#/definitions/params'
 result_schema_id: str = 'opcut://opcut.yaml#/definitions/result'
 
 
 @click.group()
-@click.option('--log',
-              default=None,
-              metavar='PATH',
-              type=Path,
-              help=f"logging configuration file path {log_schema_id}")
-def main(log: typing.Optional[Path]):
+def main():
     """Application main entry point"""
-    if not log:
-        return
-
-    log_conf = json.decode_file(log)
-    common.json_schema_repo.validate(log_schema_id, log_conf)
-    logging.config.dictConfig(log_conf)
 
 
 @main.command()
@@ -41,30 +29,35 @@ def main(log: typing.Optional[Path]):
               default=common.Method.FORWARD_GREEDY,
               type=common.Method,
               help="calculate method")
-@click.option('--params',
-              default=None,
-              metavar='PATH',
-              type=Path,
-              help=f"calculate parameters file path ({params_schema_id})")
-@click.option('--result',
+@click.option('--output',
               default=None,
               metavar='PATH',
               type=Path,
               help=f"result file path ({result_schema_id})")
+@click.argument('params',
+                required=False,
+                default=None,
+                metavar='PATH',
+                type=Path)
 def calculate(method: common.Method,
-              params: typing.Optional[Path],
-              result: typing.Optional[Path]):
+              output: typing.Optional[Path],
+              params: typing.Optional[Path]):
     """Calculate result"""
-    params = (json.decode_file(params) if params
+    params = (json.decode_file(params) if params and params != Path('-')
               else json.decode_stream(sys.stdin))
     common.json_schema_repo.validate(params_schema_id, params)
     params = common.params_from_json(params)
 
-    res = opcut.csp.calculate(params, method)
+    try:
+        res = opcut.csp.calculate(params, method)
+
+    except common.UnresolvableError:
+        sys.exit(42)
+
     res = common.result_to_json(res)
 
-    if result:
-        json.encode_file(res, result)
+    if output and output != Path('-'):
+        json.encode_file(res, output)
     else:
         json.encode_stream(res, sys.stdout)
 
@@ -77,32 +70,33 @@ def calculate(method: common.Method,
 @click.option('--panel',
               default=None,
               help="panel identifier")
-@click.option('--result',
-              default=None,
-              metavar='PATH',
-              type=Path,
-              help=f"result file path ({result_schema_id})")
 @click.option('--output',
               default=None,
               metavar='PATH',
               type=Path,
               help="result file path")
+@click.argument('result',
+                required=False,
+                default=None,
+                metavar='PATH',
+                type=Path)
 def generate_output(output_type: common.OutputType,
                     panel: typing.Optional[str],
-                    result: typing.Optional[Path],
-                    output: typing.Optional[Path]):
+                    output: typing.Optional[Path],
+                    result: typing.Optional[Path]):
     """Generate output"""
-    result = (json.decode_file(result) if result
+    result = (json.decode_file(result) if result and result != Path('-')
               else json.decode_stream(sys.stdin))
     common.json_schema_repo.validate(result_schema_id, result)
     result = common.result_from_json(result)
 
     out = opcut.output.generate_output(result, output_type, panel)
 
-    if output:
-        out.write_bytes(out)
+    if output and output != Path('-'):
+        output.write_bytes(out)
     else:
-        sys.stdout.detach().write(out)
+        stdout, sys.stdout = sys.stdout.detach(), None
+        stdout.write(out)
 
 
 @main.command()
@@ -113,10 +107,29 @@ def generate_output(output_type: common.OutputType,
               default=8080,
               type=int,
               help="listening TCP port")
+@click.option('--log-level',
+              default='INFO',
+              type=click.Choice(['CRITICAL', 'ERROR', 'WARNING', 'INFO',
+                                 'DEBUG', 'NOTSET']),
+              help="log level")
 def server(host: str,
-           port: int):
+           port: int,
+           log_level: str):
     """Run server"""
-    loop = aio.init_asyncio()
+    logging.config.dictConfig({
+        'version': 1,
+        'formatters': {
+            'console': {
+                'format': "[%(asctime)s %(levelname)s %(name)s] %(message)s"}},
+        'handlers': {
+            'console': {
+                'class': 'logging.StreamHandler',
+                'formatter': 'console',
+                'level': log_level}},
+        'root': {
+            'level': log_level,
+            'handlers': ['console']},
+        'disable_existing_loggers': False})
 
     async def run():
         server = await opcut.server.create(host, port)
@@ -127,6 +140,7 @@ def server(host: str,
         finally:
             await aio.uncancellable(server.async_close())
 
+    loop = aio.init_asyncio()
     with contextlib.suppress(asyncio.CancelledError):
         aio.run_asyncio(run(), loop=loop)
 

@@ -1,11 +1,13 @@
 from pathlib import Path
+import asyncio
+import subprocess
+import sys
 
 from hat import aio
+from hat import json
 import aiohttp.web
 
 from opcut import common
-import opcut.csp
-import opcut.output
 
 
 static_dir: Path = common.package_path / 'ui'
@@ -63,12 +65,13 @@ class Server(aio.Resource):
             return aiohttp.web.Response(status=400,
                                         text="Invalid request")
 
+        native = request.query.get('native') == 'true'
         method = common.Method(request.query['method'])
         params = common.params_from_json(data)
 
         try:
-            result = await self._executor(opcut.csp.calculate, params, method)
-            return aiohttp.web.json_response(common.result_to_json(result))
+            result = await _calculate(native, method, params)
+            return aiohttp.web.json_response(result)
 
         except common.UnresolvableError:
             return aiohttp.web.Response(status=400,
@@ -88,8 +91,7 @@ class Server(aio.Resource):
         panel = request.query.get('panel')
         result = common.result_from_json(data)
 
-        output = await self._executor(opcut.output.generate_output, result,
-                                      output_type, panel)
+        output = await _generate_output(output_type, panel, result)
 
         if output_type == common.OutputType.PDF:
             content_type = 'application/pdf'
@@ -102,3 +104,53 @@ class Server(aio.Resource):
 
         return aiohttp.web.Response(body=output,
                                     content_type=content_type)
+
+
+async def _calculate(native, method, params):
+    args = [*_get_calculate_cmd(native), '--method', method.value]
+    stdint_data = json.encode(common.params_to_json(params)).encode('utf-8')
+
+    p = await asyncio.create_subprocess_exec(*args,
+                                             stdin=subprocess.PIPE,
+                                             stdout=subprocess.PIPE,
+                                             stderr=subprocess.PIPE)
+    stdout_data, stderr_data = await p.communicate(stdint_data)
+
+    if p.returncode == 0:
+        return json.decode(stdout_data.decode('utf-8'))
+
+    if p.returncode == 42:
+        raise common.UnresolvableError()
+
+    raise Exception(stderr_data.decode('utf-8'))
+
+
+async def _generate_output(output_type, panel, result):
+    args = [*_get_generate_output_cmd(), '--output-type', output_type.value,
+            *(['--panel', panel] if panel else [])]
+    stdint_data = json.encode(common.result_to_json(result)).encode('utf-8')
+
+    p = await asyncio.create_subprocess_exec(*args,
+                                             stdin=subprocess.PIPE,
+                                             stdout=subprocess.PIPE,
+                                             stderr=subprocess.PIPE)
+    stdout_data, stderr_data = await p.communicate(stdint_data)
+
+    if p.returncode == 0:
+        return stdout_data
+
+    raise Exception(stderr_data.decode('utf-8'))
+
+
+def _get_calculate_cmd(native):
+    if native and sys.platform == 'linux':
+        return [str(common.package_path / 'bin/linux-opcut-calculate')]
+
+    elif native and sys.platform == 'win32':
+        return [str(common.package_path / 'bin/windows-opcut-calculate.exe')]
+
+    return [sys.executable, '-m', 'opcut', 'calculate']
+
+
+def _get_generate_output_cmd():
+    return [sys.executable, '-m', 'opcut', 'generate-output']

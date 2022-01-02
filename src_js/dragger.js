@@ -23,6 +23,6 @@ document.addEventListener('mousemove', evt => {
 });
 
 
-document.addEventListener('mouseup', evt => {
+document.addEventListener('mouseup', _ => {
     draggers.splice(0);
 });

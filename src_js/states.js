@@ -4,6 +4,7 @@ export const main = {
         method: 'forward_greedy',
         cut_width: 0.3,
         min_initial_usage: false,
+        native: false,
         panels: [],
         items: []
     },

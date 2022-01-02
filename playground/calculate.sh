@@ -3,6 +3,6 @@
 . $(dirname -- "$0")/env.sh
 
 exec $PYTHON -m opcut calculate \
-    --params $RUN_PATH/params.json \
-    --result $RUN_PATH/result.json \
-    "$@"
+    --method forward_greedy \
+    --output $RUN_PATH/result.json \
+    $RUN_PATH/params.json
