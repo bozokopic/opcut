@@ -19,6 +19,10 @@ params_schema_id: str = 'opcut://opcut.yaml#/definitions/params'
 result_schema_id: str = 'opcut://opcut.yaml#/definitions/result'
 
 
+def _doc_enum_values(enum_cls):
+    return ', '.join(str(i.value) for i in enum_cls)
+
+
 @click.group()
 def main():
     """Application main entry point"""
@@ -28,7 +32,7 @@ def main():
 @click.option('--method',
               default=common.Method.FORWARD_GREEDY,
               type=common.Method,
-              help="calculate method")
+              help=f"calculate method ({_doc_enum_values(common.Method)})")
 @click.option('--output',
               default=None,
               metavar='PATH',
@@ -42,7 +46,7 @@ def main():
 def calculate(method: common.Method,
               output: typing.Optional[Path],
               params: typing.Optional[Path]):
-    """Calculate result"""
+    """Calculate result based on parameters JSON"""
     params = (json.decode_file(params) if params and params != Path('-')
               else json.decode_stream(sys.stdin))
     common.json_schema_repo.validate(params_schema_id, params)
@@ -66,7 +70,7 @@ def calculate(method: common.Method,
 @click.option('--output-type',
               default=common.OutputType.PDF,
               type=common.OutputType,
-              help="output type")
+              help=f"output type ({_doc_enum_values(common.OutputType)})")
 @click.option('--panel',
               default=None,
               help="panel identifier")
@@ -84,7 +88,7 @@ def generate_output(output_type: common.OutputType,
                     panel: typing.Optional[str],
                     output: typing.Optional[Path],
                     result: typing.Optional[Path]):
-    """Generate output"""
+    """Generate output based on result JSON"""
     result = (json.decode_file(result) if result and result != Path('-')
               else json.decode_stream(sys.stdin))
     common.json_schema_repo.validate(result_schema_id, result)

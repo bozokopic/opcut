@@ -73,7 +73,7 @@ function leftPanel() {
                           r.get('form', 'min_initial_usage'),
                           val => r.set(['form', 'min_initial_usage'], val)),
             ['label'],
-            checkboxInput('Use native implementation',
+            checkboxInput('Use native implementation (experimental)',
                           r.get('form', 'native'),
                           val => r.set(['form', 'native'], val))
         ],

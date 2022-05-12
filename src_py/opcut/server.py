@@ -18,7 +18,6 @@ async def create(host: str,
                  ) -> 'Server':
     server = Server()
     server._async_group = aio.Group()
-    server._executor = aio.create_executor()
 
     app = aiohttp.web.Application()
     app.add_routes([
