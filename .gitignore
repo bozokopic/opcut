@@ -2,6 +2,7 @@
 /.peru
 /build
 /cache
+/compile_flags.txt
 /deps
 /node_modules
 /src_py/opcut/bin

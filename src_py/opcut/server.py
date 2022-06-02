@@ -1,5 +1,6 @@
 from pathlib import Path
 import asyncio
+import platform
 import subprocess
 import sys
 
@@ -143,10 +144,14 @@ async def _generate_output(output_type, panel, result):
 
 def _get_calculate_cmd(native):
     if native and sys.platform == 'linux':
-        return [str(common.package_path / 'bin/linux-opcut-calculate')]
+        if platform.machine() == 'x86_64':
+            return [str(common.package_path /
+                        'bin/linux_x86_64-opcut-calculate')]
 
     elif native and sys.platform == 'win32':
-        return [str(common.package_path / 'bin/windows-opcut-calculate.exe')]
+        if platform.machine() == 'amd64':
+            return [str(common.package_path /
+                        'bin/windows_amd64-opcut-calculate.exe')]
 
     return [sys.executable, '-m', 'opcut', 'calculate']
 

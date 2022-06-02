@@ -18,12 +18,12 @@ src_py_dir = Path('src_py')
 build_c_dir = build_dir / 'c'
 
 platforms = [common.local_platform]
-if common.local_platform == common.Platform.LINUX:
-    platforms.append(common.Platform.WINDOWS)
+if common.local_platform == common.Platform.LINUX_X86_64:
+    platforms.append(common.Platform.WINDOWS_AMD64)
 
 builds = [CBuild(src_paths=[*src_c_dir.rglob('*.c'),
                             deps_dir / 'argparse/argparse.c',
-                            deps_dir / 'hat-util/src_c/hat/allocator.c'],
+                            deps_dir / 'hat-util/src_c/hat/libc_allocator.c'],
                  build_dir=build_c_dir / platform.name.lower(),
                  platform=platform,
                  cc_flags=['-fPIC', '-O2',

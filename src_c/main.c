@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <argparse.h>
+#include <hat/libc_allocator.h>
 #include "csp.h"
 
 
@@ -64,7 +65,7 @@ static int read_stream(hat_allocator_t *a, FILE *stream, opcut_str_t *json) {
 
     while (!(json->len < size)) {
         size += 4096;
-        char *data = hat_allocator_alloc(a, size, json->data);
+        char *data = hat_allocator_realloc(a, size, json->data);
         if (!data)
             return OPCUT_ERROR;
 
@@ -77,7 +78,7 @@ static int read_stream(hat_allocator_t *a, FILE *stream, opcut_str_t *json) {
 
 
 int main(int argc, char **argv) {
-    hat_allocator_t *a = &hat_allocator_libc;
+    hat_allocator_t *a = &hat_libc_allocator;
     opcut_pool_t *panel_pool = opcut_pool_create(a, sizeof(opcut_panel_t));
     opcut_pool_t *item_pool = opcut_pool_create(a, sizeof(opcut_item_t));
     opcut_pool_t *used_pool = opcut_pool_create(a, sizeof(opcut_used_t));

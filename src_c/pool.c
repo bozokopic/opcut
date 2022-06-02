@@ -25,10 +25,8 @@ static void allocate_block(opcut_pool_t *pool) {
         items_per_block = 1;
 
     header_t *block = hat_allocator_alloc(
-        pool->a,
-        sizeof(header_t) +
-            items_per_block * (sizeof(header_t) + pool->item_size),
-        NULL);
+        pool->a, sizeof(header_t) +
+                     items_per_block * (sizeof(header_t) + pool->item_size));
     if (!block)
         return;
     block->next = pool->blocks;
@@ -44,7 +42,7 @@ static void allocate_block(opcut_pool_t *pool) {
 
 
 opcut_pool_t *opcut_pool_create(hat_allocator_t *a, size_t item_size) {
-    opcut_pool_t *pool = hat_allocator_alloc(a, sizeof(opcut_pool_t), NULL);
+    opcut_pool_t *pool = hat_allocator_alloc(a, sizeof(opcut_pool_t));
     if (!pool)
         return NULL;
 

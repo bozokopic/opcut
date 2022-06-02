@@ -406,8 +406,7 @@ int opcut_params_init(hat_allocator_t *a, opcut_params_t *params,
     if (tokens_len < 0)
         return OPCUT_ERROR;
 
-    jsmntok_t *tokens =
-        hat_allocator_alloc(a, tokens_len * sizeof(jsmntok_t), NULL);
+    jsmntok_t *tokens = hat_allocator_alloc(a, tokens_len * sizeof(jsmntok_t));
     if (!tokens)
         return OPCUT_ERROR;
 
