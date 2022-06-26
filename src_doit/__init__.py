@@ -112,8 +112,7 @@ def task_ui():
 
 def task_deps():
     """Install dependencies"""
-    return {'actions': ['yarn install --silent',
-                        f'{sys.executable} -m peru sync']}
+    return {'actions': ['yarn install --silent']}
 
 
 def task_format():

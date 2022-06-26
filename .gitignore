@@ -1,11 +1,9 @@
 /.doit.db
-/.peru
 /build
 /cache
-/compile_flags.txt
-/deps
 /node_modules
-/src_py/opcut/bin
 /src_py/opcut/json_schema_repo.json
+/src_py/opcut/libopcut.dll
+/src_py/opcut/libopcut.so
 /src_py/opcut/ui
 __pycache__
