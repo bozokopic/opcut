@@ -1,6 +1,5 @@
 from pathlib import Path
 import asyncio
-import platform
 import subprocess
 import sys
 
@@ -24,7 +23,7 @@ async def create(host: str,
     app.add_routes([
         aiohttp.web.get('/', server._root_handler),
         aiohttp.web.post('/calculate', server._calculate_handler),
-        aiohttp.web.post('/generate_output', server._generate_output_handler),
+        aiohttp.web.post('/generate', server._generate_handler),
         aiohttp.web.static('/', static_dir)])
 
     runner = aiohttp.web.AppRunner(app)
@@ -65,19 +64,18 @@ class Server(aio.Resource):
             return aiohttp.web.Response(status=400,
                                         text="Invalid request")
 
-        native = request.query.get('native') == 'true'
         method = common.Method(request.query['method'])
         params = common.params_from_json(data)
 
         try:
-            result = await _calculate(native, method, params)
+            result = await _calculate(method, params)
             return aiohttp.web.json_response(result)
 
         except common.UnresolvableError:
             return aiohttp.web.Response(status=400,
                                         text='Result is not solvable')
 
-    async def _generate_output_handler(self, request):
+    async def _generate_handler(self, request):
         try:
             data = await request.json()
             common.json_schema_repo.validate(
@@ -87,16 +85,16 @@ class Server(aio.Resource):
             return aiohttp.web.Response(status=400,
                                         text="Invalid request")
 
-        output_type = common.OutputType(request.query['output_type'])
+        output_format = common.OutputFormat(request.query['output_format'])
         panel = request.query.get('panel')
         result = common.result_from_json(data)
 
-        output = await _generate_output(output_type, panel, result)
+        output = await _generate(output_format, panel, result)
 
-        if output_type == common.OutputType.PDF:
+        if output_format == common.OutputType.PDF:
             content_type = 'application/pdf'
 
-        elif output_type == common.OutputType.SVG:
+        elif output_format == common.OutputType.SVG:
             content_type = 'image/svg+xml'
 
         else:
@@ -106,8 +104,9 @@ class Server(aio.Resource):
                                     content_type=content_type)
 
 
-async def _calculate(native, method, params):
-    args = [*_get_calculate_cmd(native), '--method', method.value]
+async def _calculate(method, params):
+    args = [sys.executable, '-m', 'opcut', 'calculate',
+            '--method', method.value]
     stdint_data = json.encode(common.params_to_json(params)).encode('utf-8')
 
     p = await asyncio.create_subprocess_exec(*args,
@@ -125,8 +124,9 @@ async def _calculate(native, method, params):
     raise Exception(stderr_data.decode('utf-8'))
 
 
-async def _generate_output(output_type, panel, result):
-    args = [*_get_generate_output_cmd(), '--output-type', output_type.value,
+async def _generate(output_format, panel, result):
+    args = [sys.executable, '-m', 'opcut', 'generate',
+            '--output-format', output_format.value,
             *(['--panel', panel] if panel else [])]
     stdint_data = json.encode(common.result_to_json(result)).encode('utf-8')
 
@@ -140,21 +140,3 @@ async def _generate_output(output_type, panel, result):
         return stdout_data
 
     raise Exception(stderr_data.decode('utf-8'))
-
-
-def _get_calculate_cmd(native):
-    if native and sys.platform == 'linux':
-        if platform.machine() == 'x86_64':
-            return [str(common.package_path /
-                        'bin/linux_x86_64-opcut-calculate')]
-
-    elif native and sys.platform == 'win32':
-        if platform.machine() == 'amd64':
-            return [str(common.package_path /
-                        'bin/windows_amd64-opcut-calculate.exe')]
-
-    return [sys.executable, '-m', 'opcut', 'calculate']
-
-
-def _get_generate_output_cmd():
-    return [sys.executable, '-m', 'opcut', 'generate-output']

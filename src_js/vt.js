@@ -62,7 +62,9 @@ function leftPanel() {
             ['label', 'Method'],
             selectInput(r.get('form', 'method'),
                         [['forward_greedy', 'Forward greedy'],
-                         ['greedy', 'Greedy']],
+                         ['greedy', 'Greedy'],
+                         ['forward_greedy_native', 'Forward greedy (native)'],
+                         ['greedy_native', 'Greedy (native)'],],
                         val => r.set(['form', 'method'], val)),
             ['label', 'Cut width'],
             numberInput(r.get('form', 'cut_width'),
@@ -71,11 +73,7 @@ function leftPanel() {
             ['label'],
             checkboxInput('Minimize initial panel usage',
                           r.get('form', 'min_initial_usage'),
-                          val => r.set(['form', 'min_initial_usage'], val)),
-            ['label'],
-            checkboxInput('Use native implementation (experimental)',
-                          r.get('form', 'native'),
-                          val => r.set(['form', 'native'], val))
+                          val => r.set(['form', 'min_initial_usage'], val))
         ],
         ['div.content',
             leftPanelPanels(),
@@ -308,7 +306,7 @@ function rightPanel() {
             ['div.toolbar',
                 ['button', {
                     on: {
-                        click: common.generateOutput
+                        click: common.generate
                     }},
                     ['span.fa.fa-file-pdf-o'],
                     ' PDF'
@@ -465,7 +463,6 @@ function textInput(value, validator, onChange) {
 
 
 function numberInput(value, validator, onChange) {
-
     return ['input', {
         props: {
             type: 'number',

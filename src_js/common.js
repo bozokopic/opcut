@@ -10,7 +10,7 @@ import * as states from './states';
 
 
 const calculateUrl = URI.resolve(window.location.href, './calculate');
-const generateOutputUrl = URI.resolve(window.location.href, './generate_output');
+const generateUrl = URI.resolve(window.location.href, './generate');
 
 let panelCounter = 0;
 let itemCounter = 0;
@@ -20,9 +20,8 @@ export async function calculate() {
     r.set('calculating', true);
     try {
         const method = r.get('form', 'method');
-        const native = r.get('form', 'native');
         const params = createCalculateParams();
-        const res = await fetch(`${calculateUrl}?method=${method}&native=${native}`, {
+        const res = await fetch(`${calculateUrl}?method=${method}`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(params)
@@ -45,10 +44,10 @@ export async function calculate() {
 }
 
 
-export async function generateOutput() {
+export async function generate() {
     try {
         const result = r.get('result');
-        const res = await fetch(`${generateOutputUrl}?output_type=pdf`, {
+        const res = await fetch(`${generateUrl}?output_format=pdf`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(result)

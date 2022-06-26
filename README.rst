@@ -37,26 +37,70 @@ Install
     `https://github.com/bozokopic/opcut/releases`
 
 
-Run
----
+Usage
+-----
 
-Running server (default listening address http://0.0.0.0:8080)::
+`opcut` command is interface for execution of three distinct actions:
+
+    * `opcut calculate ...`
+
+        Calculation of cutting stock problem. Input parameters and result is
+        formated as JSON data (JSON, YAML or TOML).
+
+    * `opcut generate ...`
+
+        Generate output representation (SVG, PDF, ...) based on calculation
+        result.
+
+    * `opcut server ...`
+
+        Run HTTP server providing single-page web application interface and
+        OpenAPI interface.
+        (default listening address is http://0.0.0.0:8080).
+
+For additional command line arguments, run ``opcut --help`` or
+``opcut <action> --help``.
+
+
+`opcut calculate`
+'''''''''''''''''
+
+Example::
+
+    $ opcut calculate --input-format yaml --output result.json << EOF
+    cut_width: 1
+    panels:
+        panel1:
+            width: 100
+            height: 100
+    items:
+        item1:
+            width: 10
+            height: 10
+            can_rotate: false
+    EOF
+
+
+`opcut generate`
+''''''''''''''''
+
+Example::
+
+    $ opcut generate --output output.pdf result.json
+
+
+`opcut server`
+''''''''''''''
+
+Example::
 
     $ opcut server
-
-Running command line utility::
-
-    $ opcut calculate ...
-    $ opcut generate_output ...
-
-Additional command line arguments::
-
-    $ opcut --help
 
 
 Development requirements
 ------------------------
 
+* C99 compiler (gcc, clang, ...)
 * nodejs >=7
 * yarn
 
@@ -80,28 +124,26 @@ Default task::
 creates wheel package inside `build` directory.
 
 
-TODO
-----
+JSON Schema
+-----------
 
-* global
+.. literalinclude:: schemas/opcut.yaml
+    :language: yaml
 
-    * create CONTRIBUTING
 
-* optimizer
+OpenAPI
+-------
 
-    * add additional algorithms
-    * evaluate python implementations and do native rewrites if needed
-
-* back-end
-
-    * additional output formats
+.. literalinclude:: schemas/openapi.yaml
+    :language: yaml
 
 
 License
 -------
 
 opcut - cutting stock problem optimizer
-Copyright (C) 2017-2022  Bozo Kopic
+
+Copyright (C) 2017-2022 Bozo Kopic
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

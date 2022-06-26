@@ -2,16 +2,11 @@
 openapi: 3.1.0
 info:
     title: opcut
-    version: 0.0.1
+    version: 0.0.2
 paths:
     '/calculate':
         post:
             parameters:
-              - name: native
-                in: query
-                required: false
-                schema:
-                    type: boolean
               - name: method
                 in: query
                 required: true
@@ -19,6 +14,8 @@ paths:
                     enum:
                         - greedy
                         - forward_greedy
+                        - greedy_native
+                        - forward_greedy_native
             requestBody:
                 content:
                     application/json:
@@ -34,10 +31,10 @@ paths:
                     content:
                         text/plain:
                             description: error message
-    '/generate_output':
+    '/generate':
         post:
             parameters:
-              - name: output_type
+              - name: output_format
                 in: query
                 required: true
                 schema:

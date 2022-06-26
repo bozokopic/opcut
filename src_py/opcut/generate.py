@@ -6,18 +6,18 @@ import cairo
 from opcut import common
 
 
-def generate_output(result: common.Result,
-                    output_type: common.OutputType,
-                    panel_id: typing.Optional[str] = None,
-                    settings: common.OutputSettings = common.OutputSettings()
-                    ) -> bytes:
+def generate(result: common.Result,
+             output_format: common.OutputFormat,
+             panel_id: typing.Optional[str] = None,
+             settings: common.OutputSettings = common.OutputSettings()
+             ) -> bytes:
     """Generate output"""
     ret = io.BytesIO()
 
-    if output_type == common.OutputType.PDF:
+    if output_format == common.OutputFormat.PDF:
         surface_cls = cairo.PDFSurface
 
-    elif output_type == common.OutputType.SVG:
+    elif output_format == common.OutputFormat.SVG:
         surface_cls = cairo.SVGSurface
 
     else:

@@ -3,8 +3,8 @@ import itertools
 from opcut import common
 
 
-def calculate(params: common.Params,
-              method: common.Method
+def calculate(method: common.Method,
+              params: common.Params
               ) -> common.Result:
     """Calculate cutting stock problem"""
     unused = [common.Unused(panel=panel,
@@ -22,6 +22,12 @@ def calculate(params: common.Params,
 
     elif method == common.Method.FORWARD_GREEDY:
         return _calculate_forward_greedy(result)
+
+    elif method == common.Method.GREEDY_NATIVE:
+        return _calculate_greedy_native(result)
+
+    elif method == common.Method.FORWARD_GREEDY_NATIVE:
+        return _calculate_forward_greedy_native(result)
 
     raise ValueError('unsupported method')
 
@@ -60,6 +66,14 @@ def _calculate_forward_greedy(result):
             raise common.UnresolvableError()
         result = new_result
     return result
+
+
+def _calculate_greedy_native(result):
+    raise NotImplementedError()
+
+
+def _calculate_forward_greedy_native(result):
+    raise NotImplementedError()
 
 
 def _get_next_results(result):

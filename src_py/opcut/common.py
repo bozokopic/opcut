@@ -67,9 +67,11 @@ class OutputSettings(typing.NamedTuple):
 class Method(enum.Enum):
     GREEDY = 'greedy'
     FORWARD_GREEDY = 'forward_greedy'
+    GREEDY_NATIVE = 'greedy_native'
+    FORWARD_GREEDY_NATIVE = 'forward_greedy_native'
 
 
-class OutputType(enum.Enum):
+class OutputFormat(enum.Enum):
     PDF = 'pdf'
     SVG = 'svg'
 

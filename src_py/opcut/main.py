@@ -1,4 +1,5 @@
 from pathlib import Path
+import argparse
 import asyncio
 import contextlib
 import logging.config
@@ -7,11 +8,10 @@ import typing
 
 from hat import aio
 from hat import json
-import click
 
 from opcut import common
-import opcut.csp
-import opcut.output
+import opcut.calculate
+import opcut.generate
 import opcut.server
 
 
@@ -19,107 +19,153 @@ params_schema_id: str = 'opcut://opcut.yaml#/definitions/params'
 result_schema_id: str = 'opcut://opcut.yaml#/definitions/result'
 
 
-def _doc_enum_values(enum_cls):
-    return ', '.join(str(i.value) for i in enum_cls)
+def create_argument_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(dest='action')
+
+    def enum_values(enum_cls):
+        return ', '.join(str(i.value) for i in enum_cls)
+
+    calculate = subparsers.add_parser('calculate')
+    calculate.add_argument(
+        '--method', metavar='METHOD', type=common.Method,
+        default=common.Method.FORWARD_GREEDY,
+        help=f"calculate method ({enum_values(common.Method)})")
+    calculate.add_argument(
+        '--input-format', metavar='FORMAT', type=json.Format, default=None,
+        help=f"input params format ({enum_values(json.Format)})")
+    calculate.add_argument(
+        '--output-format', metavar='FORMAT', type=json.Format, default=None,
+        help=f"output result format ({enum_values(json.Format)})")
+    calculate.add_argument(
+        '--output', metavar='PATH', type=Path, default=Path('-'),
+        help=f"output result file path or - for stdout ({result_schema_id})")
+    calculate.add_argument(
+        'params', type=Path, default=Path('-'),
+        help=f"input params file path or - for stdin ({params_schema_id})")
+
+    generate = subparsers.add_parser('generate')
+    generate.add_argument(
+        '--input-format', metavar='FORMAT', type=json.Format, default=None,
+        help=f"input result format ({enum_values(json.Format)})")
+    generate.add_argument(
+        '--output-format', metavar='FORMAT', type=common.OutputFormat,
+        default=common.OutputFormat.PDF,
+        help=f"output format ({enum_values(common.OutputFormat)})")
+    generate.add_argument(
+        '--panel', metavar='PANEL', default=None,
+        help="panel identifier")
+    generate.add_argument(
+        '--output', metavar='PATH', type=Path, default=Path('-'),
+        help="output file path or - for stdout")
+    generate.add_argument(
+        'result', type=Path, default=Path('-'),
+        help=f"input result file path or - for stdin ({result_schema_id})")
+
+    server = subparsers.add_parser('server')
+    server.add_argument(
+        '--host', metavar='HOST', default='0.0.0.0',
+        help="listening host name (default 0.0.0.0)")
+    server.add_argument(
+        '--port', metavar='PORT', type=int, default=8080,
+        help="listening TCP port (default 8080)")
+    server.add_argument(
+        '--log-level', metavar='LEVEL', default='info',
+        choices=['critical', 'error', 'warning', 'info', 'debug', 'notset'],
+        help="log level (default info)")
+
+    return parser
 
 
-@click.group()
 def main():
-    """Application main entry point"""
+    parser = create_argument_parser()
+    args = parser.parse_args()
+
+    if args.action == 'calculate':
+        calculate(method=args.method,
+                  input_format=args.input_format,
+                  output_format=args.output_format,
+                  result_path=args.output,
+                  params_path=args.params)
+
+    elif args.action == 'generate':
+        generate(input_format=args.input_format,
+                 output_format=args.output_format,
+                 panel_id=args.panel,
+                 output_path=args.output,
+                 result_path=args.result)
+
+    elif args.action == 'server':
+        server(host=args.host,
+               port=args.port,
+               log_level=args.log_level)
+
+    else:
+        raise ValueError('unsupported action')
 
 
-@main.command()
-@click.option('--method',
-              default=common.Method.FORWARD_GREEDY,
-              type=common.Method,
-              help=f"calculate method ({_doc_enum_values(common.Method)})")
-@click.option('--output',
-              default=None,
-              metavar='PATH',
-              type=Path,
-              help=f"result file path ({result_schema_id})")
-@click.argument('params',
-                required=False,
-                default=None,
-                metavar='PATH',
-                type=Path)
 def calculate(method: common.Method,
-              output: typing.Optional[Path],
-              params: typing.Optional[Path]):
-    """Calculate result based on parameters JSON"""
-    params = (json.decode_file(params) if params and params != Path('-')
-              else json.decode_stream(sys.stdin))
-    common.json_schema_repo.validate(params_schema_id, params)
-    params = common.params_from_json(params)
+              input_format: typing.Optional[json.Format],
+              output_format: typing.Optional[json.Format],
+              result_path: Path,
+              params_path: Path):
+    if input_format is None and params_path == Path('-'):
+        input_format = json.Format.JSON
+
+    if output_format is None and result_path == Path('-'):
+        output_format = json.Format.JSON
+
+    params_json = (json.decode_stream(sys.stdin, input_format)
+                   if params_path == Path('-')
+                   else json.decode_file(params_path, input_format))
+
+    common.json_schema_repo.validate(params_schema_id, params_json)
+    params = common.params_from_json(params_json)
 
     try:
-        res = opcut.csp.calculate(params, method)
+        result = opcut.calculate.calculate(method=method,
+                                           params=params)
 
     except common.UnresolvableError:
         sys.exit(42)
 
-    res = common.result_to_json(res)
+    result_json = common.result_to_json(result)
 
-    if output and output != Path('-'):
-        json.encode_file(res, output)
+    if result_path == Path('-'):
+        json.encode_stream(result_json, sys.stdout, output_format)
     else:
-        json.encode_stream(res, sys.stdout)
+        json.encode_file(result_json, result_path, output_format)
 
 
-@main.command()
-@click.option('--output-type',
-              default=common.OutputType.PDF,
-              type=common.OutputType,
-              help=f"output type ({_doc_enum_values(common.OutputType)})")
-@click.option('--panel',
-              default=None,
-              help="panel identifier")
-@click.option('--output',
-              default=None,
-              metavar='PATH',
-              type=Path,
-              help="result file path")
-@click.argument('result',
-                required=False,
-                default=None,
-                metavar='PATH',
-                type=Path)
-def generate_output(output_type: common.OutputType,
-                    panel: typing.Optional[str],
-                    output: typing.Optional[Path],
-                    result: typing.Optional[Path]):
-    """Generate output based on result JSON"""
-    result = (json.decode_file(result) if result and result != Path('-')
-              else json.decode_stream(sys.stdin))
-    common.json_schema_repo.validate(result_schema_id, result)
-    result = common.result_from_json(result)
+def generate(input_format: typing.Optional[json.Format],
+             output_format: common.OutputFormat,
+             panel_id: typing.Optional[str],
+             output_path: Path,
+             result_path: Path):
+    if input_format is None and result_path == Path('-'):
+        input_format = json.Format.JSON
 
-    out = opcut.output.generate_output(result, output_type, panel)
+    result_json = (json.decode_stream(sys.stdin, input_format)
+                   if result_path == Path('-')
+                   else json.decode_file(result_path, input_format))
 
-    if output and output != Path('-'):
-        output.write_bytes(out)
-    else:
+    common.json_schema_repo.validate(result_schema_id, result_json)
+    result = common.result_from_json(result_json)
+
+    data = opcut.generate.generate(result=result,
+                                   output_format=output_format,
+                                   panel_id=panel_id)
+
+    if output_path == Path('-'):
         stdout, sys.stdout = sys.stdout.detach(), None
-        stdout.write(out)
+        stdout.write(data)
+    else:
+        output_path.write_bytes(data)
 
 
-@main.command()
-@click.option('--host',
-              default='0.0.0.0',
-              help="listening host name")
-@click.option('--port',
-              default=8080,
-              type=int,
-              help="listening TCP port")
-@click.option('--log-level',
-              default='INFO',
-              type=click.Choice(['CRITICAL', 'ERROR', 'WARNING', 'INFO',
-                                 'DEBUG', 'NOTSET']),
-              help="log level")
 def server(host: str,
            port: int,
            log_level: str):
-    """Run server"""
     logging.config.dictConfig({
         'version': 1,
         'formatters': {
@@ -129,14 +175,15 @@ def server(host: str,
             'console': {
                 'class': 'logging.StreamHandler',
                 'formatter': 'console',
-                'level': log_level}},
+                'level': log_level.upper()}},
         'root': {
-            'level': log_level,
+            'level': log_level.upper(),
             'handlers': ['console']},
         'disable_existing_loggers': False})
 
     async def run():
-        server = await opcut.server.create(host, port)
+        server = await opcut.server.create(host=host,
+                                           port=port)
 
         try:
             await server.wait_closing()

@@ -4,6 +4,8 @@ id: "opcut://opcut.yaml#"
 definitions:
     params:
         type: object
+        description: |
+            calculation input parameters independent of calculation method
         required:
             - cut_width
             - panels
@@ -11,20 +13,30 @@ definitions:
         properties:
             cut_width:
                 type: number
+                description: |
+                    width of the guillotine cut
             min_initial_usage:
                 type: boolean
+                description: |
+                    minimize usage of initial panels
             panels:
                 type: object
+                description: |
+                    input panels (keys represent unique panel identifiers)
                 patternProperties:
                     ".+":
                         "$ref": "opcut://opcut.yaml#/definitions/panel"
             items:
                 type: object
+                description: |
+                    required items (keys represent unique item identifiers)
                 patternProperties:
                     ".+":
                         "$ref": "opcut://opcut.yaml#/definitions/item"
     result:
         type: object
+        description: |
+            calculation result
         required:
             - params
             - used
@@ -34,24 +46,36 @@ definitions:
                 "$ref": "opcut://opcut.yaml#"
             used:
                 type: array
+                description: |
+                    resulting panels associated with required items
                 items:
                     "$ref": "opcut://opcut.yaml#/definitions/used"
             unused:
                 type: array
+                description: |
+                    resulting unused panels
                 items:
                     "$ref": "opcut://opcut.yaml#/definitions/unused"
     panel:
         type: object
+        description: |
+            single input panel
         required:
             - width
             - height
         properties:
             width:
                 type: number
+                description: |
+                    panel's initial width
             height:
                 type: number
+                description: |
+                    panel's initial height
     item:
         type: object
+        description: |
+            single required item
         required:
             - width
             - height
@@ -59,12 +83,20 @@ definitions:
         properties:
             width:
                 type: number
+                description: |
+                    items's width
             height:
                 type: number
+                description: |
+                    items's height
             can_rotate:
                 type: boolean
+                description: |
+                    can item be rotated (is grain direction irrelevant)
     used:
         type: object
+        description: |
+            single resulting panels associated with required item
         required:
             - panel
             - item
@@ -74,16 +106,28 @@ definitions:
         properties:
             panel:
                 type: string
+                description: |
+                    input panel identifier
             item:
                 type: string
+                description: |
+                    matching required item identifier
             x:
                 type: number
+                description: |
+                    used panel location based on input panel's width offset
             y:
                 type: number
+                description: |
+                    used panel location based on input panel's height offset
             rotate:
                 type: boolean
+                description: |
+                    is resulting panel rotated
     unused:
         type: object
+        description: |
+            single unused resulting panel
         required:
             - panel
             - width
@@ -93,12 +137,22 @@ definitions:
         properties:
             panel:
                 type: string
+                description: |
+                    input panel identifier
             width:
                 type: number
+                description: |
+                    unused resulting panel's width
             height:
                 type: number
+                description: |
+                    unused resulting panel's height
             x:
                 type: number
+                description: |
+                    used panel location based on input panel's width offset
             y:
                 type: number
+                description: |
+                    used panel location based on input panel's height offset
 ...
