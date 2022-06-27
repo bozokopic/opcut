@@ -1,38 +1,39 @@
 import itertools
 
 from opcut import common
+from opcut import libopcut
 
 
 def calculate(method: common.Method,
               params: common.Params
               ) -> common.Result:
     """Calculate cutting stock problem"""
-    unused = [common.Unused(panel=panel,
-                            width=panel.width,
-                            height=panel.height,
-                            x=0,
-                            y=0)
-              for panel in params.panels]
-    result = common.Result(params=params,
-                           used=[],
-                           unused=unused)
 
     if method == common.Method.GREEDY:
-        return _calculate_greedy(result)
+        return _calculate_greedy(_create_initial_result(params))
 
-    elif method == common.Method.FORWARD_GREEDY:
-        return _calculate_forward_greedy(result)
+    if method == common.Method.FORWARD_GREEDY:
+        return _calculate_forward_greedy(_create_initial_result(params))
 
-    elif method == common.Method.GREEDY_NATIVE:
-        return _calculate_greedy_native(result)
-
-    elif method == common.Method.FORWARD_GREEDY_NATIVE:
-        return _calculate_forward_greedy_native(result)
+    if method in (common.Method.GREEDY_NATIVE,
+                  common.Method.FORWARD_GREEDY_NATIVE):
+        return libopcut.calculate(method, params)
 
     raise ValueError('unsupported method')
 
 
 _fitness_K = 0.03
+
+
+def _create_initial_result(params):
+    return common.Result(params=params,
+                         used=[],
+                         unused=[common.Unused(panel=panel,
+                                               width=panel.width,
+                                               height=panel.height,
+                                               x=0,
+                                               y=0)
+                                 for panel in params.panels])
 
 
 def _calculate_greedy(result):
@@ -66,14 +67,6 @@ def _calculate_forward_greedy(result):
             raise common.UnresolvableError()
         result = new_result
     return result
-
-
-def _calculate_greedy_native(result):
-    raise NotImplementedError()
-
-
-def _calculate_forward_greedy_native(result):
-    raise NotImplementedError()
 
 
 def _get_next_results(result):

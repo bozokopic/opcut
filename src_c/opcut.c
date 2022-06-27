@@ -104,6 +104,47 @@ static void mem_pool_free(mem_pool_t *pool, void *item) {
 }
 
 
+static void sort_panels(opcut_panel_t **first, opcut_panel_t **last) {
+    if (!*first) {
+        if (last)
+            *last = NULL;
+        return;
+    }
+
+    opcut_panel_t *pivot_first = *first;
+    opcut_panel_t *pivot_last = *first;
+    opcut_panel_t *left_first = NULL;
+    opcut_panel_t *right_first = NULL;
+
+    for (opcut_panel_t *panel = (*first)->next; panel;) {
+        opcut_panel_t *next = panel->next;
+        if (panel->area > pivot_first->area) {
+            panel->next = left_first;
+            left_first = panel;
+        } else if (panel->area < pivot_first->area) {
+            panel->next = right_first;
+            right_first = panel;
+        } else {
+            pivot_last->next = panel;
+            pivot_last = panel;
+        }
+        panel = next;
+    }
+
+    opcut_panel_t *left_last;
+    opcut_panel_t *right_last;
+    sort_panels(&left_first, &left_last);
+    sort_panels(&right_first, &right_last);
+
+    *first = (left_first ? left_first : pivot_first);
+    if (left_last)
+        left_last->next = pivot_first;
+    pivot_last->next = right_first;
+    if (last)
+        *last = (right_last ? right_last : pivot_last);
+}
+
+
 static void sort_items(opcut_item_t **first, opcut_item_t **last) {
     if (!*first) {
         if (last)
@@ -135,47 +176,6 @@ static void sort_items(opcut_item_t **first, opcut_item_t **last) {
     opcut_item_t *right_last;
     sort_items(&left_first, &left_last);
     sort_items(&right_first, &right_last);
-
-    *first = (left_first ? left_first : pivot_first);
-    if (left_last)
-        left_last->next = pivot_first;
-    pivot_last->next = right_first;
-    if (last)
-        *last = (right_last ? right_last : pivot_last);
-}
-
-
-static void sort_unused(opcut_unused_t **first, opcut_unused_t **last) {
-    if (!*first) {
-        if (last)
-            *last = NULL;
-        return;
-    }
-
-    opcut_unused_t *pivot_first = *first;
-    opcut_unused_t *pivot_last = *first;
-    opcut_unused_t *left_first = NULL;
-    opcut_unused_t *right_first = NULL;
-
-    for (opcut_unused_t *unused = (*first)->next; unused;) {
-        opcut_unused_t *next = unused->next;
-        if (unused->area > pivot_first->area) {
-            unused->next = left_first;
-            left_first = unused;
-        } else if (unused->area < pivot_first->area) {
-            unused->next = right_first;
-            right_first = unused;
-        } else {
-            pivot_last->next = unused;
-            pivot_last = unused;
-        }
-        unused = next;
-    }
-
-    opcut_unused_t *left_last;
-    opcut_unused_t *right_last;
-    sort_unused(&left_first, &left_last);
-    sort_unused(&right_first, &right_last);
 
     *first = (left_first ? left_first : pivot_first);
     if (left_last)
@@ -445,13 +445,13 @@ opcut_allocator_t *opcut_allocator_create(opcut_malloc_t malloc,
     if (!a)
         return NULL;
 
-    a->free = free;
-    a->panel = NULL;
-    a->item = NULL;
-    a->params = NULL;
-    a->used = NULL;
-    a->unused = NULL;
-    a->result = NULL;
+    *a = (opcut_allocator_t){.free = free,
+                             .panel = NULL,
+                             .item = NULL,
+                             .params = NULL,
+                             .used = NULL,
+                             .unused = NULL,
+                             .result = NULL};
 
     a->panel = mem_pool_create(malloc, free, sizeof(opcut_panel_t));
     if (!a->panel)
@@ -508,7 +508,7 @@ void opcut_allocator_destroy(opcut_allocator_t *a) {
 }
 
 
-opcut_panel_t *opcut_panel_create(opcut_allocator_t *a, char *id, double width,
+opcut_panel_t *opcut_panel_create(opcut_allocator_t *a, int id, double width,
                                   double height, opcut_panel_t *next) {
     opcut_panel_t *panel = mem_pool_alloc(a->panel);
     if (!panel)
@@ -524,7 +524,7 @@ opcut_panel_t *opcut_panel_create(opcut_allocator_t *a, char *id, double width,
 }
 
 
-opcut_item_t *opcut_item_create(opcut_allocator_t *a, char *id, double width,
+opcut_item_t *opcut_item_create(opcut_allocator_t *a, int id, double width,
                                 double height, bool can_rotate,
                                 opcut_item_t *next) {
     opcut_item_t *item = mem_pool_alloc(a->item);
@@ -563,102 +563,46 @@ opcut_params_t *opcut_params_create(opcut_allocator_t *a, double cut_width,
 }
 
 
-opcut_used_t *opcut_used_create(opcut_allocator_t *a, opcut_panel_t *panel,
-                                opcut_item_t *item, double x, double y,
-                                bool rotate, opcut_used_t *next) {
-    opcut_used_t *used = mem_pool_alloc(a->used);
-    if (!used)
-        return NULL;
+int opcut_calculate(opcut_allocator_t *a, int method, opcut_params_t *params,
+                    opcut_result_t **result) {
+    *result = mem_pool_alloc(a->result);
+    if (!*result)
+        return OPCUT_ERROR;
 
-    used->panel = panel;
-    used->item = item;
-    used->x = x;
-    used->y = y;
-    used->rotate = rotate;
-    used->next = next;
+    **result = (opcut_result_t){.params = params, .used = NULL, .unused = NULL};
 
-    return used;
-}
+    sort_panels(&(params->panels), NULL);
+    sort_items(&(params->items), NULL);
 
+    opcut_unused_t *unused = NULL;
+    for (opcut_panel_t *panel = params->panels; panel; panel = panel->next) {
+        opcut_unused_t *temp = mem_pool_alloc(a->unused);
+        if (!temp)
+            return OPCUT_ERROR;
 
-opcut_unused_t *opcut_unused_create(opcut_allocator_t *a, opcut_panel_t *panel,
-                                    double width, double height, double x,
-                                    double y, bool rotate,
-                                    opcut_unused_t *next) {
-    opcut_unused_t *unused = mem_pool_alloc(a->unused);
-    if (!unused)
-        return NULL;
-
-    unused->panel = panel;
-    unused->width = width;
-    unused->height = height;
-    unused->x = x;
-    unused->y = y;
-    unused->next = next;
-    unused->area = width * height;
-    unused->initial = true;
-
-    return unused;
-}
-
-
-opcut_result_t *opcut_result_create(opcut_allocator_t *a,
-                                    opcut_params_t *params, opcut_used_t *used,
-                                    opcut_unused_t *unused) {
-    opcut_result_t *result = mem_pool_alloc(a->result);
-    if (!result)
-        return NULL;
-
-    result->params = params;
-    result->used = used;
-    result->unused = unused;
-
-    return result;
-}
-
-
-int opcut_calculate(opcut_allocator_t *a, int method, opcut_result_t *result) {
-    opcut_item_t *used_items = NULL;
-    opcut_item_t *unused_items = NULL;
-
-    for (opcut_item_t *item = result->params->items; item;) {
-        bool is_used = false;
-        opcut_item_t *next = item->next;
-
-        for (opcut_used_t *used = result->used; used && !is_used;
-             used = used->next)
-            is_used = used->item == item;
-
-        if (is_used) {
-            item->next = used_items;
-            used_items = item;
-
-        } else {
-            item->next = unused_items;
-            unused_items = item;
-        }
-
-        item = next;
+        *temp = (opcut_unused_t){.panel = panel,
+                                 .width = panel->width,
+                                 .height = panel->height,
+                                 .x = 0,
+                                 .y = 0,
+                                 .next = unused,
+                                 .area = panel->area,
+                                 .initial = true};
+        unused = temp;
     }
 
-    sort_items(&used_items, NULL);
-    sort_items(&unused_items, NULL);
-
-    result->params->items = used_items;
-    for (opcut_item_t *item = result->params->items; item; item = item->next) {
-        if (!item->next) {
-            item->next = unused_items;
-            break;
-        }
+    while (unused) {
+        opcut_unused_t *next = unused->next;
+        unused->next = (*result)->unused;
+        (*result)->unused = unused;
+        unused = next;
     }
-
-    sort_unused(&(result->unused), NULL);
 
     if (method == OPCUT_METHOD_GREEDY)
-        return calculate_greedy(a, result, unused_items, false);
+        return calculate_greedy(a, *result, params->items, false);
 
     if (method == OPCUT_METHOD_FORWARD_GREEDY)
-        return calculate_greedy(a, result, unused_items, true);
+        return calculate_greedy(a, *result, params->items, true);
 
     return OPCUT_ERROR;
 }

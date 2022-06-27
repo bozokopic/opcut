@@ -27,7 +27,7 @@ builds = [CBuild(src_paths=[*src_c_dir.rglob('*.c')],
                  cc_flags=['-fPIC', '-O2'])
           for platform in platforms]
 
-lib_paths = [src_py_dir / (f'opcut/libopcut{get_lib_suffix(platform)}')
+lib_paths = [src_py_dir / (f'opcut/_libopcut{get_lib_suffix(platform)}')
              for platform in platforms]
 
 
