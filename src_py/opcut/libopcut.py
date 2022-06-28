@@ -13,24 +13,19 @@ def calculate(method: common.Method,
 
     native_method = _encode_method(method)
 
-    id_panels = {panel_id: panel
-                 for panel_id, panel in enumerate(params.panels)}
-    id_items = {item_id: item
-                for item_id, item in enumerate(params.items)}
-
     a = _lib.opcut_allocator_create(ctypes.pythonapi.PyMem_Malloc,
                                     ctypes.pythonapi.PyMem_Free)
     if a is None:
         raise Exception("allocation error")
 
     try:
-        native_panels = _encode_panels(a, id_panels)
-        native_items = _encode_items(a, id_items)
-        native_params = _encode_params(a, params, native_panels, native_items)
-
-        native_result = ctypes.POINTER(_lib.opcut_result_t)()
-        ret = _lib.opcut_calculate(a, native_method, native_params,
-                                   ctypes.byref(native_result))
+        native_params = _encode_params(params)
+        native_used = ctypes.POINTER(_lib.opcut_used_t)()
+        native_unused = ctypes.POINTER(_lib.opcut_unused_t)()
+        ret = _lib.opcut_calculate(a, native_method,
+                                   ctypes.byref(native_params),
+                                   ctypes.byref(native_used),
+                                   ctypes.byref(native_unused))
 
         if ret == _lib.OPCUT_UNSOLVABLE:
             raise common.UnresolvableError()
@@ -38,10 +33,8 @@ def calculate(method: common.Method,
         if ret != _lib.OPCUT_SUCCESS:
             raise Exception()
 
-        used = list(_decode_used(native_result.contents.used, id_panels,
-                                 id_items))
-        unused = list(_decode_unused(native_result.contents.unused,
-                                     id_panels))
+        used = list(_decode_used(params, native_used))
+        unused = list(_decode_unused(params, native_unused))
         return common.Result(params=params,
                              used=used,
                              unused=unused)
@@ -60,47 +53,43 @@ def _encode_method(method):
     raise ValueError('unsupported method')
 
 
-def _encode_panels(a, id_panels):
-    panels = None
-    for panel_id, panel in id_panels.items():
-        panels = _lib.opcut_panel_create(a, panel_id, panel.width,
-                                         panel.height, panels)
-        if panels is None:
-            raise Exception("allocation error")
-    return panels
+def _encode_params(params):
+    panels_type = _lib.opcut_panel_t * len(params.panels)
+    panels = panels_type(*(_lib.opcut_panel_t(width=panel.width,
+                                              height=panel.height,
+                                              area=panel.width * panel.height)
+                           for panel in params.panels))
+
+    items_type = _lib.opcut_item_t * len(params.items)
+    items = items_type(*(_lib.opcut_item_t(width=item.width,
+                                           height=item.height,
+                                           can_rotate=item.can_rotate,
+                                           area=item.width * item.height)
+                         for item in params.items))
+
+    return _lib.opcut_params_t(cut_width=params.cut_width,
+                               min_initial_usage=params.min_initial_usage,
+                               panels=panels,
+                               panels_len=len(panels),
+                               items=items,
+                               items_len=len(items),
+                               panels_area=sum(panel.width * panel.height
+                                               for panel in params.panels))
 
 
-def _encode_items(a, id_items):
-    items = None
-    for item_id, item in id_items.items():
-        items = _lib.opcut_item_create(a, item_id, item.width, item.height,
-                                       item.can_rotate, items)
-        if items is None:
-            raise Exception("allocation error")
-    return items
-
-
-def _encode_params(a, params, panels, items):
-    params = _lib.opcut_params_create(a, params.cut_width,
-                                      params.min_initial_usage, panels, items)
-    if params is None:
-        raise Exception("allocation error")
-    return params
-
-
-def _decode_used(used, id_panels, id_items):
+def _decode_used(params, used):
     while used:
-        yield common.Used(panel=id_panels[used.contents.panel.contents.id],
-                          item=id_items[used.contents.item.contents.id],
+        yield common.Used(panel=params.panels[used.contents.panel_id],
+                          item=params.items[used.contents.item_id],
                           x=used.contents.x,
                           y=used.contents.y,
                           rotate=used.contents.rotate)
         used = used.contents.next
 
 
-def _decode_unused(unused, id_panels):
+def _decode_unused(params, unused):
     while unused:
-        yield common.Unused(panel=id_panels[unused.contents.panel.contents.id],
+        yield common.Unused(panel=params.panels[unused.contents.panel_id],
                             width=unused.contents.width,
                             height=unused.contents.height,
                             x=unused.contents.x,
@@ -126,19 +115,15 @@ class _Lib:
 
         self.opcut_panel_t = type('opcut_panel_t', (ctypes.Structure, ), {})
         self.opcut_panel_t._fields_ = [
-            ('id', ctypes.c_int),
             ('width', ctypes.c_double),
             ('height', ctypes.c_double),
-            ('next', ctypes.POINTER(self.opcut_panel_t)),
             ('area', ctypes.c_double)]
 
         self.opcut_item_t = type('opcut_item_t', (ctypes.Structure, ), {})
         self.opcut_item_t._fields_ = [
-            ('id', ctypes.c_int),
             ('width', ctypes.c_double),
             ('height', ctypes.c_double),
             ('can_rotate', ctypes.c_bool),
-            ('next', ctypes.POINTER(self.opcut_item_t)),
             ('area', ctypes.c_double)]
 
         self.opcut_params_t = type('opcut_params_t', (ctypes.Structure, ), {})
@@ -146,13 +131,15 @@ class _Lib:
             ('cut_width', ctypes.c_double),
             ('min_initial_usage', ctypes.c_bool),
             ('panels', ctypes.POINTER(self.opcut_panel_t)),
+            ('panels_len', ctypes.c_size_t),
             ('items', ctypes.POINTER(self.opcut_item_t)),
+            ('items_len', ctypes.c_size_t),
             ('panels_area', ctypes.c_double)]
 
         self.opcut_used_t = type('opcut_used_t', (ctypes.Structure, ), {})
         self.opcut_used_t._fields_ = [
-            ('panel', ctypes.POINTER(self.opcut_panel_t)),
-            ('item', ctypes.POINTER(self.opcut_item_t)),
+            ('panel_id', ctypes.c_size_t),
+            ('item_id', ctypes.c_size_t),
             ('x', ctypes.c_double),
             ('y', ctypes.c_double),
             ('rotate', ctypes.c_bool),
@@ -160,7 +147,7 @@ class _Lib:
 
         self.opcut_unused_t = type('opcut_unused_t', (ctypes.Structure, ), {})
         self.opcut_unused_t._fields_ = [
-            ('panel', ctypes.POINTER(self.opcut_panel_t)),
+            ('panel_id', ctypes.c_size_t),
             ('width', ctypes.c_double),
             ('height', ctypes.c_double),
             ('x', ctypes.c_double),
@@ -168,12 +155,6 @@ class _Lib:
             ('next', ctypes.POINTER(self.opcut_unused_t)),
             ('area', ctypes.c_double),
             ('initial', ctypes.c_bool)]
-
-        self.opcut_result_t = type('opcut_result_t', (ctypes.Structure, ), {})
-        self.opcut_result_t._fields_ = [
-            ('params', ctypes.POINTER(self.opcut_params_t)),
-            ('used', ctypes.POINTER(self.opcut_used_t)),
-            ('unused', ctypes.POINTER(self.opcut_unused_t))]
 
         functions = [
             (self.opcut_allocator_t_p,
@@ -184,28 +165,12 @@ class _Lib:
              'opcut_allocator_destroy',
              [self.opcut_allocator_t_p]),
 
-            (ctypes.POINTER(self.opcut_panel_t),
-             'opcut_panel_create',
-             [self.opcut_allocator_t_p, ctypes.c_int, ctypes.c_double,
-              ctypes.c_double, ctypes.POINTER(self.opcut_panel_t)]),
-
-            (ctypes.POINTER(self.opcut_item_t),
-             'opcut_item_create',
-             [self.opcut_allocator_t_p, ctypes.c_int, ctypes.c_double,
-              ctypes.c_double, ctypes.c_bool,
-              ctypes.POINTER(self.opcut_item_t)]),
-
-            (ctypes.POINTER(self.opcut_params_t),
-             'opcut_params_create',
-             [self.opcut_allocator_t_p, ctypes.c_double, ctypes.c_bool,
-              ctypes.POINTER(self.opcut_panel_t),
-              ctypes.POINTER(self.opcut_item_t)]),
-
             (ctypes.c_int,
              'opcut_calculate',
              [self.opcut_allocator_t_p, ctypes.c_int,
               ctypes.POINTER(self.opcut_params_t),
-              ctypes.POINTER(ctypes.POINTER(self.opcut_result_t))])
+              ctypes.POINTER(ctypes.POINTER(self.opcut_used_t)),
+              ctypes.POINTER(ctypes.POINTER(self.opcut_unused_t))])
         ]
 
         for restype, name, argtypes in functions:
