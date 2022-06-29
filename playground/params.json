@@ -1,5 +1,6 @@
 {
     "cut_width": 1,
+    "min_initial_usage": true,
     "panels": {
         "p1": {
             "width": 50,
@@ -8,8 +9,38 @@
     },
     "items": {
         "i1": {
+            "width": 1,
+            "height": 5,
+            "can_rotate": true
+        },
+        "i1_1": {
+            "width": 1,
+            "height": 5,
+            "can_rotate": true
+        },
+        "i1_2": {
+            "width": 1,
+            "height": 5,
+            "can_rotate": true
+        },
+        "i1_3": {
+            "width": 1,
+            "height": 5,
+            "can_rotate": true
+        },
+        "i1_4": {
+            "width": 1,
+            "height": 5,
+            "can_rotate": true
+        },
+        "i2": {
             "width": 5,
             "height": 5,
+            "can_rotate": true
+        },
+        "i3": {
+            "width": 10,
+            "height": 10,
             "can_rotate": true
         }
     }

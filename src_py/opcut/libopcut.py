@@ -31,7 +31,7 @@ def calculate(method: common.Method,
             raise common.UnresolvableError()
 
         if ret != _lib.OPCUT_SUCCESS:
-            raise Exception()
+            raise Exception("calculation error")
 
         used = list(_decode_used(params, native_used))
         unused = list(_decode_unused(params, native_unused))

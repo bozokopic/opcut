@@ -41,7 +41,7 @@ def create_argument_parser() -> argparse.ArgumentParser:
         '--output', metavar='PATH', type=Path, default=Path('-'),
         help=f"output result file path or - for stdout ({result_schema_id})")
     calculate.add_argument(
-        'params', type=Path, default=Path('-'),
+        'params', type=Path, default=Path('-'), nargs='?',
         help=f"input params file path or - for stdin ({params_schema_id})")
 
     generate = subparsers.add_parser('generate')

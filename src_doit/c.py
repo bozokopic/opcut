@@ -21,10 +21,13 @@ platforms = [common.local_platform]
 if common.local_platform == common.Platform.LINUX_X86_64:
     platforms.append(common.Platform.WINDOWS_AMD64)
 
+cc_flags = ['-fPIC', '-O2']
+# cc_flags = ['-fPIC', '-O0', '-ggdb']
+
 builds = [CBuild(src_paths=[*src_c_dir.rglob('*.c')],
                  build_dir=build_c_dir / platform.name.lower(),
                  platform=platform,
-                 cc_flags=['-fPIC', '-O2'])
+                 cc_flags=cc_flags)
           for platform in platforms]
 
 lib_paths = [src_py_dir / (f'opcut/_libopcut{get_lib_suffix(platform)}')
