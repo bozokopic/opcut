@@ -14,23 +14,23 @@
             "can_rotate": true
         },
         "i1_1": {
-            "width": 1,
+            "width": 10,
             "height": 5,
             "can_rotate": true
         },
         "i1_2": {
-            "width": 1,
-            "height": 5,
+            "width": 2,
+            "height": 4,
             "can_rotate": true
         },
         "i1_3": {
             "width": 1,
-            "height": 5,
+            "height": 8,
             "can_rotate": true
         },
         "i1_4": {
-            "width": 1,
-            "height": 5,
+            "width": 13,
+            "height": 20,
             "can_rotate": true
         },
         "i2": {

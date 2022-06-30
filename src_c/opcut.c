@@ -1,11 +1,10 @@
 #include "opcut.h"
 #include <unistd.h>
+#include <math.h>
 
 #define PAGE_SIZE 4096
 #define FITNESS_K 0.03
 
-typedef double (*sort_compare_fn)(opcut_params_t *params, size_t id1,
-                                  size_t id2);
 
 typedef struct mem_header_t {
     struct mem_header_t *next;
@@ -132,6 +131,23 @@ static void free_unused_until(opcut_allocator_t *a, opcut_unused_t *unused,
 }
 
 
+static inline double compare_item(opcut_params_t *params, size_t id1, size_t id2) {
+    return params->items[id1].area - params->items[id2].area;
+}
+
+
+static inline double compare_unused(opcut_unused_t *u1, opcut_unused_t *u2) {
+    return u1->area - u2->area;
+}
+
+
+static inline double compare_fitness(fitness_t *f1, fitness_t *f2) {
+    if (f1->unused_initial_count == f2->unused_initial_count)
+        return f1->fitness - f2->fitness;
+    return f1->unused_initial_count - f2->unused_initial_count;
+}
+
+
 static inline void swap_ids(size_t *ids, size_t pos1, size_t pos2) {
     size_t temp = ids[pos1];
     ids[pos1] = ids[pos2];
@@ -139,40 +155,65 @@ static inline void swap_ids(size_t *ids, size_t pos1, size_t pos2) {
 }
 
 
-static size_t partition_ids(opcut_params_t *params, sort_compare_fn cmp,
-                            size_t *ids, size_t start, size_t stop) {
+static size_t partition_item_ids(opcut_params_t *params,
+                            size_t *item_ids, ssize_t start, ssize_t stop) {
     ssize_t pivot = start - 1;
     for (size_t i = start; i < stop; ++i)
-        if (cmp(params, ids[i], ids[stop]) >= 0)
-            swap_ids(ids, ++pivot, i);
+        if (compare_item(params, item_ids[i], item_ids[stop]) >= 0)
+            swap_ids(item_ids, ++pivot, i);
     pivot += 1;
-    swap_ids(ids, pivot, stop);
+    swap_ids(item_ids, pivot, stop);
     return pivot;
 }
 
 
-static void sort_ids(opcut_params_t *params, sort_compare_fn cmp, size_t *ids,
-                     size_t start, size_t stop) {
-    if (start >= stop)
+static void sort_item_ids(opcut_params_t *params, size_t *item_ids,
+                     ssize_t start, ssize_t stop) {
+    if (start >= stop || stop < 0)
         return;
 
-    size_t pivot = partition_ids(params, cmp, ids, start, stop);
-    if (pivot)
-        sort_ids(params, cmp, ids, start, pivot - 1);
-    sort_ids(params, cmp, ids, pivot + 1, stop);
+    ssize_t pivot = partition_item_ids(params, item_ids, start, stop);
+    sort_item_ids(params, item_ids, start, pivot - 1);
+    sort_item_ids(params, item_ids, pivot + 1, stop);
 }
 
 
-static double compare_panels(opcut_params_t *params, size_t panel_id1,
-                             size_t panel_id2) {
-    return params->panels[panel_id1].area - params->panels[panel_id2].area;
+static int copy_unused_without(opcut_allocator_t *a, opcut_unused_t *exclude,
+                               opcut_unused_t *src, opcut_unused_t **dst) {
+    opcut_unused_t *unused = NULL;
+    for (opcut_unused_t *i = src; i; i = i->next) {
+        if (i == exclude)
+            continue;
+
+        opcut_unused_t *temp = mem_pool_alloc(a->unused);
+        if (!temp)
+            return OPCUT_ERROR;
+
+        *temp = *i;
+        temp->next = unused;
+        unused = temp;
+    }
+
+    *dst = NULL;
+    while (unused) {
+        opcut_unused_t *next = unused->next;
+        unused->next = *dst;
+        *dst = unused;
+        unused = next;
+    }
+
+    return OPCUT_SUCCESS;
 }
 
 
-static double compare_items(opcut_params_t *params, size_t item_id1,
-                            size_t item_id2) {
-    return params->items[item_id1].area - params->items[item_id2].area;
+static void insert_unused(opcut_unused_t **list, opcut_unused_t *el) {
+    while (*list && compare_unused(*list, el) <= 0)
+        list = &((*list)->next);
+
+    el->next = *list;
+    *list = el;
 }
+
 
 
 static size_t *create_initial_item_ids(opcut_allocator_t *a,
@@ -187,7 +228,7 @@ static size_t *create_initial_item_ids(opcut_allocator_t *a,
     for (size_t item_id = 0; item_id < params->items_len; ++item_id)
         item_ids[item_id] = item_id;
 
-    sort_ids(params, compare_items, item_ids, 0, params->items_len - 1);
+    sort_item_ids(params, item_ids, 0, params->items_len - 1);
 
     return item_ids;
 }
@@ -198,18 +239,8 @@ static opcut_unused_t *create_initial_unused(opcut_allocator_t *a,
     if (!params->panels_len)
         return NULL;
 
-    size_t *panel_ids = a->malloc(params->panels_len * sizeof(size_t));
-    if (!panel_ids)
-        return NULL;
-
-    for (size_t panel_id = 0; panel_id < params->panels_len; ++panel_id)
-        panel_ids[panel_id] = panel_id;
-
-    sort_ids(params, compare_panels, panel_ids, 0, params->panels_len - 1);
-
     opcut_unused_t *unused = NULL;
-    for (size_t i = 0; i < params->panels_len; ++i) {
-        size_t panel_id = panel_ids[i];
+    for (size_t panel_id = 0; panel_id < params->panels_len; ++panel_id) {
         opcut_panel_t *panel = params->panels + panel_id;
 
         opcut_unused_t *temp = mem_pool_alloc(a->unused);
@@ -227,18 +258,10 @@ static opcut_unused_t *create_initial_unused(opcut_allocator_t *a,
                                  .next = unused,
                                  .area = panel->area,
                                  .initial = true};
-        unused = temp;
+        insert_unused(&unused, temp);
     }
 
-    a->free(panel_ids);
     return unused;
-}
-
-
-static inline double compare_fitness(fitness_t *f1, fitness_t *f2) {
-    if (f1->unused_initial_count == f2->unused_initial_count)
-        return f1->fitness - f2->fitness;
-    return f1->unused_initial_count - f2->unused_initial_count;
 }
 
 
@@ -282,6 +305,8 @@ static void calculate_fitness(opcut_params_t *params, result_t *result,
         }
     }
 }
+
+
 
 
 static inline bool item_fits_unused(opcut_item_t *item, opcut_unused_t *unused,
@@ -336,7 +361,7 @@ static int cut_item_from_unused(opcut_allocator_t *a, opcut_params_t *params,
                              .next = result->unused,
                              .area = width * height,
                              .initial = false};
-        result->unused = new_unused;
+        insert_unused(&(result->unused), new_unused);
     }
 
     height = unused->height - item_height - params->cut_width;
@@ -354,43 +379,7 @@ static int cut_item_from_unused(opcut_allocator_t *a, opcut_params_t *params,
                              .next = result->unused,
                              .area = width * height,
                              .initial = false};
-        result->unused = new_unused;
-    }
-
-    if (result->unused && result->unused->next &&
-        result->unused->area > result->unused->next->area) {
-        opcut_unused_t *temp = result->unused->next;
-        result->unused->next = temp->next;
-        temp->next = result->unused;
-        result->unused = temp;
-    }
-
-    return OPCUT_SUCCESS;
-}
-
-
-static int copy_unused(opcut_allocator_t *a, result_t *result,
-                       opcut_unused_t *exclude) {
-    opcut_unused_t *unused = NULL;
-    for (opcut_unused_t *i = result->unused; i; i = i->next) {
-        if (i == exclude)
-            continue;
-
-        opcut_unused_t *temp = mem_pool_alloc(a->unused);
-        if (!temp)
-            return OPCUT_ERROR;
-
-        *temp = *i;
-        temp->next = unused;
-        unused = temp;
-    }
-
-    result->unused = NULL;
-    while (unused) {
-        opcut_unused_t *next = unused->next;
-        unused->next = result->unused;
-        result->unused = unused;
-        unused = next;
+        insert_unused(&(result->unused), new_unused);
     }
 
     return OPCUT_SUCCESS;
@@ -414,8 +403,10 @@ static int calculate_greedy(opcut_allocator_t *a, opcut_params_t *params,
                     continue;
 
                 for (size_t vertical = 0; vertical < 2; ++vertical) {
-                    result_t temp_result = *result;
-                    if (copy_unused(a, &temp_result, unused))
+                    result_t temp_result = {.used = result->used,
+                                            .unused = NULL};
+                    if (copy_unused_without(a, unused, result->unused,
+                                            &(temp_result.unused)))
                         return OPCUT_ERROR;
 
                     if (cut_item_from_unused(a, params, &temp_result, item_id,
@@ -427,8 +418,11 @@ static int calculate_greedy(opcut_allocator_t *a, opcut_params_t *params,
                         calculate_fitness(params, &temp_result, &temp_fitness);
 
                     } else {
-                        result_t greedy_result = temp_result;
-                        if (copy_unused(a, &greedy_result, temp_result.unused))
+                        result_t greedy_result = {.used = temp_result.used,
+                                                  .unused = NULL};
+                        if (copy_unused_without(a, temp_result.unused,
+                                                temp_result.unused,
+                                                &(greedy_result.unused)))
                             return OPCUT_ERROR;
 
                         int err = calculate_greedy(a, params, &greedy_result,
