@@ -191,9 +191,9 @@ def server(host: str,
         finally:
             await aio.uncancellable(server.async_close())
 
-    loop = aio.init_asyncio()
+    aio.init_asyncio()
     with contextlib.suppress(asyncio.CancelledError):
-        aio.run_asyncio(run(), loop=loop)
+        aio.run_asyncio(run())
 
 
 if __name__ == '__main__':
