@@ -1,6 +1,5 @@
 from pathlib import Path
 import subprocess
-import sys
 import tempfile
 
 from hat import json
@@ -9,6 +8,7 @@ from hat.doit.py import (build_wheel,
                          run_pytest,
                          run_flake8)
 from hat.doit.js import run_eslint
+from hat.doit.c import get_task_clang_format
 
 from .c import *  # NOQA
 from .dist import *  # NOQA
@@ -21,7 +21,7 @@ __all__ = ['task_clean_all',
            'task_check',
            'task_test',
            'task_ui',
-           'task_deps',
+           'task_node_modules',
            'task_format',
            'task_json_schema_repo',
            *c.__all__,
@@ -61,7 +61,6 @@ def task_wheel():
             description='Cutting stock problem optimizer',
             url='https://github.com/bozokopic/opcut',
             license=common.License.GPL3,
-            packages=['opcut'],
             console_scripts=['opcut = opcut.main:main'])
 
     return {'actions': [build],
@@ -75,7 +74,7 @@ def task_check():
     return {'actions': [(run_flake8, [src_py_dir]),
                         (run_flake8, [pytest_dir]),
                         (run_eslint, [src_js_dir])],
-            'task_dep': ['deps']}
+            'task_dep': ['node_modules']}
 
 
 def task_test():
@@ -107,22 +106,18 @@ def task_ui():
 
     return {'actions': [build],
             'pos_arg': 'args',
-            'task_dep': ['deps']}
+            'task_dep': ['node_modules']}
 
 
-def task_deps():
-    """Install dependencies"""
+def task_node_modules():
+    """Install node modules"""
     return {'actions': ['yarn install --silent']}
 
 
 def task_format():
     """Format"""
-    files = [*Path('src_c').rglob('*.c'),
-             *Path('src_c').rglob('*.h')]
-    for f in files:
-        yield {'name': str(f),
-               'actions': [f'clang-format -style=file -i {f}'],
-               'file_dep': [f]}
+    yield from get_task_clang_format([*Path('src_c').rglob('*.c'),
+                                      *Path('src_c').rglob('*.h')])
 
 
 def task_json_schema_repo():

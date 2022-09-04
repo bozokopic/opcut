@@ -127,15 +127,15 @@ creates wheel package inside `build` directory.
 JSON Schema
 -----------
 
-.. literalinclude:: schemas/opcut.yaml
-    :language: yaml
+.. include:: schemas/opcut.yaml
+    :code: yaml
 
 
 OpenAPI
 -------
 
-.. literalinclude:: schemas/openapi.yaml
-    :language: yaml
+.. include:: schemas/openapi.yaml
+    :code: yaml
 
 
 License
