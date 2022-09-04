@@ -63,9 +63,9 @@ Usage
 For additional command line arguments, run ``opcut --help`` or
 ``opcut <action> --help``.
 
-JSON schema describing data structures is available at `schemas/opcut.yaml`_.
+JSON schema describing data structures is available at `<schemas/opcut.yaml>`_.
 
-OpenAPI definition is available at `schemas/openapi.yaml`_.
+OpenAPI definition is available at `<schemas/openapi.yaml>`_.
 
 
 `opcut calculate`
