@@ -12,6 +12,8 @@ panels and guillotine cuts (end-to-end cuts). This project includes:
     * REST service API (OpenAPI definition)
     * single-page web application front-end
 
+Git repository is available at `<https://github.com/bozokopic/opcut.git>`_.
+
 
 Runtime requirements
 --------------------
@@ -60,6 +62,10 @@ Usage
 
 For additional command line arguments, run ``opcut --help`` or
 ``opcut <action> --help``.
+
+JSON schema describing data structures is available at `schemas/opcut.yaml`_.
+
+OpenAPI definition is available at `schemas/openapi.yaml`_.
 
 
 `opcut calculate`
@@ -124,18 +130,34 @@ Default task::
 creates wheel package inside `build` directory.
 
 
-JSON Schema
------------
+TODO
+----
 
-.. include:: schemas/opcut.yaml
-    :code: yaml
+* unit tests
+* changelog
+* alternative hosting (https://opcut.herokuapp.com is shutting down)
+* mailing list
+* documentation
+* roadmap
 
 
-OpenAPI
--------
+Contributing
+------------
 
-.. include:: schemas/openapi.yaml
-    :code: yaml
+This project is currently in "proof of concept" state and is not yet
+recommended for production usage.
+
+Any kind of help in development of this project is appreciated.
+
+Issues and feature requests can be submitted to
+`issue tracker <https://github.com/bozokopic/opcut/issues>`_.
+
+Repository changes can be sent as patches over email (Github pull request are
+also acceptable until dedicated mailing list is set up). Changes containing
+new functionality or other significant changes should be discussed prior
+to sending patch.
+
+For any questions regarding this project, contact me at bozo@kopic.xyz.
 
 
 License
