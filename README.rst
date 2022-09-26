@@ -1,7 +1,7 @@
 opcut
 =====
 
-`https://opcut.kopic.xyz/`_
+`<https://opcut.kopic.xyz/>`_
 
 `opcut` is cutting stock problem optimizer
 (`https://en.wikipedia.org/wiki/Cutting_stock_problem`) utilizing multiple
@@ -14,7 +14,7 @@ panels and guillotine cuts (end-to-end cuts). This project includes:
 
 Git repository is available at `<https://github.com/bozokopic/opcut.git>`_.
 
-Public instance `https://opcut.kopic.xyz/`_ is constrained with limited
+Public instance `<https://opcut.kopic.xyz/>`_ is constrained with limited
 resources and should be used only for functionality evaluation purposes.
 In case of complex and repetitive calculations, please consider running
 self hosted instance.
