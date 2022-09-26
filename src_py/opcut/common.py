@@ -1,5 +1,5 @@
-from pathlib import Path
 import enum
+import importlib.resources
 import typing
 
 from hat import json
@@ -7,11 +7,10 @@ from hat import json
 
 mm: float = 72 / 25.4
 
-package_path: Path = Path(__file__).parent
-
-json_schema_repo: json.SchemaRepository = json.SchemaRepository(
-    json.json_schema_repo,
-    json.SchemaRepository.from_json(package_path / 'json_schema_repo.json'))
+with importlib.resources.path(__package__, 'json_schema_repo.json') as _path:
+    json_schema_repo: json.SchemaRepository = json.SchemaRepository(
+        json.json_schema_repo,
+        json.SchemaRepository.from_json(_path))
 
 
 class Panel(typing.NamedTuple):

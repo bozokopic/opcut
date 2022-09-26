@@ -131,7 +131,8 @@ static void free_unused_until(opcut_allocator_t *a, opcut_unused_t *unused,
 }
 
 
-static inline double compare_item(opcut_params_t *params, size_t id1, size_t id2) {
+static inline double compare_item(opcut_params_t *params, size_t id1,
+                                  size_t id2) {
     return params->items[id1].area - params->items[id2].area;
 }
 
@@ -155,8 +156,8 @@ static inline void swap_ids(size_t *ids, size_t pos1, size_t pos2) {
 }
 
 
-static size_t partition_item_ids(opcut_params_t *params,
-                            size_t *item_ids, ssize_t start, ssize_t stop) {
+static size_t partition_item_ids(opcut_params_t *params, size_t *item_ids,
+                                 ssize_t start, ssize_t stop) {
     ssize_t pivot = start - 1;
     for (size_t i = start; i < stop; ++i)
         if (compare_item(params, item_ids[i], item_ids[stop]) >= 0)
@@ -168,7 +169,7 @@ static size_t partition_item_ids(opcut_params_t *params,
 
 
 static void sort_item_ids(opcut_params_t *params, size_t *item_ids,
-                     ssize_t start, ssize_t stop) {
+                          ssize_t start, ssize_t stop) {
     if (start >= stop || stop < 0)
         return;
 
@@ -213,7 +214,6 @@ static void insert_unused(opcut_unused_t **list, opcut_unused_t *el) {
     el->next = *list;
     *list = el;
 }
-
 
 
 static size_t *create_initial_item_ids(opcut_allocator_t *a,
@@ -305,8 +305,6 @@ static void calculate_fitness(opcut_params_t *params, result_t *result,
         }
     }
 }
-
-
 
 
 static inline bool item_fits_unused(opcut_item_t *item, opcut_unused_t *unused,

@@ -1,5 +1,6 @@
-from pathlib import Path
 import asyncio
+import contextlib
+import importlib.resources
 import subprocess
 import sys
 
@@ -10,27 +11,29 @@ import aiohttp.web
 from opcut import common
 
 
-static_dir: Path = common.package_path / 'ui'
-
-
 async def create(host: str,
                  port: int
                  ) -> 'Server':
     server = Server()
     server._async_group = aio.Group()
 
-    app = aiohttp.web.Application()
-    app.add_routes([
-        aiohttp.web.get('/', server._root_handler),
-        aiohttp.web.post('/calculate', server._calculate_handler),
-        aiohttp.web.post('/generate', server._generate_handler),
-        aiohttp.web.static('/', static_dir)])
-
-    runner = aiohttp.web.AppRunner(app)
-    await runner.setup()
-    server.async_group.spawn(aio.call_on_cancel, runner.cleanup)
-
     try:
+        exit_stack = contextlib.ExitStack()
+        static_dir = exit_stack.enter_context(
+            importlib.resources.path(__package__, 'ui'))
+        server.async_group.spawn(aio.call_on_cancel, exit_stack.close)
+
+        app = aiohttp.web.Application()
+        app.add_routes([
+            aiohttp.web.get('/', server._root_handler),
+            aiohttp.web.post('/calculate', server._calculate_handler),
+            aiohttp.web.post('/generate', server._generate_handler),
+            aiohttp.web.static('/', static_dir)])
+
+        runner = aiohttp.web.AppRunner(app)
+        await runner.setup()
+        server.async_group.spawn(aio.call_on_cancel, runner.cleanup)
+
         site = aiohttp.web.TCPSite(runner=runner,
                                    host=host,
                                    port=port,

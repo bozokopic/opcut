@@ -44,10 +44,11 @@ json_schema_repo_path = src_py_dir / 'opcut/json_schema_repo.json'
 
 def task_clean_all():
     """Clean all"""
-    return {'actions': [(common.rm_rf, [build_dir,
-                                        ui_dir,
-                                        json_schema_repo_path,
-                                        src_py_dir / 'opcut/bin'])]}
+    return {'actions': [(common.rm_rf, [
+        build_dir,
+        ui_dir,
+        json_schema_repo_path,
+        *src_py_dir.glob('opcut/_libopcut.*')])]}
 
 
 def task_wheel():

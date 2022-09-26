@@ -1,7 +1,0 @@
-build:
-    docker:
-        web:
-            dockerfile: Dockerfile.heroku
-            target: opcut-run
-run:
-    web: opcut server --port $PORT

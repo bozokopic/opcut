@@ -1,7 +1,7 @@
 
 export const main = {
     form: {
-        method: 'forward_greedy',
+        method: 'forward_greedy_native',
         cut_width: 0.3,
         min_initial_usage: true,
         panels: [],
