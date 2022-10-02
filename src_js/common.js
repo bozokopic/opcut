@@ -29,9 +29,13 @@ export async function calculate() {
         if (!res.ok)
             throw await res.text();
         const result = await res.json();
+        const selected = {
+            panel: Object.keys(result.params.panels)[0],
+            item: null
+        };
         r.change(u.pipe(
             u.set('result', result),
-            u.set('selected', states.main.selected)
+            u.set('selected', selected)
         ));
         if (!result)
             throw 'Could not resolve calculation';

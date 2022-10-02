@@ -94,10 +94,10 @@ class Server(aio.Resource):
 
         output = await _generate(output_format, panel, result)
 
-        if output_format == common.OutputType.PDF:
+        if output_format == common.OutputFormat.PDF:
             content_type = 'application/pdf'
 
-        elif output_format == common.OutputType.SVG:
+        elif output_format == common.OutputFormat.SVG:
             content_type = 'image/svg+xml'
 
         else:
