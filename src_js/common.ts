@@ -1,19 +1,107 @@
-import * as URI from 'uri-js';
-import FileSaver from 'file-saver';
-import iziToast from 'izitoast';
-import Papa from 'papaparse';
-
 import r from '@hat-open/renderer';
 import * as u from '@hat-open/util';
 
-import * as states from './states';
+import * as csv from './csv';
+import * as file from './file';
+import * as notification from './notification';
 
 
-const calculateUrl = URI.resolve(window.location.href, './calculate');
-const generateUrl = URI.resolve(window.location.href, './generate');
+export type FormPanel = {
+    name: string,
+    quantity: number,
+    width: number,
+    height: number
+};
+
+export type FormItem = {
+    name: string,
+    quantity: number,
+    width: number,
+    height: number
+    can_rotate: boolean
+};
+
+export type Params = {
+    cut_width: number,
+    min_initial_usage: boolean,
+    panels: Record<string, {
+        width: number,
+        height: number
+    }>,
+    items: Record<string, {
+        width: number,
+        height: number
+        can_rotate: boolean
+    }>
+};
+
+export type Used = {
+    panel: string,
+    item: string,
+    x: number,
+    y: number,
+    rotate: boolean
+};
+
+export type Unused = {
+    panel: string,
+    width: number,
+    height: number,
+    x: number,
+    y: number
+};
+
+export type Result = {
+    params: Params,
+    used: Used[],
+    unused: Unused[]
+};
+
+
+const calculateUrl = String(new URL('./calculate', window.location.href));
+const generateUrl = String(new URL('./generate', window.location.href));
 
 let panelCounter = 0;
 let itemCounter = 0;
+
+
+export const defaultState = {
+    form: {
+        method: 'forward_greedy_native',
+        cut_width: 0.3,
+        min_initial_usage: true,
+        panels: [],
+        items: []
+    },
+    result: null,
+    selected: {
+        panel: null,
+        item: null
+    },
+    svg: {
+        font_size: '1',
+        show_names: true,
+        show_dimensions: false
+    },
+    calculating: false
+};
+
+
+const defaultFormPanel: FormPanel = {
+    name: 'Panel',
+    quantity: 1,
+    width: 100,
+    height: 100
+};
+
+
+const defaultFormItem: FormItem = {
+    name: 'Item',
+    quantity: 1,
+    width: 10,
+    height: 10,
+    can_rotate: true
+};
 
 
 export async function calculate() {
@@ -39,9 +127,9 @@ export async function calculate() {
         ));
         if (!result)
             throw 'Could not resolve calculation';
-        showNotification('success', 'New calculation available');
+        notification.show('success', 'New calculation available');
     } catch (e) {
-        showNotification('error', e);
+        notification.show('error', String(e));
     } finally {
         r.set('calculating', false);
     }
@@ -59,75 +147,85 @@ export async function generate() {
         if (!res.ok)
             throw await res.text();
         const blob = await res.blob();
-        FileSaver.saveAs(blob, 'output.pdf');
+        const f = new File([blob], 'output.pdf');
+        file.save(f);
     } catch (e) {
-        showNotification('error', e);
+        notification.show('error', String(e));
     }
 }
 
 
 export async function csvImportPanels() {
-    const panels = await csvImport({
+    const f = await file.load('.csv');
+    if (f == null)
+        return;
+    const panels = await csv.decode(f, {
         name: String,
         quantity: u.strictParseInt,
         width: u.strictParseFloat,
         height: u.strictParseFloat
-    });
-    r.change(['form', 'panels'], x => x.concat(panels));
+    }) as FormPanel[];
+    r.change(['form', 'panels'], x => (x as FormPanel[]).concat(panels));
 }
 
 
 export function csvExportPanels() {
-    const panels = r.get('form', 'panels');
-    const csvData = Papa.unparse(panels);
-    const blob = new Blob([csvData], {type: 'text/csv'});
-    FileSaver.saveAs(blob, 'panels.csv');
+    const panels = r.get('form', 'panels') as FormPanel[];
+    const blob = csv.encode(panels);
+    const f = new File([blob], 'panels.csv');
+    file.save(f);
 }
 
 
 export async function csvImportItems() {
-    const items = await csvImport({
+    const f = await file.load('.csv');
+    if (f == null)
+        return;
+    const items = await csv.decode(f, {
         name: String,
         quantity: u.strictParseInt,
         width: u.strictParseFloat,
         height: u.strictParseFloat,
         can_rotate: u.equals('true')
-    });
-    r.change(['form', 'items'], x => x.concat(items));
+    }) as FormItem[];
+    r.change(['form', 'items'], x => (x as FormItem[]).concat(items));
 }
 
 
 export function csvExportItems() {
-    const items = r.get('form', 'items');
-    const csvData = Papa.unparse(items);
-    const blob = new Blob([csvData], {type: 'text/csv'});
-    FileSaver.saveAs(blob, 'items.csv');
+    const items = r.get('form', 'items') as FormItem[];
+    const blob = csv.encode(items);
+    const f = new File([blob], 'items.csv');
+    file.save(f);
 }
 
 
 export function addPanel() {
     panelCounter += 1;
-    const panel = u.set('name', `Panel${panelCounter}`, states.panel);
-    r.change(['form', 'panels'], u.append(panel));
+    const panel = u.set('name', `Panel${panelCounter}`, defaultFormPanel);
+    r.change(['form', 'panels'], u.append(panel) as any);
 }
 
 
 export function addItem() {
     itemCounter += 1;
-    const item = u.set('name', `Item${itemCounter}`, states.item);
-    r.change(['form', 'items'], u.append(item));
+    const item = u.set('name', `Item${itemCounter}`, defaultFormItem);
+    r.change(['form', 'items'], u.append(item) as any);
 }
 
 
 function createCalculateParams() {
-    const cutWidth = u.strictParseFloat(r.get('form', 'cut_width'));
+    const cutWidth = r.get('form', 'cut_width') as number;
     if (cutWidth < 0)
         throw 'Invalid cut width';
 
     const minInitialUsage = r.get('form', 'min_initial_usage');
 
-    const panels = {};
-    for (const panel of r.get('form', 'panels')) {
+    const panels: Record<string, {
+        width: number,
+        height: number
+    }> = {};
+    for (const panel of (r.get('form', 'panels') as FormPanel[])) {
         if (!panel.name)
             throw 'Invalid panel name';
         if (panel.quantity < 1)
@@ -146,8 +244,12 @@ function createCalculateParams() {
     if (u.equals(panels, {}))
         throw 'No panels defined';
 
-    const items = {};
-    for (const item of r.get('form', 'items')) {
+    const items: Record<string, {
+        width: number,
+        height: number,
+        can_rotate: boolean
+    }> = {};
+    for (const item of (r.get('form', 'items') as FormItem[])) {
         if (!item.name)
             throw 'Invalid item name';
         if (item.quantity < 1)
@@ -177,65 +279,4 @@ function createCalculateParams() {
         panels: panels,
         items: items
     };
-}
-
-
-function showNotification(type, message) {
-    iziToast[type]({message: message});
-}
-
-
-async function csvImport(header) {
-    const file = await loadFile('.csv');
-    if (!file)
-        return [];
-
-    const data = await new Promise(resolve => {
-        Papa.parse(file, {
-            header: true,
-            complete: result => resolve(result.data)
-        });
-    });
-
-    const result = [];
-    for (const i of data) {
-        let element = {};
-        for (const [k, v] of Object.entries(header)) {
-            if (!(k in i)) {
-                element = null;
-                break;
-            }
-            element[k] = v(i[k]);
-        }
-        if (element)
-            result.push(element);
-    }
-    return result;
-}
-
-
-async function loadFile(ext) {
-    const el = document.createElement('input');
-    el.style = 'display: none';
-    el.type = 'file';
-    el.accept = ext;
-    document.body.appendChild(el);
-
-    const promise = new Promise(resolve => {
-        const listener = evt => {
-            resolve(u.get(['files', 0], evt.target));
-        };
-        el.addEventListener('change', listener);
-
-        // TODO blur not fired on close???
-        el.addEventListener('blur', listener);
-
-        el.click();
-    });
-
-    try {
-        return await promise;
-    } finally {
-        document.body.removeChild(el);
-    }
 }

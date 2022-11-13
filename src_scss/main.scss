@@ -26,11 +26,13 @@ body {
         & > .panel-resizer {
             cursor: ew-resize;
             width: 0.4rem;
+            flex-shrink: 0;
         }
 
         & > .left-panel {
             @include shadow-4dp;
             width: 35rem;
+            flex-shrink: 0;
             display: flex;
             flex-direction: column;
             background-color: $color-grey-100;
@@ -157,16 +159,19 @@ body {
         & > .right-panel {
             @include shadow-4dp;
             width: 20rem;
+            flex-shrink: 0;
             display: flex;
             flex-direction: column;
             background-color: $color-grey-100;
             overflow: auto;
 
-            .toolbar {
-                display: flex;
-                justify-content: center;
+            .form {
+                display: grid;
+                grid-template-columns: auto 1fr;
+                grid-column-gap: 0.5rem;
+                grid-row-gap: 0.3rem;
+                align-items: center;
                 margin: 1rem;
-                flex-shrink: 0;
             }
 
             .panel {

@@ -1,4 +1,4 @@
-aiohttp ~= 3.8.1
-hat-aio ~= 0.7.0
-hat-json ~= 0.5.10
+aiohttp ~= 3.8.3
+hat-aio ~= 0.7.2
+hat-json ~= 0.6.7
 pycairo ~= 1.21.0

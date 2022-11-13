@@ -1,18 +1,18 @@
 import * as u from '@hat-open/util';
 import r from '@hat-open/renderer';
 
-import * as states from './states';
-import * as vt from './vt';
+import * as common from './common';
+import * as vt from './vt/index';
 
 import '../src_scss/main.scss';
 
 
 function main() {
     const root = document.body.appendChild(document.createElement('div'));
-    r.init(root, states.main, vt.main);
+    r.init(root, common.defaultState, vt.main);
 }
 
 
 window.addEventListener('load', main);
-window.r = r;
-window.u = u;
+(window as any).r = r;
+(window as any).u = u;
