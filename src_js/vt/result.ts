@@ -41,6 +41,26 @@ export function main(): u.VNodeChild[] {
                 'Show dimensions',
                 r.get('svg', 'show_dimensions') as boolean,
                 val => r.set(['svg', 'show_dimensions'], val)
+            ),
+            ['label', 'Cut color'],
+            input.color(
+                r.get('svg', 'cut_color') as string,
+                val => r.set(['svg', 'cut_color'], val)
+            ),
+            ['label', 'Item color'],
+            input.color(
+                r.get('svg', 'item_color') as string,
+                val => r.set(['svg', 'item_color'], val)
+            ),
+            ['label', 'Selected color'],
+            input.color(
+                r.get('svg', 'selected_color') as string,
+                val => r.set(['svg', 'selected_color'], val)
+            ),
+            ['label', 'Unused color'],
+            input.color(
+                r.get('svg', 'unused_color') as string,
+                val => r.set(['svg', 'unused_color'], val)
             )
         ],
         Object.keys(result.params.panels).map(panelResult)

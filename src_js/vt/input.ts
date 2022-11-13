@@ -84,3 +84,19 @@ export function select(
         ])
     ];
 }
+
+
+export function color(
+    value: string,
+    onChange: (val: string) => void
+): u.VNode {
+    return ['input', {
+        props: {
+            type: 'color',
+            value: value
+        },
+        on: {
+            change: (evt: Event) => onChange((evt.target as HTMLInputElement).value)
+        }
+    }];
+}

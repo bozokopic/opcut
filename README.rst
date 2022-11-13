@@ -138,7 +138,6 @@ creates wheel package inside `build` directory.
 TODO
 ----
 
-* ui svg rewrite
 * unit tests
 * changelog
 * alternative hosting (https://opcut.herokuapp.com is shutting down)

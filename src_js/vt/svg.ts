@@ -16,16 +16,17 @@ export function main(): u.VNode | null {
     const panel = result.params.panels[selected.panel];
     const used = u.filter(i => i.panel == selected.panel, result.used);
     const unused = u.filter(i => i.panel == selected.panel, result.unused);
-    const panelColor = 'rgb(100,100,100)';
-    const itemColor = 'rgb(250,250,250)';
-    const selectedItemColor = 'rgb(200,140,140)';
-    const unusedColor = 'rgb(238,238,238)';
+
     const fontSize = String(
         Math.max(panel.height, panel.width) * 0.02 *
         u.strictParseFloat(r.get('svg', 'font_size') as string)
     );
     const showNames = r.get('svg', 'show_names');
     const showDimensions = r.get('svg', 'show_dimensions');
+    const cutColor = r.get('svg', 'cut_color');
+    const itemColor = r.get('svg', 'item_color');
+    const selectedItemColor = r.get('svg', 'selected_color');
+    const unusedColor = r.get('svg', 'unused_color');
 
     return ['svg', {
         attrs: {
@@ -41,7 +42,7 @@ export function main(): u.VNode | null {
                 width: String(panel.width),
                 height: String(panel.height),
                 'stroke-width': '0',
-                fill: panelColor
+                fill: cutColor
             }}
         ],
         used.map(used => {

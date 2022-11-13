@@ -81,7 +81,11 @@ export const defaultState = {
     svg: {
         font_size: '1',
         show_names: true,
-        show_dimensions: false
+        show_dimensions: false,
+        cut_color: '#646464',
+        item_color: '#fafafa',
+        selected_color: '#c88c8c',
+        unused_color: '#eeeeee'
     },
     calculating: false
 };
