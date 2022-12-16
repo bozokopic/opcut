@@ -12,9 +12,11 @@ from opcut import common
 
 
 async def create(host: str,
-                 port: int
+                 port: int,
+                 timeout: float
                  ) -> 'Server':
     server = Server()
+    server._timeout = timeout
     server._async_group = aio.Group()
 
     try:
@@ -71,8 +73,13 @@ class Server(aio.Resource):
         params = common.params_from_json(data)
 
         try:
-            result = await _calculate(method, params)
+            result = await asyncio.wait_for(_calculate(method, params),
+                                            self._timeout)
             return aiohttp.web.json_response(result)
+
+        except asyncio.TimeoutError:
+            return aiohttp.web.Response(status=400,
+                                        text='Request timeout')
 
         except common.UnresolvableError:
             return aiohttp.web.Response(status=400,
@@ -92,7 +99,13 @@ class Server(aio.Resource):
         panel = request.query.get('panel')
         result = common.result_from_json(data)
 
-        output = await _generate(output_format, panel, result)
+        try:
+            output = await asyncio.wait_for(
+                _generate(output_format, panel, result), self._timeout)
+
+        except asyncio.TimeoutError:
+            return aiohttp.web.Response(status=400,
+                                        text='Request timeout')
 
         if output_format == common.OutputFormat.PDF:
             content_type = 'application/pdf'
@@ -116,13 +129,23 @@ async def _calculate(method, params):
                                              stdin=subprocess.PIPE,
                                              stdout=subprocess.PIPE,
                                              stderr=subprocess.PIPE)
-    stdout_data, stderr_data = await p.communicate(stdint_data)
+
+    stderr_data = None
+    try:
+        stdout_data, stderr_data = await p.communicate(stdint_data)
+
+    finally:
+        if p.returncode is None:
+            p.terminate()
 
     if p.returncode == 0:
         return json.decode(stdout_data.decode('utf-8'))
 
     if p.returncode == 42:
         raise common.UnresolvableError()
+
+    if not stderr_data:
+        raise Exception()
 
     raise Exception(stderr_data.decode('utf-8'))
 
@@ -137,9 +160,19 @@ async def _generate(output_format, panel, result):
                                              stdin=subprocess.PIPE,
                                              stdout=subprocess.PIPE,
                                              stderr=subprocess.PIPE)
-    stdout_data, stderr_data = await p.communicate(stdint_data)
+
+    stderr_data = None
+    try:
+        stdout_data, stderr_data = await p.communicate(stdint_data)
+
+    finally:
+        if p.returncode is None:
+            p.terminate()
 
     if p.returncode == 0:
         return stdout_data
+
+    if not stderr_data:
+        raise Exception()
 
     raise Exception(stderr_data.decode('utf-8'))

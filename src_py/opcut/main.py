@@ -70,6 +70,9 @@ def create_argument_parser() -> argparse.ArgumentParser:
         '--port', metavar='PORT', type=int, default=8080,
         help="listening TCP port (default 8080)")
     server.add_argument(
+        '--timeout', metavar='T', type=float, default=300,
+        help="single request timeout in seconds (default 300)")
+    server.add_argument(
         '--log-level', metavar='LEVEL', default='info',
         choices=['critical', 'error', 'warning', 'info', 'debug', 'notset'],
         help="log level (default info)")
@@ -98,6 +101,7 @@ def main():
     elif args.action == 'server':
         server(host=args.host,
                port=args.port,
+               timeout=args.timeout,
                log_level=args.log_level)
 
     else:
@@ -165,6 +169,7 @@ def generate(input_format: typing.Optional[json.Format],
 
 def server(host: str,
            port: int,
+           timeout: float,
            log_level: str):
     logging.config.dictConfig({
         'version': 1,
@@ -183,7 +188,8 @@ def server(host: str,
 
     async def run():
         server = await opcut.server.create(host=host,
-                                           port=port)
+                                           port=port,
+                                           timeout=timeout)
 
         try:
             await server.wait_closing()
