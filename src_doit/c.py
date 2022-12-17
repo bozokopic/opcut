@@ -18,7 +18,7 @@ src_py_dir = Path('src_py')
 build_c_dir = build_dir / 'c'
 
 platforms = [common.local_platform]
-if common.local_platform == common.Platform.LINUX_X86_64:
+if common.local_platform == common.Platform.LINUX_GNU_X86_64:
     platforms.append(common.Platform.WINDOWS_AMD64)
 
 cc_flags = ['-fPIC', '-O2']
