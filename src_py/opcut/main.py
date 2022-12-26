@@ -20,13 +20,19 @@ result_schema_id: str = 'opcut://opcut.yaml#/definitions/result'
 
 
 def create_argument_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        prog='opcut',
+        description='cutting stock problem optimizer with web interface',
+        epilog='Enter %(prog)s argument --help for more options')
+
     subparsers = parser.add_subparsers(dest='action')
 
     def enum_values(enum_cls):
         return ', '.join(str(i.value) for i in enum_cls)
 
-    calculate = subparsers.add_parser('calculate')
+    calculate = subparsers.add_parser(
+        'calculate',
+        help='Outputs the optimal stock cuts as a text file.')
     calculate.add_argument(
         '--method', metavar='METHOD', type=common.Method,
         default=common.Method.FORWARD_GREEDY,
@@ -44,7 +50,9 @@ def create_argument_parser() -> argparse.ArgumentParser:
         'params', type=Path, default=Path('-'), nargs='?',
         help=f"input params file path or - for stdin ({params_schema_id})")
 
-    generate = subparsers.add_parser('generate')
+    generate = subparsers.add_parser(
+        'generate',
+        help='Renders a cut list as an image file.')
     generate.add_argument(
         '--input-format', metavar='FORMAT', type=json.Format, default=None,
         help=f"input result format ({enum_values(json.Format)})")
@@ -62,7 +70,9 @@ def create_argument_parser() -> argparse.ArgumentParser:
         'result', type=Path, default=Path('-'), nargs='?',
         help=f"input result file path or - for stdin ({result_schema_id})")
 
-    server = subparsers.add_parser('server')
+    server = subparsers.add_parser(
+        'server',
+        help='Run a web server with user interface')
     server.add_argument(
         '--host', metavar='HOST', default='0.0.0.0',
         help="listening host name (default 0.0.0.0)")
@@ -82,6 +92,7 @@ def create_argument_parser() -> argparse.ArgumentParser:
 
 def main():
     parser = create_argument_parser()
+
     args = parser.parse_args()
 
     if args.action == 'calculate':
@@ -105,7 +116,8 @@ def main():
                log_level=args.log_level)
 
     else:
-        raise ValueError('unsupported action')
+        parser.print_help()
+        sys.exit(0)
 
 
 def calculate(method: common.Method,
