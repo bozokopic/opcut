@@ -34,14 +34,29 @@ Runtime requirements
 Install
 -------
 
-::
+Archlinux
+'''''''''
+
+Opcut is available as `opcut <https://aur.archlinux.org/packages/opcut>`_
+package at AUR::
+
+    $ yay -S opcut
+
+
+Windows
+'''''''
+
+Windows distribution, with embedded python, is available at
+`<https://github.com/bozokopic/opcut/releases>`_
+
+
+Python wheel
+''''''''''''
+
+Opcut is available as `opcut <https://pypi.org/project/opcut/>`_ wheel at
+PyPI::
 
     $ pip install opcut
-
-.. note::
-
-    Windows distribution, with embedded python, is available at
-    `https://github.com/bozokopic/opcut/releases`
 
 
 Usage
