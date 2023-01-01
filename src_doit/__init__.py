@@ -22,6 +22,7 @@ __all__ = ['task_clean_all',
            'task_wheel',
            'task_check',
            'task_test',
+           'task_docs',
            'task_ui',
            'task_node_modules',
            'task_format',
@@ -39,6 +40,7 @@ docs_dir = Path('docs')
 schemas_dir = Path('schemas')
 node_modules_dir = Path('node_modules')
 
+build_docs_dir = build_dir / 'docs'
 build_py_dir = build_dir / 'py'
 ui_dir = src_py_dir / 'opcut/ui'
 ui_docs_dir = ui_dir / 'docs'
@@ -89,6 +91,17 @@ def task_test():
             'task_dep': ['json_schema_repo']}
 
 
+def task_docs():
+    """Build documentation"""
+
+    def build():
+        build_sphinx(src_dir=docs_dir,
+                     dst_dir=build_docs_dir,
+                     project='opcut')
+
+    return {'actions': [build]}
+
+
 def task_ui():
     """Build UI"""
 
@@ -98,9 +111,11 @@ def task_ui():
         common.cp_r(src_static_dir, ui_dir)
         common.cp_r(schemas_dir, ui_dir)
 
-        build_sphinx(src_dir=docs_dir,
-                     dst_dir=ui_docs_dir,
-                     project='opcut')
+        common.mkdir_p(ui_docs_dir)
+        for i in build_docs_dir.glob('*'):
+            if i.name.startswith('.'):
+                continue
+            common.cp_r(i, ui_docs_dir)
 
         with tempfile.TemporaryDirectory() as tmpdir:
             tmpdir = Path(tmpdir)
@@ -115,7 +130,8 @@ def task_ui():
 
     return {'actions': [build],
             'pos_arg': 'args',
-            'task_dep': ['node_modules']}
+            'task_dep': ['docs',
+                         'node_modules']}
 
 
 def task_node_modules():
