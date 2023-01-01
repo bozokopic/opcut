@@ -4,6 +4,7 @@ import tempfile
 
 from hat import json
 from hat.doit import common
+from hat.doit.docs import build_sphinx
 from hat.doit.js import (ESLintConf,
                          run_eslint)
 from hat.doit.py import (build_wheel,
@@ -40,6 +41,7 @@ node_modules_dir = Path('node_modules')
 
 build_py_dir = build_dir / 'py'
 ui_dir = src_py_dir / 'opcut/ui'
+ui_docs_dir = ui_dir / 'docs'
 json_schema_repo_path = src_py_dir / 'opcut/json_schema_repo.json'
 
 
@@ -95,6 +97,11 @@ def task_ui():
         common.rm_rf(ui_dir)
         common.cp_r(src_static_dir, ui_dir)
         common.cp_r(schemas_dir, ui_dir)
+
+        build_sphinx(src_dir=docs_dir,
+                     dst_dir=ui_docs_dir,
+                     project='opcut')
+
         with tempfile.TemporaryDirectory() as tmpdir:
             tmpdir = Path(tmpdir)
             config_path = tmpdir / 'webpack.config.js'

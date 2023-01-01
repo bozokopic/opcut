@@ -10,12 +10,21 @@ export function main(): u.VNodeChild[] {
     return [
         ['div.header',
             ['span.title', 'OPCUT'],
-            ['a.github', {
+            ['a.icon', {
                 props: {
                     title: 'GitHub',
-                    href: 'https://github.com/bozokopic/opcut'
+                    href: 'https://github.com/bozokopic/opcut',
+                    target: '_blank'
                 }},
                 ['span.fa.fa-github']
+            ],
+            ['a.icon', {
+                props: {
+                    title: 'Documentation',
+                    href: 'docs/index.html',
+                    target: '_blank'
+                }},
+                ['span.fa.fa-question-circle']
             ]
         ],
         ['div.form',

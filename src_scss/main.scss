@@ -8,7 +8,6 @@
 
 html, body, button, input, select {
     font-family: 'Inter';
-    font-size: 12pt;
 }
 
 html, body {
@@ -50,17 +49,18 @@ body {
 
                 & > .title {
                     flex-grow: 1;
-                    font-size: 18pt;
+                    font-size: 1.4rem;
                     font-weight: 500;
-                    color: $color-grey-800;
+                    color: $color-grey-700;
                 }
 
-                & > .github {
-                    font-size: 24pt;
-                    color: $color-grey-800;
+                & > .icon {
+                    font-size: 1.5rem;
+                    color: $color-grey-700;
+                    margin-left: 0.5rem;
 
                     &:visited {
-                        color: $color-grey-800;
+                        color: $color-grey-700;
                     }
 
                     &:hover {
