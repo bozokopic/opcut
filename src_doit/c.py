@@ -23,13 +23,13 @@ if common.local_platform == common.Platform.LINUX_GNU_X86_64:
     if 'SKIP_CROSS_COMPILE' not in os.environ:
         platforms.append(common.Platform.WINDOWS_AMD64)
 
-cc_flags = ['-fPIC', '-O2']
+c_flags = ['-fPIC', '-O2']
 # cc_flags = ['-fPIC', '-O0', '-ggdb']
 
 builds = [CBuild(src_paths=[*src_c_dir.rglob('*.c')],
                  build_dir=build_c_dir / platform.name.lower(),
                  platform=platform,
-                 cc_flags=cc_flags)
+                 c_flags=c_flags)
           for platform in platforms]
 
 lib_paths = [src_py_dir / (f'opcut/_libopcut{get_lib_suffix(platform)}')
