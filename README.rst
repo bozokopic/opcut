@@ -37,8 +37,8 @@ Install
 Archlinux
 '''''''''
 
-Opcut is available as `opcut <https://aur.archlinux.org/packages/opcut>`_
-package at AUR::
+Opcut is available as
+`opcut package <https://aur.archlinux.org/packages/opcut>`_ at AUR::
 
     $ yay -S opcut
 
@@ -53,8 +53,7 @@ Windows distribution, with embedded python, is available at
 Python wheel
 ''''''''''''
 
-Opcut is available as `opcut <https://pypi.org/project/opcut/>`_ wheel at
-PyPI::
+Opcut is available as `opcut wheel <https://pypi.org/project/opcut>`_ at PyPI::
 
     $ pip install opcut
 
