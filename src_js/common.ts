@@ -2,7 +2,6 @@ import r from '@hat-open/renderer';
 import * as u from '@hat-open/util';
 
 import * as csv from './csv';
-import * as file from './file';
 import * as notification from './notification';
 
 
@@ -152,7 +151,7 @@ export async function generate() {
             throw await res.text();
         const blob = await res.blob();
         const f = new File([blob], 'output.pdf');
-        file.save(f);
+        u.saveFile(f);
     } catch (e) {
         notification.show('error', String(e));
     }
@@ -160,7 +159,7 @@ export async function generate() {
 
 
 export async function csvImportPanels() {
-    const f = await file.load('.csv');
+    const f = await u.loadFile('.csv');
     if (f == null)
         return;
     const panels = await csv.decode(f, {
@@ -177,12 +176,12 @@ export function csvExportPanels() {
     const panels = r.get('form', 'panels') as FormPanel[];
     const blob = csv.encode(panels);
     const f = new File([blob], 'panels.csv');
-    file.save(f);
+    u.saveFile(f);
 }
 
 
 export async function csvImportItems() {
-    const f = await file.load('.csv');
+    const f = await u.loadFile('.csv');
     if (f == null)
         return;
     const items = await csv.decode(f, {
@@ -200,7 +199,7 @@ export function csvExportItems() {
     const items = r.get('form', 'items') as FormItem[];
     const blob = csv.encode(items);
     const f = new File([blob], 'items.csv');
-    file.save(f);
+    u.saveFile(f);
 }
 
 

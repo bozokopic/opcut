@@ -35,6 +35,11 @@
   resolved "https://registry.yarnpkg.com/@hat-open/util/-/util-0.6.7.tgz#0925b079b21f7b0250e53942e9316d0e606a491a"
   integrity sha512-1CrzfjAO+T+9A4sevDwMeudq/Mm4OrKSA+3vtASsPaBea9QmknoacSxsw7xUTIofQbl3eSEmBfh38Zx0xI9Pgw==
 
+"@hat-open/util@^0.6.9":
+  version "0.6.9"
+  resolved "https://registry.yarnpkg.com/@hat-open/util/-/util-0.6.9.tgz#51888ca5ad5bb40defdb4e9c3b59f090168c8a0f"
+  integrity sha512-3F0VimPrhISELQirA/bxeNg1z0t3oUOjDK+Nkc7EtGbJRAwHC3t3X6MLMHnYYt6HBoqpiE5bhTYLfUDg8d27pQ==
+
 "@humanwhocodes/config-array@^0.11.6":
   version "0.11.7"
   resolved "https://registry.yarnpkg.com/@humanwhocodes/config-array/-/config-array-0.11.7.tgz#38aec044c6c828f6ed51d5d7ae3d9b9faf6dbb0f"

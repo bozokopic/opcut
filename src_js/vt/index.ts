@@ -1,7 +1,5 @@
 import * as u from '@hat-open/util';
 
-import * as dragger from '../dragger';
-
 import * as params from './params';
 import * as result from './result';
 import * as svg from './svg';
@@ -21,7 +19,7 @@ export function main(): u.VNode {
 function leftPanelResizer(): u.VNode {
     return ['div.panel-resizer', {
         on: {
-            mousedown: dragger.mouseDownHandler(evt => {
+            mousedown: u.draggerMouseDownHandler(evt => {
                 const panel = (evt.target as HTMLElement).parentNode?.querySelector('.left-panel') as HTMLElement | null;
                 if (panel == null)
                     return () => {};  // eslint-disable-line
@@ -38,7 +36,7 @@ function leftPanelResizer(): u.VNode {
 function rightPanelResizer(): u.VNode {
     return ['div.panel-resizer', {
         on: {
-            mousedown: dragger.mouseDownHandler(evt => {
+            mousedown: u.draggerMouseDownHandler(evt => {
                 const panel = (evt.target as HTMLElement).parentNode?.querySelector('.right-panel') as HTMLElement | null;
                 if (panel == null)
                     return () => {};  // eslint-disable-line
