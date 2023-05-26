@@ -1,10 +1,15 @@
+.. _cutting stock problem: https://en.wikipedia.org/wiki/Cutting_stock_problem
+.. _GitHub releases: https://github.com/bozokopic/opcut/releases
+.. _AUR package: https://aur.archlinux.org/packages/opcut
+.. _PyPI project: https://pypi.org/project/opcut
+.. _Docker image: https://hub.docker.com/r/bozokopic/opcut
+
 opcut
 =====
 
 `<https://opcut.kopic.xyz/>`_
 
-`opcut` is cutting stock problem optimizer
-(`https://en.wikipedia.org/wiki/Cutting_stock_problem`) utilizing multiple
+`opcut` is `cutting stock problem`_ optimizer utilizing multiple
 panels and guillotine cuts (end-to-end cuts). This project includes:
 
     * multiple back-end optimizer implementations
@@ -37,8 +42,7 @@ Install
 Archlinux
 '''''''''
 
-Opcut is available as
-`opcut package <https://aur.archlinux.org/packages/opcut>`_ at AUR::
+`opcut` is available as `AUR package`_::
 
     $ yay -S opcut
 
@@ -46,16 +50,26 @@ Opcut is available as
 Windows
 '''''''
 
-Windows distribution, with embedded python, is available at
-`<https://github.com/bozokopic/opcut/releases>`_
+Windows distribution, with embedded python, is available at `GitHub releases`_.
+
+This archive contains `opcut-server.cmd`, which can be used for running
+server application, and `opcut.cmd` as generic `opcut` action launcher.
 
 
 Python wheel
 ''''''''''''
 
-Opcut is available as `opcut wheel <https://pypi.org/project/opcut>`_ at PyPI::
+Opcut is available as `PyPI project`_::
 
     $ pip install opcut
+
+
+Docker
+''''''
+
+`opcut` server is available as `Docker image`_::
+
+    $ docker run -p 8080:8080 bozokopic/opcut
 
 
 Usage
@@ -154,7 +168,6 @@ TODO
 
 * unit tests
 * changelog
-* alternative hosting (https://opcut.herokuapp.com is shutting down)
 * mailing list
 * documentation
 * roadmap
