@@ -1,33 +1,32 @@
+from .dist import *  # NOQA
+from .libopcut import *  # NOQA
+
 from pathlib import Path
 import subprocess
 import tempfile
 
 from hat import json
 from hat.doit import common
-from hat.doit.docs import build_sphinx
 from hat.doit.js import (ESLintConf,
                          run_eslint)
-from hat.doit.py import (build_wheel,
-                         run_pytest,
+from hat.doit.py import (get_task_build_wheel,
+                         get_task_create_pip_requirements,
                          run_flake8)
 from hat.doit.c import get_task_clang_format
 
-from .c import *  # NOQA
-from .dist import *  # NOQA
-from . import c
 from . import dist
+from . import libopcut
 
 
 __all__ = ['task_clean_all',
            'task_wheel',
            'task_check',
-           'task_test',
-           'task_docs',
            'task_ui',
            'task_node_modules',
            'task_format',
            'task_json_schema_repo',
-           *c.__all__,
+           'task_pip_requirements',
+           *libopcut.__all__,
            *dist.__all__]
 
 
@@ -35,15 +34,12 @@ build_dir = Path('build')
 src_py_dir = Path('src_py')
 src_js_dir = Path('src_js')
 src_static_dir = Path('src_static')
-pytest_dir = Path('test_pytest')
-docs_dir = Path('docs')
 schemas_dir = Path('schemas')
 node_modules_dir = Path('node_modules')
+man_dir = Path('man')
 
-build_docs_dir = build_dir / 'docs'
 build_py_dir = build_dir / 'py'
 ui_dir = src_py_dir / 'opcut/ui'
-ui_docs_dir = ui_dir / 'docs'
 json_schema_repo_path = src_py_dir / 'opcut/json_schema_repo.json'
 
 
@@ -58,48 +54,21 @@ def task_clean_all():
 
 def task_wheel():
     """Build wheel"""
-
-    def build():
-        build_wheel(
-            src_dir=src_py_dir,
-            dst_dir=build_py_dir,
-            name='opcut',
-            description='Cutting stock problem optimizer',
-            url='https://github.com/bozokopic/opcut',
-            license=common.License.GPL3,
-            console_scripts=['opcut = opcut.main:main'])
-
-    return {'actions': [build],
-            'task_dep': ['ui',
-                         'json_schema_repo',
-                         'c']}
+    return get_task_build_wheel(
+        src_dir=src_py_dir,
+        build_dir=build_py_dir,
+        platform=common.target_platform,
+        data_paths=[(man_dir / 'opcut.1', Path('share/man/man1/opcut.1'))],
+        task_dep=['json_schema_repo',
+                  'ui',
+                  'libopcut'])
 
 
 def task_check():
     """Check"""
     return {'actions': [(run_flake8, [src_py_dir]),
-                        (run_flake8, [pytest_dir]),
                         (run_eslint, [src_js_dir, ESLintConf.TS])],
             'task_dep': ['node_modules']}
-
-
-def task_test():
-    """Test"""
-    return {'actions': [(common.mkdir_p, [ui_dir]),
-                        lambda args: run_pytest(pytest_dir, *(args or []))],
-            'pos_arg': 'args',
-            'task_dep': ['json_schema_repo']}
-
-
-def task_docs():
-    """Build documentation"""
-
-    def build():
-        build_sphinx(src_dir=docs_dir,
-                     dst_dir=build_docs_dir,
-                     project='opcut')
-
-    return {'actions': [build]}
 
 
 def task_ui():
@@ -110,12 +79,6 @@ def task_ui():
         common.rm_rf(ui_dir)
         common.cp_r(src_static_dir, ui_dir)
         common.cp_r(schemas_dir, ui_dir)
-
-        common.mkdir_p(ui_docs_dir)
-        for i in build_docs_dir.glob('*'):
-            if i.name.startswith('.'):
-                continue
-            common.cp_r(i, ui_docs_dir)
 
         with tempfile.TemporaryDirectory() as tmpdir:
             tmpdir = Path(tmpdir)
@@ -130,8 +93,7 @@ def task_ui():
 
     return {'actions': [build],
             'pos_arg': 'args',
-            'task_dep': ['docs',
-                         'node_modules']}
+            'task_dep': ['node_modules']}
 
 
 def task_node_modules():
@@ -157,6 +119,11 @@ def task_json_schema_repo():
     return {'actions': [generate],
             'file_dep': src_paths,
             'targets': [json_schema_repo_path]}
+
+
+def task_pip_requirements():
+    """Create pip requirements"""
+    return get_task_create_pip_requirements()
 
 
 _webpack_conf = r"""

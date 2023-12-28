@@ -1,0 +1,495 @@
+.Dd December 28, 2023
+.Dt OPCUT 1
+.Os
+
+.Sh NAME
+.Nm opcut
+.Nd cutting stock problem optimizer
+
+.Sh SYNOPSIS
+.Nm
+.Ar calculate
+.Op Fl \-help
+.Op Fl \-input-format Ar FORMAT
+.Op Fl \-method Ar METHOD
+.Op Fl \-output Ar PATH
+.Op Fl \-output-format Ar FORMAT
+.Op Ar params
+
+.Nm
+.Ar generate
+.Op Fl \-help
+.Op Fl \-input-format Ar FORMAT
+.Op Fl \-output Ar PATH
+.Op Fl \-output-format Ar FORMAT
+.Op Fl \-panel Ar PANEL
+.Op Ar result
+
+.Nm
+.Ar server
+.Op Fl \-help
+.Op Fl \-host Ar HOST
+.Op Fl \-port Ar PORT
+.Op Fl \-timeout Ar T
+.Op Fl \-log-level Ar LEVEL
+
+.Sh DESCRIPTION
+.Nm
+is cutting stock problem optimizer utilizing multiple panels and guillotine
+cuts (end-to-end cuts).
+
+.Ss Nm opcut Ar calculate No ...
+Calculation of cutting stock problem.
+Input parameters and result is formatted as JSON data (JSON, YAML or TOML).
+
+Structure of files is defined by JSON Schemas (see
+.Sx FILES ) :
+.Bl -tag -offset Ds -compact
+.It opcut://opcut.yaml#/definitions/params
+structure of input parameters
+.It opcut://opcut.yaml#/definitions/result
+structure of output results
+.El
+
+.Nm
+.Ar calculate
+accepts following arguments:
+.Bl -tag -offset Ds
+
+.It Fl \-input-format Ar FORMAT
+Input
+.Ar params
+format
+.Em ( json ,
+.Em yaml
+or
+.Em toml ) .
+If not specified, format will be detected based on
+.Ar params
+file extension.
+If input is read from
+.Em stdin ,
+and format is not specified,
+.Em json
+is assumed.
+
+.It Fl \-method Ar METHOD
+Supported calculation methods:
+.Bl -tag -offset Ds -compact
+.It Em greedy
+.It Em forward_greedy
+.It Em greedy_native
+.It Em forward_greedy_native
+.El
+If not specified,
+.Em forward_greedy_native
+is assumed.
+
+.It Fl \-output Ar PATH
+Output file path or
+.Em -
+for
+.Em stdout .
+If not specified,
+.Em -
+is assumed.
+
+.It Fl \-output-format Ar FORMAT
+Output file format
+.Em ( json ,
+.Em yaml
+or
+.Em toml ) .
+If not specified, format will be detected based on
+.Fl \-output
+file extension.
+If output is written to
+.Em stdout ,
+and format is not specified,
+.Em json
+is assumed.
+
+.It Ar params
+Input parameters file path or
+.Em -
+for
+.Em stdin .
+If not specified,
+.Em -
+is assumed.
+
+.El
+
+.Ss Nm opcut Ar generate No ...
+Generate output representation (SVG or PDF) based on calculation result
+(see
+.Sx Nm opcut Ar calculate No ... ) .
+
+.Nm
+.Ar generate
+accepts following arguments:
+.Bl -tag -offset Ds
+
+.It Fl \-input-format Ar FORMAT
+Input
+.Ar result
+format
+.Em ( json ,
+.Em yaml
+or
+.Em toml ) .
+If not specified, format will be detected based on
+.Ar result
+file extension.
+If input is read from
+.Em stdin ,
+and format is not specified,
+.Em json
+is assumed.
+
+.It Fl \-output Ar PATH
+Generated output file path or
+.Em -
+for
+.Em stdout .
+If not specified,
+.Em -
+is assumed.
+
+.It Fl \-output-format Ar FORMAT
+Output file format
+.Em ( pdf
+or
+.Em svg ) .
+If not specified, format will be detected based on
+.Fl \-output
+file extension.
+If output is written to
+.Em stdout ,
+and format is not specified,
+.Em pdf
+is assumed.
+
+.It Fl \-panel Ar PANEL
+Panel name represented in output.
+If not provided, all panels are represented in output.
+
+.It Ar result
+Input result file path or
+.Em -
+for
+.Em stdin .
+If not specified,
+.Em -
+is assumed.
+
+.El
+
+.Ss Nm opcut Ar server No ...
+Run HTTP server providing single-page web application interface and OpenAPI
+interface (default listening address is
+.Lk http://0.0.0.0:8080 ) .
+
+.Nm
+.Ar server
+accepts following arguments:
+.Bl -tag -offset Ds
+
+.It Fl \-host Ar HOST
+Listening host name.
+If not specified,
+.Em 0.0.0.0
+is assumed.
+
+.It Fl \-port Ar PORT
+Listening TCP port.
+If not specified,
+.Em 8080
+is assumed.
+
+.It Fl \-timeout Ar T
+Single request timeout in seconds.
+If not specified,
+.Em 300
+is assumed.
+
+.It Fl \-log-level Ar LEVEL
+Logging level
+.Em ( critical ,
+.Em error ,
+.Em warning ,
+.Em info ,
+.Em debug
+or
+.Em notset ) .
+If not specified,
+.Em info
+is assumed.
+
+.El
+
+.Sh FILES
+
+.Ss opcut.yaml
+JSON Schema definition of input/output files.
+
+.Bd -literal
+
+id: "opcut://opcut.yaml#"
+definitions:
+    params:
+        type: object
+        description: |
+            calculation input parameters independent of calculation method
+        required:
+            - cut_width
+            - panels
+            - items
+        properties:
+            cut_width:
+                type: number
+                description: |
+                    width of the guillotine cut
+            min_initial_usage:
+                type: boolean
+                description: |
+                    minimize usage of initial panels
+            panels:
+                type: object
+                description: |
+                    input panels (keys represent unique panel identifiers)
+                patternProperties:
+                    ".+":
+                        $ref: "opcut://opcut.yaml#/definitions/panel"
+            items:
+                type: object
+                description: |
+                    required items (keys represent unique item identifiers)
+                patternProperties:
+                    ".+":
+                        $ref: "opcut://opcut.yaml#/definitions/item"
+    result:
+        type: object
+        description: |
+            calculation result
+        required:
+            - params
+            - used
+            - unused
+        properties:
+            params:
+                $ref: "opcut://opcut.yaml#"
+            used:
+                type: array
+                description: |
+                    resulting panels associated with required items
+                items:
+                    $ref: "opcut://opcut.yaml#/definitions/used"
+            unused:
+                type: array
+                description: |
+                    resulting unused panels
+                items:
+                    $ref: "opcut://opcut.yaml#/definitions/unused"
+    panel:
+        type: object
+        description: |
+            single input panel
+        required:
+            - width
+            - height
+        properties:
+            width:
+                type: number
+                description: |
+                    panel's initial width
+            height:
+                type: number
+                description: |
+                    panel's initial height
+    item:
+        type: object
+        description: |
+            single required item
+        required:
+            - width
+            - height
+            - can_rotate
+        properties:
+            width:
+                type: number
+                description: |
+                    items's width
+            height:
+                type: number
+                description: |
+                    items's height
+            can_rotate:
+                type: boolean
+                description: |
+                    can item be rotated (is grain direction irrelevant)
+    used:
+        type: object
+        description: |
+            single resulting panels associated with required item
+        required:
+            - panel
+            - item
+            - x
+            - y
+            - rotate
+        properties:
+            panel:
+                type: string
+                description: |
+                    input panel identifier
+            item:
+                type: string
+                description: |
+                    matching required item identifier
+            x:
+                type: number
+                description: |
+                    used panel location based on input panel's width offset
+            y:
+                type: number
+                description: |
+                    used panel location based on input panel's height offset
+            rotate:
+                type: boolean
+                description: |
+                    is resulting panel rotated
+    unused:
+        type: object
+        description: |
+            single unused resulting panel
+        required:
+            - panel
+            - width
+            - height
+            - x
+            - y
+        properties:
+            panel:
+                type: string
+                description: |
+                    input panel identifier
+            width:
+                type: number
+                description: |
+                    unused resulting panel's width
+            height:
+                type: number
+                description: |
+                    unused resulting panel's height
+            x:
+                type: number
+                description: |
+                    used panel location based on input panel's width offset
+            y:
+                type: number
+                description: |
+                    used panel location based on input panel's height offset
+
+.Ed
+
+
+.Ss openapi.yaml
+OpenAPI definition of server API.
+
+.Bd -literal
+
+openapi: 3.1.0
+info:
+    title: opcut
+    version: 0.0.2
+paths:
+    '/calculate':
+        post:
+            parameters:
+              - name: method
+                in: query
+                required: true
+                schema:
+                    enum:
+                        - greedy
+                        - forward_greedy
+                        - greedy_native
+                        - forward_greedy_native
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: "opcut.yaml#/definitions/params"
+            responses:
+                "200":
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "opcut.yaml#/definitions/result"
+                default:
+                    content:
+                        text/plain:
+                            description: error message
+    '/generate':
+        post:
+            parameters:
+              - name: output_format
+                in: query
+                required: true
+                schema:
+                    enum:
+                        - pdf
+                        - svg
+              - name: panel
+                in: query
+                required: false
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: "opcut.yaml#/definitions/result"
+            responses:
+                "200":
+                    content:
+                        application/pdf: {}
+                        image/svg+xml: {}
+                default:
+                    content:
+                        text/plain:
+                            description: error message
+
+.Ed
+
+.Sh EXIT STATUS
+.Ex -std
+
+.Sh EXAMPLES
+
+.Bl -tag
+
+.It Calculate Pa result.json No based on input parameters:
+.Bd -literal
+$ opcut calculate --input-format yaml --output result.json << EOF
+cut_width: 1
+panels:
+    panel1:
+        width: 100
+        height: 100
+items:
+    item1:
+        width: 10
+        height: 10
+        can_rotate: false
+EOF
+.Ed
+
+.It Generate Pa output.pdf No from Pa result.json:
+.Bd -literal
+$ opcut generate --output output.pdf result.json
+.Ed
+
+.El
+
+.Sh AUTHORS
+.An Bozo Kopic Aq Mt bozo@kopic.xyz

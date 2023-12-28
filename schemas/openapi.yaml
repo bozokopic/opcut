@@ -20,13 +20,13 @@ paths:
                 content:
                     application/json:
                         schema:
-                            "$ref": "opcut.yaml#/definitions/params"
+                            $ref: "opcut.yaml#/definitions/params"
             responses:
                 "200":
                     content:
                         application/json:
                             schema:
-                                "$ref": "opcut.yaml#/definitions/result"
+                                $ref: "opcut.yaml#/definitions/result"
                 default:
                     content:
                         text/plain:
@@ -48,7 +48,7 @@ paths:
                 content:
                     application/json:
                         schema:
-                            "$ref": "opcut.yaml#/definitions/result"
+                            $ref: "opcut.yaml#/definitions/result"
             responses:
                 "200":
                     content:

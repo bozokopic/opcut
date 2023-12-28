@@ -1,6 +1,0 @@
-[report]
-show_missing = True
-
-[run]
-include =
-    ../src_py/*

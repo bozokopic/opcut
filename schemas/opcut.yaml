@@ -1,5 +1,4 @@
 ---
-"$schema": "http://json-schema.org/schema#"
 id: "opcut://opcut.yaml#"
 definitions:
     params:
@@ -25,14 +24,14 @@ definitions:
                     input panels (keys represent unique panel identifiers)
                 patternProperties:
                     ".+":
-                        "$ref": "opcut://opcut.yaml#/definitions/panel"
+                        $ref: "opcut://opcut.yaml#/definitions/panel"
             items:
                 type: object
                 description: |
                     required items (keys represent unique item identifiers)
                 patternProperties:
                     ".+":
-                        "$ref": "opcut://opcut.yaml#/definitions/item"
+                        $ref: "opcut://opcut.yaml#/definitions/item"
     result:
         type: object
         description: |
@@ -43,19 +42,19 @@ definitions:
             - unused
         properties:
             params:
-                "$ref": "opcut://opcut.yaml#"
+                $ref: "opcut://opcut.yaml#"
             used:
                 type: array
                 description: |
                     resulting panels associated with required items
                 items:
-                    "$ref": "opcut://opcut.yaml#/definitions/used"
+                    $ref: "opcut://opcut.yaml#/definitions/used"
             unused:
                 type: array
                 description: |
                     resulting unused panels
                 items:
-                    "$ref": "opcut://opcut.yaml#/definitions/unused"
+                    $ref: "opcut://opcut.yaml#/definitions/unused"
     panel:
         type: object
         description: |

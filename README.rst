@@ -28,12 +28,12 @@ self hosted instance.
 Runtime requirements
 --------------------
 
-* python >=3.8
+* python >=3.10
 
 .. note::
 
     on Ubuntu, if pycairo is not available, additional
-    ``apt install gcc pkg-config libcairo2-dev python3-dev`` is required
+    ``apt install gcc pkg-config libcairo2-dev`` is required
 
 
 Install
@@ -77,24 +77,24 @@ Usage
 
 `opcut` command is interface for execution of three distinct actions:
 
-    * `opcut calculate ...`
+* `opcut calculate ...`
 
-        Calculation of cutting stock problem. Input parameters and result is
-        formated as JSON data (JSON, YAML or TOML).
+    Calculation of cutting stock problem. Input parameters and result is
+    formatted as JSON data (JSON, YAML or TOML).
 
-    * `opcut generate ...`
+* `opcut generate ...`
 
-        Generate output representation (SVG, PDF, ...) based on calculation
-        result.
+    Generate output representation (SVG, PDF, ...) based on calculation
+    result.
 
-    * `opcut server ...`
+* `opcut server ...`
 
-        Run HTTP server providing single-page web application interface and
-        OpenAPI interface.
-        (default listening address is http://0.0.0.0:8080).
+    Run HTTP server providing single-page web application interface and
+    OpenAPI interface (default listening address is http://0.0.0.0:8080).
 
-For additional command line arguments, run ``opcut --help`` or
-``opcut <action> --help``.
+For additional command line arguments and documentation, run::
+
+    $ man 1 opcut
 
 JSON schema describing data structures is available at `<schemas/opcut.yaml>`_.
 
@@ -150,7 +150,7 @@ Build
 Build tool used for `opcut` is pydoit (`http://pydoit.org/`). It can be
 installed together with other python dependencies by running::
 
-    $ pip install -r requirements.pip.dev.txt
+    $ pip install -r requirements.pip.txt
 
 For listing available doit tasks, use::
 
@@ -169,7 +169,6 @@ TODO
 * unit tests
 * changelog
 * mailing list
-* documentation
 * roadmap
 
 

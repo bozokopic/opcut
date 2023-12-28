@@ -17,14 +17,6 @@ export function main(): u.VNodeChild[] {
                     target: '_blank'
                 }},
                 ['span.fa.fa-github']
-            ],
-            ['a.icon', {
-                props: {
-                    title: 'Documentation',
-                    href: 'docs/index.html',
-                    target: '_blank'
-                }},
-                ['span.fa.fa-question-circle']
             ]
         ],
         ['div.form',

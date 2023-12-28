@@ -34,7 +34,7 @@ def create_argument_parser() -> argparse.ArgumentParser:
         help='Outputs the optimal stock cuts as a text file.')
     calculate.add_argument(
         '--method', metavar='METHOD', type=common.Method,
-        default=common.Method.FORWARD_GREEDY,
+        default=common.Method.FORWARD_GREEDY_NATIVE,
         help=f"calculate method ({enum_values(common.Method)})")
     calculate.add_argument(
         '--input-format', metavar='FORMAT', type=json.Format, default=None,
