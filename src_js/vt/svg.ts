@@ -17,10 +17,10 @@ export function main(): u.VNode | null {
     const used = u.filter(i => i.panel == selected.panel, result.used);
     const unused = u.filter(i => i.panel == selected.panel, result.unused);
 
-    const fontSize = String(
-        Math.max(panel.height, panel.width) * 0.02 *
-        u.strictParseFloat(r.get('svg', 'font_size') as string)
-    );
+    const fontSize = Math.max(panel.height, panel.width) * 0.02 *
+        u.strictParseFloat(r.get('svg', 'font_size') as string);
+    const nameFontSize = String(fontSize);
+    const dimensionFontSize = String(fontSize * 0.8);
     const showNames = r.get('svg', 'show_names');
     const showDimensions = r.get('svg', 'show_dimensions');
     const cutColor = r.get('svg', 'cut_color');
@@ -91,9 +91,9 @@ export function main(): u.VNode | null {
                     attrs: {
                         x: String(used.x + width / 2),
                         y: String(used.y + height / 2),
-                        'alignment-baseline': 'middle',
+                        'dominant-baseline': 'middle',
                         'text-anchor': 'middle',
-                        'font-size': fontSize
+                        'font-size': nameFontSize
                     },
                     on: {
                         click: click
@@ -107,9 +107,9 @@ export function main(): u.VNode | null {
                     attrs: {
                         x: String(used.x + width / 2),
                         y: String(used.y + height),
-                        'alignment-baseline': 'baseline',
+                        'dominant-baseline': 'baseline',
                         'text-anchor': 'middle',
-                        'font-size': fontSize
+                        'font-size': dimensionFontSize
                     },
                     on: {
                         click: click
@@ -124,9 +124,9 @@ export function main(): u.VNode | null {
                         x: String(used.x + width),
                         y: String(used.y + height / 2),
                         'transform': `rotate(-90, ${used.x + width}, ${used.y + height / 2})`,
-                        'alignment-baseline': 'baseline',
+                        'dominant-baseline': 'baseline',
                         'text-anchor': 'middle',
-                        'font-size': fontSize
+                        'font-size': dimensionFontSize
                     },
                     on: {
                         click: click
