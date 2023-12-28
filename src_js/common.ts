@@ -2,7 +2,6 @@ import r from '@hat-open/renderer';
 import * as u from '@hat-open/util';
 
 import * as csv from './csv';
-import * as notification from './notification';
 
 
 export type FormPanel = {
@@ -130,9 +129,9 @@ export async function calculate() {
         ));
         if (!result)
             throw 'Could not resolve calculation';
-        notification.show('success', 'New calculation available');
+        notify('success', 'New calculation available');
     } catch (e) {
-        notification.show('error', String(e));
+        notify('error', String(e));
     } finally {
         r.set('calculating', false);
     }
@@ -153,7 +152,7 @@ export async function generate() {
         const f = new File([blob], 'output.pdf');
         u.saveFile(f);
     } catch (e) {
-        notification.show('error', String(e));
+        notify('error', String(e));
     }
 }
 
@@ -282,4 +281,25 @@ function createCalculateParams() {
         panels: panels,
         items: items
     };
+}
+
+
+function notify(type: string, message: string) {
+    let root = document.querySelector('body > .notifications');
+    if (!root) {
+        root = document.createElement('div');
+        root.className = 'notifications';
+        document.body.appendChild(root);
+    }
+
+    const el = document.createElement('div');
+    el.className = type;
+    el.innerText = message;
+    root.appendChild(el);
+
+    setTimeout(() => {
+        if (!root)
+            return;
+        root.removeChild(el);
+    }, 2000);
 }

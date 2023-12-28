@@ -1,5 +1,3 @@
-@import '~izitoast/dist/css/iziToast.min';
-
 @import 'color';
 @import 'shadow';
 @import 'fonts/fontawesome';
@@ -208,6 +206,30 @@ body {
 
             .selected {
                 background-color: $color-grey-300;
+            }
+        }
+    }
+
+    & > .notifications {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        flex-direction: column-reverse;
+        z-index: 2;
+
+        & > div {
+            margin: 0 0.5rem 0.5rem 0;
+            padding: 1rem;
+            border-radius: 0.2rem;
+            background-color: $color-grey-200;
+
+            &.error {
+                background-color: $color-red-200;
+            }
+
+            &.success {
+                background-color: $color-blue-grey-200;
             }
         }
     }
