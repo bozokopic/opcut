@@ -152,7 +152,16 @@ module.exports = {{
             }},
             {{
                 test: /\.ts$/,
-                use: 'ts-loader'
+                use: [
+                    {{
+                        loader: 'ts-loader',
+                        options: {{
+                            compilerOptions: {{
+                                sourceMap: true
+                            }}
+                        }}
+                    }}
+                ]
             }}
         ]
     }},

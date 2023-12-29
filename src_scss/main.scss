@@ -170,6 +170,11 @@ body {
                 grid-row-gap: 0.3rem;
                 align-items: center;
                 margin: 1rem;
+
+                & > .label {
+                    font-weight: 600;
+                    color: $color-grey-800;
+                }
             }
 
             .panel {

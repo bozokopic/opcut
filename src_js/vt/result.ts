@@ -10,9 +10,10 @@ export function main(): u.VNodeChild[] {
     const result = r.get('result') as common.Result | null;
     if (result == null)
         return [];
+
     return [
         ['div.form',
-            ['label', 'Export'],
+            ['label.label', 'Export'],
             ['div',
                 ['button', {
                     on: {
@@ -22,7 +23,7 @@ export function main(): u.VNodeChild[] {
                     ' PDF'
                 ]
             ],
-            ['label', 'Font size'],
+            ['label.label', 'Font size'],
             input.select(
                 r.get('svg', 'font_size') as string,
                 [['0.5', 'Small'],
@@ -30,38 +31,40 @@ export function main(): u.VNodeChild[] {
                  ['1.5', 'Large']],
                 val => r.set(['svg', 'font_size'], val)
             ),
-            ['label'],
+            ['label.label'],
             input.checkbox(
                 'Show names',
                 r.get('svg', 'show_names') as boolean,
                 val => r.set(['svg', 'show_names'], val)
             ),
-            ['label'],
+            ['label.label'],
             input.checkbox(
                 'Show dimensions',
                 r.get('svg', 'show_dimensions') as boolean,
                 val => r.set(['svg', 'show_dimensions'], val)
             ),
-            ['label', 'Cut color'],
+            ['label.label', 'Cut color'],
             input.color(
                 r.get('svg', 'cut_color') as string,
                 val => r.set(['svg', 'cut_color'], val)
             ),
-            ['label', 'Item color'],
+            ['label.label', 'Item color'],
             input.color(
                 r.get('svg', 'item_color') as string,
                 val => r.set(['svg', 'item_color'], val)
             ),
-            ['label', 'Selected color'],
+            ['label.label', 'Selected color'],
             input.color(
                 r.get('svg', 'selected_color') as string,
                 val => r.set(['svg', 'selected_color'], val)
             ),
-            ['label', 'Unused color'],
+            ['label.label', 'Unused color'],
             input.color(
                 r.get('svg', 'unused_color') as string,
                 val => r.set(['svg', 'unused_color'], val)
-            )
+            ),
+            ['label.label', 'Waste area'],
+            ['span', String(calculateWasteArea(result))]
         ],
         Object.keys(result.params.panels).map(panelResult)
     ];
@@ -101,4 +104,22 @@ function panelResult(panel: string): u.VNode {
                 ]
             ])
     ];
+}
+
+
+function calculateWasteArea(result: common.Result): number {
+    type T = {width: number, height: number};
+
+    const area = ({width, height}: T) => width * height;
+    const sum = u.reduce((acc, i: number) => acc + i, 0);
+    const sumAreas = (x: T[]) => sum(u.map(area, x));
+
+    const panels = Object.values(result.params.panels);
+    const used = u.map(
+        i => result.params.items[i.item],
+        Object.values(result.used)
+    );
+    const unused = Object.values(result.unused);
+
+    return sumAreas(panels) - sumAreas(used) - sumAreas(unused);
 }
