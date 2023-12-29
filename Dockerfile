@@ -1,4 +1,4 @@
-FROM python:3.10-slim-bullseye as opcut-base
+FROM python:3.10-slim-bookworm as opcut-base
 WORKDIR /opcut
 RUN apt update -y && \
     apt install -y pkg-config gcc libcairo2-dev
