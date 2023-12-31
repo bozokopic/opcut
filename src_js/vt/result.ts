@@ -6,73 +6,66 @@ import * as common from '../common';
 import * as input from './input';
 
 
-export function main(): u.VNodeChild[] {
-    const result = r.get('result') as common.Result | null;
-    if (result == null)
+export function main(): u.VNodeChild {
+    const state = common.getState();
+    const dict = common.getDict();
+
+    if (state.result == null)
         return [];
+
+    const fontSizes = u.map(
+        i => [i, dict[i]] as [common.FontSize, string],
+        Object.keys(common.fontSizes) as common.FontSize[]
+    );
 
     return [
         ['div.form',
-            ['label.label', 'Export'],
+            ['label.label', dict.export],
             ['div',
                 ['button', {
                     on: {
                         click: common.generate
                     }},
-                    ['span.fa.fa-file-pdf-o'],
+                    icon('application-pdf'),
                     ' PDF'
                 ]
             ],
-            ['label.label', 'Font size'],
+            ['label.label', dict.font_size],
             input.select(
-                r.get('svg', 'font_size') as string,
-                [['0.5', 'Small'],
-                 ['1', 'Medium'],
-                 ['1.5', 'Large']],
-                val => r.set(['svg', 'font_size'], val)
+                state.svg.fontSize,
+                fontSizes,
+                val => r.set(['svg', 'fontSize'], val)
             ),
             ['label.label'],
             input.checkbox(
-                'Show names',
-                r.get('svg', 'show_names') as boolean,
-                val => r.set(['svg', 'show_names'], val)
+                dict.show_names,
+                state.svg.showNames,
+                val => r.set(['svg', 'showNames'], val)
             ),
             ['label.label'],
             input.checkbox(
-                'Show dimensions',
-                r.get('svg', 'show_dimensions') as boolean,
-                val => r.set(['svg', 'show_dimensions'], val)
+                dict.show_dimensions,
+                state.svg.showDimensions,
+                val => r.set(['svg', 'showDimensions'], val)
             ),
-            ['label.label', 'Cut color'],
-            input.color(
-                r.get('svg', 'cut_color') as string,
-                val => r.set(['svg', 'cut_color'], val)
-            ),
-            ['label.label', 'Item color'],
-            input.color(
-                r.get('svg', 'item_color') as string,
-                val => r.set(['svg', 'item_color'], val)
-            ),
-            ['label.label', 'Selected color'],
-            input.color(
-                r.get('svg', 'selected_color') as string,
-                val => r.set(['svg', 'selected_color'], val)
-            ),
-            ['label.label', 'Unused color'],
-            input.color(
-                r.get('svg', 'unused_color') as string,
-                val => r.set(['svg', 'unused_color'], val)
-            ),
-            ['label.label', 'Waste area'],
-            ['span', String(calculateWasteArea(result))]
+
+            ['label.label', dict.cut_area],
+            ['span', String(Math.round(calculateCutArea(state.result) * 100) / 100)]
         ],
-        Object.keys(result.params.panels).map(panelResult)
+        Object.keys(state.result.params.panels).map(panelResult)
     ];
 }
 
 
-function panelResult(panel: string): u.VNode {
-    const isSelected = (item: string | null) => u.equals(r.get('selected'), {panel: panel, item: item});
+function panelResult(panel: string): u.VNodeChild {
+    const state = common.getState();
+
+    if (state.result == null)
+        return [];
+
+    const select = (item: string | null) => r.set('selected', {panel, item});
+    const isSelected = (item: string | null) =>
+        state.selected.panel == panel && state.selected.item == item;
 
     return ['div.panel',
         ['div.panel-name', {
@@ -80,20 +73,20 @@ function panelResult(panel: string): u.VNode {
                 selected: isSelected(null)
             },
             on: {
-                click: () => r.set('selected', {panel: panel, item: null})
+                click: () => select(null)
             }},
             panel
         ],
-        u.filter(used => used.panel == panel, r.get('result', 'used') as common.Used[]).map(used =>
+        u.filter(used => used.panel == panel, state.result.used).map(used =>
             ['div.item', {
                 class: {
                     selected: isSelected(used.item)
                 },
                 on: {
-                    click: () => r.set('selected', {panel: panel, item: used.item})
+                    click: () => select(used.item)
                 }},
                 ['div.item-name', used.item],
-                (used.rotate ? ['span.item-rotate.fa.fa-refresh'] : []),
+                (used.rotate ? icon('object-rotate-right') : []),
                 ['div.item-x',
                     'X:',
                     String(Math.round(used.x * 100) / 100)
@@ -102,12 +95,23 @@ function panelResult(panel: string): u.VNode {
                     'Y:',
                     String(Math.round(used.y * 100) / 100)
                 ]
-            ])
+            ]
+        )
     ];
 }
 
 
-function calculateWasteArea(result: common.Result): number {
+
+function icon(name: string): u.VNode {
+    return ['img.icon', {
+        props: {
+            src: `icons/${name}.svg`
+        }
+    }];
+}
+
+
+function calculateCutArea(result: common.Result): number {
     type T = {width: number, height: number};
 
     const area = ({width, height}: T) => width * height;

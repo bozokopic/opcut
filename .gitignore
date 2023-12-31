@@ -2,7 +2,8 @@
 /build
 /cache
 /node_modules
-/src_py/opcut/json_schema_repo.json
+/src_js/version.ts
 /src_py/opcut/_libopcut.*
+/src_py/opcut/json_schema_repo.json
 /src_py/opcut/ui
 __pycache__

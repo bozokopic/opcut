@@ -8,8 +8,12 @@ import '../src_scss/main.scss';
 
 
 function main() {
+    const settings = common.loadSettings();
+    const state = u.set('settings', settings, common.defaultState);
+
     const root = document.body.appendChild(document.createElement('div'));
-    r.init(root, common.defaultState, vt.main);
+
+    r.init(root, state, vt.main);
 }
 
 

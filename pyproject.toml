@@ -1,6 +1,6 @@
 [project]
 name = "opcut"
-version = "0.4.10"
+version = "0.4.11"
 description = "Cutting stock problem optimizer"
 readme = "README.rst"
 requires-python = ">=3.10"

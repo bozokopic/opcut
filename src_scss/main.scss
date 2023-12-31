@@ -1,11 +1,9 @@
 @import 'color';
 @import 'shadow';
-@import 'fonts/fontawesome';
-@import 'fonts/inter';
 
 
 html, body, button, input, select {
-    font-family: 'Inter';
+    font-family: 'sans-serif';
 }
 
 html, body {
@@ -19,6 +17,13 @@ body {
     & > .main {
         height: 100%;
         display: flex;
+
+        img.icon {
+            height: 1.2em;
+            vertical-align: middle;
+            position: relative;
+            top: -0.1em;
+        }
 
         & > .panel-resizer {
             cursor: ew-resize;
@@ -43,26 +48,18 @@ body {
                 flex-shrink: 0;
                 margin: 1rem;
                 display: flex;
-                align-items: center;
+                align-items: stretch;
+                gap: 0.2rem;
 
                 & > .title {
                     flex-grow: 1;
                     font-size: 1.4rem;
                     font-weight: 500;
                     color: $color-grey-700;
-                }
 
-                & > .icon {
-                    font-size: 1.5rem;
-                    color: $color-grey-700;
-                    margin-left: 0.5rem;
-
-                    &:visited {
-                        color: $color-grey-700;
-                    }
-
-                    &:hover {
-                        color: black;
+                    & > .version {
+                        font-size: 0.8rem;
+                        padding-left: 0.5rem;
                     }
                 }
             }
@@ -74,6 +71,11 @@ body {
                 grid-row-gap: 0.3rem;
                 align-items: center;
                 margin: 1rem;
+
+                & > .label {
+                    font-weight: 600;
+                    color: $color-grey-800;
+                }
             }
 
             & > .content {
@@ -91,7 +93,7 @@ body {
                     & > table {
                         width: 100%;
 
-                        .col-quantity, .col-height, .col-width, .col-rotate {
+                        .col-quantity, .col-height, .col-width {
                             width: 5rem;
 
                             input {
@@ -99,8 +101,24 @@ body {
                             }
                         }
 
+                        .col-rotate {
+                            width: 4rem;
+                        }
+
                         .col-delete {
                             width: 2rem;
+                        }
+
+                        & > thead {
+                            th {
+                                font-weight: 600;
+                                color: $color-grey-800;
+                                text-align: left;
+
+                                &.col-rotate {
+                                    text-align: center;
+                                }
+                            }
                         }
 
                         & > tbody {
@@ -213,6 +231,67 @@ body {
                 background-color: $color-grey-300;
             }
         }
+
+        & > .overlay {
+            position: absolute;
+            z-index: 3;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(black, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            & > .settings {
+                background-color: $color-grey-100;
+                border-radius: 0.2rem;
+
+                & > .header {
+                    display: flex;
+                    padding: 0.2rem;
+                    background-color: $color-grey-800;
+                    align-items: center;
+                    border-radius: 0.2rem;
+
+                    & > .title {
+                        flex-grow: 1;
+                        text-align: center;
+                        font-weight: 600;
+                        color: $color-grey-200;
+                    }
+
+                    & > button {
+                        font-size: 0.6rem;
+                        padding: 0.2rem;
+                    }
+                }
+
+                & > .form {
+                    display: grid;
+                    grid-template-columns: auto 1fr;
+                    grid-column-gap: 0.5rem;
+                    grid-row-gap: 0.3rem;
+                    align-items: center;
+                    margin: 1rem;
+
+                    & > .label {
+                        font-weight: 600;
+                        color: $color-grey-800;
+                    }
+
+                    & > .title {
+                        margin-top: 1rem;
+                        grid-column-end: span 2;
+                        background-color: $color-grey-600;
+                        font-weight: 600;
+                        color: $color-grey-200;
+                        padding: 0.2rem 0.5rem;
+                    }
+                }
+            }
+        }
     }
 
     & > .notifications {
@@ -227,15 +306,7 @@ body {
             margin: 0 0.5rem 0.5rem 0;
             padding: 1rem;
             border-radius: 0.2rem;
-            background-color: $color-grey-200;
-
-            &.error {
-                background-color: $color-red-200;
-            }
-
-            &.success {
-                background-color: $color-blue-grey-200;
-            }
+            background-color: $color-red-200;
         }
     }
 }

@@ -25,6 +25,7 @@ __all__ = ['task_clean_all',
            'task_node_modules',
            'task_format',
            'task_json_schema_repo',
+           'task_version',
            'task_pip_requirements',
            *libopcut.__all__,
            *dist.__all__]
@@ -93,7 +94,8 @@ def task_ui():
 
     return {'actions': [build],
             'pos_arg': 'args',
-            'task_dep': ['node_modules']}
+            'task_dep': ['node_modules',
+                         'version']}
 
 
 def task_node_modules():
@@ -121,9 +123,27 @@ def task_json_schema_repo():
             'targets': [json_schema_repo_path]}
 
 
+def task_version():
+    """Generate version files"""
+    version = common.get_version()
+    pyproject_path = Path('pyproject.toml')
+
+    def generate(path, template):
+        path.write_text(template.format(version=version))
+
+    for dst_path, template in [(src_js_dir / 'version.ts', _version_ts)]:
+        yield {'name': str(dst_path),
+               'actions': [(generate, [dst_path, template])],
+               'file_dep': [pyproject_path],
+               'targets': [dst_path]}
+
+
 def task_pip_requirements():
     """Create pip requirements"""
     return get_task_create_pip_requirements()
+
+
+_version_ts = "export default '{version}';\n"
 
 
 _webpack_conf = r"""

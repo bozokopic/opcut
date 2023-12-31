@@ -2,57 +2,124 @@ import r from '@hat-open/renderer';
 import * as u from '@hat-open/util';
 
 import * as csv from './csv';
+import * as i18n from './i18n';
 
 
-export type FormPanel = {
-    name: string,
-    quantity: number,
-    width: number,
-    height: number
+export const methods = {
+    forward_greedy: 'Forward greedy',
+    greedy: 'Greedy',
+    forward_greedy_native: 'Forward greedy (native)',
+    greedy_native: 'Greedy (native)'
+} as const;
+
+export const fontSizes = {
+    small: 0.5,
+    medium: 1,
+    large: 1.5
+} as const;
+
+
+export type Method = keyof (typeof methods);
+
+export type FontSize = keyof (typeof fontSizes);
+
+export type Panel = {
+    width: number;
+    height: number;
 };
 
-export type FormItem = {
-    name: string,
-    quantity: number,
-    width: number,
-    height: number
-    can_rotate: boolean
+export type Item = {
+    width: number;
+    height: number;
+    can_rotate: boolean;
 };
 
 export type Params = {
-    cut_width: number,
-    min_initial_usage: boolean,
-    panels: Record<string, {
-        width: number,
-        height: number
-    }>,
-    items: Record<string, {
-        width: number,
-        height: number
-        can_rotate: boolean
-    }>
+    cut_width: number;
+    min_initial_usage: boolean;
+    panels: Record<string, Panel>;
+    items: Record<string, Item>;
 };
 
 export type Used = {
-    panel: string,
-    item: string,
-    x: number,
-    y: number,
-    rotate: boolean
+    panel: string;
+    item: string;
+    x: number;
+    y: number;
+    rotate: boolean;
 };
 
 export type Unused = {
-    panel: string,
-    width: number,
-    height: number,
-    x: number,
-    y: number
+    panel: string;
+    width: number;
+    height: number;
+    x: number;
+    y: number;
 };
 
 export type Result = {
-    params: Params,
-    used: Used[],
-    unused: Unused[]
+    params: Params;
+    used: Used[];
+    unused: Unused[];
+};
+
+export type FormPanel = {
+    quantity: number;
+    height: number;
+    width: number;
+    name: string;
+};
+
+export type FormItem = {
+    quantity: number;
+    height: number;
+    width: number;
+    name: string;
+    canRotate: boolean;
+};
+
+export type Settings = {
+    lang: i18n.Lang;
+    colors: {
+        cut: string;
+        item: string;
+        selected: string;
+        unused: string;
+    };
+    panel: {
+        height: number;
+        width: number;
+        name: string;
+    };
+    item: {
+        height: number;
+        width: number;
+        name: string;
+        canRotate: boolean;
+    };
+};
+
+export type State = {
+    form: {
+        method: Method;
+        cutWidth: number;
+        minInitialUsage: boolean;
+        panels: FormPanel[];
+        items: FormItem[];
+    };
+    result: Result | null;
+    selected: {
+        panel: string | null;
+        item: string | null;
+    };
+    svg: {
+        fontSize: FontSize;
+        showNames: boolean;
+        showDimensions: boolean;
+    };
+    calculating: boolean;
+    showSettings: boolean;
+    settings: Settings;
 };
 
 
@@ -63,11 +130,32 @@ let panelCounter = 0;
 let itemCounter = 0;
 
 
-export const defaultState = {
+const defaultSettings: Settings = {
+    lang: 'en',
+    colors: {
+        cut: '#646464',
+        item: '#fafafa',
+        selected: '#c88c8c',
+        unused: '#eeeeee'
+    },
+    panel: {
+        height: 100,
+        width: 100,
+        name: 'Panel'
+    },
+    item: {
+        height: 10,
+        width: 10,
+        name: 'Item',
+        canRotate: true
+    }
+} as const;
+
+export const defaultState: State = {
     form: {
         method: 'forward_greedy_native',
-        cut_width: 0.3,
-        min_initial_usage: true,
+        cutWidth: 0.3,
+        minInitialUsage: true,
         panels: [],
         items: []
     },
@@ -77,82 +165,117 @@ export const defaultState = {
         item: null
     },
     svg: {
-        font_size: '1',
-        show_names: true,
-        show_dimensions: false,
-        cut_color: '#646464',
-        item_color: '#fafafa',
-        selected_color: '#c88c8c',
-        unused_color: '#eeeeee'
+        fontSize: 'medium',
+        showNames: true,
+        showDimensions: false
     },
-    calculating: false
-};
+    calculating: false,
+    showSettings: false,
+    settings: defaultSettings
+} as const;
 
 
-const defaultFormPanel: FormPanel = {
-    name: 'Panel',
-    quantity: 1,
-    width: 100,
-    height: 100
-};
+export function getState(): State {
+    return r.get() as State;
+}
 
 
-const defaultFormItem: FormItem = {
-    name: 'Item',
-    quantity: 1,
-    width: 10,
-    height: 10,
-    can_rotate: true
-};
+export function getDict(): i18n.Dict {
+    const state = getState();
+    return i18n.dicts[state.settings.lang];
+}
+
+
+export function loadSettings(): Settings {
+    const settingsStr = window.localStorage.getItem('opcut');
+    const settings = (settingsStr ? JSON.parse(settingsStr) : null);
+
+    const getType = (x: any) => (x == null ? 'null' : typeof x);
+
+    const merge = <T>(defaultValue: T, value: any): T => {
+        if (getType(defaultValue) != getType(value))
+            return defaultValue;
+
+        if (!u.isObject(defaultValue))
+            return value;
+
+        return u.map(
+            (v, k) => merge(v, value[k as string]),
+            defaultValue
+        ) as T;
+    }
+
+    return merge(defaultSettings, settings);
+}
+
+
+export function saveSettings(settings: Settings) {
+    const settingsStr = JSON.stringify(settings);
+    window.localStorage.setItem('opcut', settingsStr);
+}
 
 
 export async function calculate() {
-    r.set('calculating', true);
+    await r.set('calculating', true);
+
     try {
-        const method = r.get('form', 'method');
-        const params = createCalculateParams();
-        const res = await fetch(`${calculateUrl}?method=${method}`, {
+        const state = getState();
+        const dict = getDict();
+
+        const params = createCalculateParams(state);
+
+        const res = await fetch(`${calculateUrl}?method=${state.form.method}`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(params)
         });
-        if (!res.ok)
-            throw await res.text();
-        const result = await res.json();
-        const selected = {
+
+        if (!res.ok) {
+            const err = await res.text();
+            throw `${dict.server_error}: ${err}`;
+        }
+
+        const result = await res.json() as Result;
+        const selected: State['selected'] = {
             panel: Object.keys(result.params.panels)[0],
             item: null
         };
-        r.change(u.pipe(
+        await r.change(u.pipe(
             u.set('result', result),
             u.set('selected', selected)
         ));
-        if (!result)
-            throw 'Could not resolve calculation';
-        notify('success', 'New calculation available');
+
     } catch (e) {
-        notify('error', String(e));
+        notify(String(e));
+
     } finally {
-        r.set('calculating', false);
+        await r.set('calculating', false);
     }
 }
 
 
 export async function generate() {
     try {
-        const result = r.get('result');
+        const state = getState();
+        const dict = getDict();
+
         const res = await fetch(`${generateUrl}?output_format=pdf`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(result)
+            body: JSON.stringify(state.result)
         });
-        if (!res.ok)
-            throw await res.text();
+
+        if (!res.ok) {
+            const err = await res.text();
+            throw `${dict.server_error}: ${err}`;
+        }
+
         const blob = await res.blob();
         const f = new File([blob], 'output.pdf');
         u.saveFile(f);
+
     } catch (e) {
-        notify('error', String(e));
+        notify(String(e));
     }
 }
 
@@ -161,19 +284,21 @@ export async function csvImportPanels() {
     const f = await u.loadFile('.csv');
     if (f == null)
         return;
-    const panels = await csv.decode(f, {
+
+    const panels: FormPanel[] = await csv.decode(f, {
         name: String,
         quantity: u.strictParseInt,
         width: u.strictParseFloat,
         height: u.strictParseFloat
-    }) as FormPanel[];
-    r.change(['form', 'panels'], x => (x as FormPanel[]).concat(panels));
+    });
+
+    await r.change(['form', 'panels'], x => (x as FormPanel[]).concat(panels));
 }
 
 
 export function csvExportPanels() {
-    const panels = r.get('form', 'panels') as FormPanel[];
-    const blob = csv.encode(panels);
+    const state = getState();
+    const blob = csv.encode(state.form.panels);
     const f = new File([blob], 'panels.csv');
     u.saveFile(f);
 }
@@ -183,108 +308,131 @@ export async function csvImportItems() {
     const f = await u.loadFile('.csv');
     if (f == null)
         return;
-    const items = await csv.decode(f, {
+
+    const items: FormItem[] = await csv.decode(f, {
         name: String,
         quantity: u.strictParseInt,
         width: u.strictParseFloat,
         height: u.strictParseFloat,
-        can_rotate: u.equals('true')
-    }) as FormItem[];
+        canRotate: u.equals('true')
+    });
+
     r.change(['form', 'items'], x => (x as FormItem[]).concat(items));
 }
 
 
 export function csvExportItems() {
-    const items = r.get('form', 'items') as FormItem[];
-    const blob = csv.encode(items);
+    const state = getState();
+    const blob = csv.encode(state.form.items);
     const f = new File([blob], 'items.csv');
     u.saveFile(f);
 }
 
 
 export function addPanel() {
+    const state = getState();
+
     panelCounter += 1;
-    const panel = u.set('name', `Panel${panelCounter}`, defaultFormPanel);
+    const panel: FormPanel = {
+        quantity: 1,
+        height: state.settings.panel.height,
+        width: state.settings.panel.width,
+        name: `${state.settings.panel.name}${panelCounter}`
+    };
+
     r.change(['form', 'panels'], u.append(panel) as any);
 }
 
 
 export function addItem() {
+    const state = getState();
+
     itemCounter += 1;
-    const item = u.set('name', `Item${itemCounter}`, defaultFormItem);
+    const item: FormItem = {
+        quantity: 1,
+        height: state.settings.item.height,
+        width: state.settings.item.width,
+        name: `${state.settings.item.name}${itemCounter}`,
+        canRotate: state.settings.item.canRotate
+    };
+
     r.change(['form', 'items'], u.append(item) as any);
 }
 
 
-function createCalculateParams() {
-    const cutWidth = r.get('form', 'cut_width') as number;
-    if (cutWidth < 0)
-        throw 'Invalid cut width';
+function createCalculateParams(state: State): Params {
+    const dict = getDict();
 
-    const minInitialUsage = r.get('form', 'min_initial_usage');
+    if (state.form.cutWidth < 0)
+        throw dict.invalid_cut_width;
 
-    const panels: Record<string, {
-        width: number,
-        height: number
-    }> = {};
-    for (const panel of (r.get('form', 'panels') as FormPanel[])) {
+    const panels: Record<string, Panel> = {};
+    for (const panel of state.form.panels) {
         if (!panel.name)
-            throw 'Invalid panel name';
+            throw dict.invalid_panel_name;
+
         if (panel.quantity < 1)
-            throw 'Invalid quantity for panel ' + panel.name;
-        if (panel.width <= 0)
-            throw 'Invalid width for panel ' + panel.name;
+            throw `${dict.invalid_quantity} (${dict.panel} ${panel.name})`
+
         if (panel.height <= 0)
-            throw 'Invalid height for panel ' + panel.name;
+            throw `${dict.invalid_height} (${dict.panel} ${panel.name})`
+
+        if (panel.width <= 0)
+            throw `${dict.invalid_width} (${dict.panel} ${panel.name})`
+
         for (let i = 1; i <= panel.quantity; ++i) {
             const name = panel.quantity > 1 ? `${panel.name} ${i}` : panel.name;
             if (name in panels)
-                throw 'Duplicate panel name ' + name;
-            panels[name] = {width: panel.width, height: panel.height};
+                throw `${dict.duplicate_name} (${dict.panel} ${panel.name})`;
+
+            panels[name] = {
+                width: panel.width,
+                height: panel.height
+            };
         }
     }
     if (u.equals(panels, {}))
-        throw 'No panels defined';
+        throw dict.no_panels_defined;
 
-    const items: Record<string, {
-        width: number,
-        height: number,
-        can_rotate: boolean
-    }> = {};
-    for (const item of (r.get('form', 'items') as FormItem[])) {
+    const items: Record<string, Item> = {};
+    for (const item of state.form.items) {
         if (!item.name)
-            throw 'Invalid item name';
+            throw dict.invalid_item_name;
+
         if (item.quantity < 1)
-            throw 'Invalid quantity for item ' + item.name;
-        if (item.width <= 0)
-            throw 'Invalid width for item ' + item.name;
+            throw `${dict.invalid_quantity} (${dict.item} ${item.name})`
+
         if (item.height <= 0)
-            throw 'Invalid height for item ' + item.name;
+            throw `${dict.invalid_height} (${dict.item} ${item.name})`
+
+        if (item.width <= 0)
+            throw `${dict.invalid_width} (${dict.item} ${item.name})`
+
         for (let i = 1; i <= item.quantity; ++i) {
             const name = item.quantity > 1 ? `${item.name} ${i}` : item.name;
-            if (name in items) {
-                throw 'Duplicate item name ' + name;
-            }
+            if (name in items)
+                throw `${dict.duplicate_name} (${dict.panel} ${item.name})`;
+
             items[name] = {
                 width: item.width,
                 height: item.height,
-                can_rotate: item.can_rotate
+                can_rotate: item.canRotate
             };
         }
     }
     if (u.equals(items, {}))
-        throw 'No items defined';
+        throw dict.no_items_defined;
 
     return {
-        cut_width: cutWidth,
-        min_initial_usage: minInitialUsage,
+        cut_width: state.form.cutWidth,
+        min_initial_usage: state.form.minInitialUsage,
         panels: panels,
         items: items
     };
 }
 
 
-function notify(type: string, message: string) {
+function notify(message: string) {
     let root = document.querySelector('body > .notifications');
     if (!root) {
         root = document.createElement('div');
@@ -293,7 +441,6 @@ function notify(type: string, message: string) {
     }
 
     const el = document.createElement('div');
-    el.className = type;
     el.innerText = message;
     root.appendChild(el);
 

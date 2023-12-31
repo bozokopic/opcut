@@ -6,40 +6,49 @@ import * as common from '../common';
 import * as input from './input';
 
 
-export function main(): u.VNodeChild[] {
+export function main(): u.VNodeChild {
+    const state = common.getState();
+    const dict = common.getDict();
+
     return [
         ['div.header',
             ['span.title', 'OPCUT'],
-            ['a.icon', {
-                props: {
-                    title: 'GitHub',
-                    href: 'https://github.com/bozokopic/opcut',
-                    target: '_blank'
+            ['button', {
+                on: {
+                    click: () => r.set('showSettings', true)
                 }},
-                ['span.fa.fa-github']
+                icon('applications-other'),
+                ` ${dict.settings}`
+            ],
+            ['button', {
+                on: {
+                    click: () => window.open(
+                        'https://github.com/bozokopic/opcut',
+                        '_blank'
+                    )
+                }},
+                icon('emblem-git-new'),
+                ` ${dict.source_code}`
             ]
         ],
         ['div.form',
-            ['label', 'Method'],
+            ['label.label', dict.method],
             input.select(
-                r.get('form', 'method') as string,
-                [['forward_greedy', 'Forward greedy'],
-                 ['greedy', 'Greedy'],
-                 ['forward_greedy_native', 'Forward greedy (native)'],
-                 ['greedy_native', 'Greedy (native)']],
+                state.form.method,
+                Object.entries(common.methods),
                 val => r.set(['form', 'method'], val)
             ),
-            ['label', 'Cut width'],
+            ['label.label', dict.cut_width],
             input.number(
-                r.get('form', 'cut_width') as number,
+                state.form.cutWidth,
                 u.isNumber,
-                val => r.set(['form', 'cut_width'], val)
+                val => r.set(['form', 'cutWidth'], val)
             ),
-            ['label'],
+            ['label.label'],
             input.checkbox(
-                'Minimize initial panel usage',
-                r.get('form', 'min_initial_usage') as boolean,
-                val => r.set(['form', 'min_initial_usage'], val)
+                dict.minimize_initial_panel_usage,
+                state.form.minInitialUsage,
+                val => r.set(['form', 'minInitialUsage'], val)
             )
         ],
         ['div.content',
@@ -48,18 +57,22 @@ export function main(): u.VNodeChild[] {
         ],
         ['button.calculate', {
             props: {
-                disabled: r.get('calculating')
+                disabled: state.calculating
             },
             on: {
                 click: common.calculate
             }},
-            'Calculate'
+            icon('system-run'),
+            ` ${dict.calculate}`
         ]
     ];
 }
 
 
 function panels(): u.VNode {
+    const state = common.getState();
+    const dict = common.getDict();
+
     const panelsPath = ['form', 'panels'];
 
     const panelNames = new Set<string>();
@@ -73,24 +86,15 @@ function panels(): u.VNode {
         ['table',
             ['thead',
                 ['tr',
-                    ['th.col-name', 'Panel name'],
-                    ['th.col-quantity', 'Quantity'],
-                    ['th.col-height', 'Height'],
-                    ['th.col-width', 'Width'],
+                    ['th.col-quantity', dict.quantity],
+                    ['th.col-height', dict.height],
+                    ['th.col-width', dict.width],
+                    ['th.col-name', dict.panel_name],
                     ['th.col-delete']
                 ]
             ],
             ['tbody',
-                (r.get(panelsPath) as common.FormPanel[]).map((panel, index) => ['tr',
-                    ['td.col-name',
-                        ['div',
-                            input.text(
-                                panel.name,
-                                nameValidator,
-                                val => r.set([panelsPath, index, 'name'], val)
-                            )
-                        ]
-                    ],
+                state.form.panels.map((panel, index) => ['tr',
                     ['td.col-quantity',
                         ['div',
                             input.number(
@@ -118,12 +122,21 @@ function panels(): u.VNode {
                             )
                         ]
                     ],
+                    ['td.col-name',
+                        ['div',
+                            input.text(
+                                panel.name,
+                                nameValidator,
+                                val => r.set([panelsPath, index, 'name'], val)
+                            )
+                        ]
+                    ],
                     ['td.col-delete',
                         ['button', {
                             on: {
                                 click: () => r.change(panelsPath, u.omit(index))
                             }},
-                            ['span.fa.fa-minus']
+                            icon('list-remove')
                         ]
                     ]
                 ])
@@ -139,23 +152,23 @@ function panels(): u.VNode {
                                 on: {
                                     click: common.addPanel
                                 }},
-                                ['span.fa.fa-plus'],
-                                ' Add'
+                                icon('list-add'),
+                                ` ${dict.add_panel}`
                             ],
                             ['span.spacer'],
                             ['button', {
                                 on: {
                                     click: common.csvImportPanels
                                 }},
-                                ['span.fa.fa-download'],
-                                ' CSV Import'
+                                icon('document-import'),
+                                ` ${dict.csv_import}`
                             ],
                             ['button', {
                                 on: {
                                     click: common.csvExportPanels
                                 }},
-                                ['span.fa.fa-upload'],
-                                ' CSV Export'
+                                icon('document-export'),
+                                ` ${dict.csv_export}`
                             ]
                         ]
                     ]
@@ -167,6 +180,9 @@ function panels(): u.VNode {
 
 
 function items(): u.VNode {
+    const state = common.getState();
+    const dict = common.getDict();
+
     const itemsPath = ['form', 'items'];
 
     const itemNames = new Set<string>();
@@ -180,25 +196,16 @@ function items(): u.VNode {
         ['table',
             ['thead',
                 ['tr',
-                    ['th.col-name', 'Item name'],
-                    ['th.col-quantity', 'Quantity'],
-                    ['th.col-height', 'Height'],
-                    ['th.col-width', 'Width'],
-                    ['th.col-rotate', 'Rotate'],
+                    ['th.col-quantity', dict.quantity],
+                    ['th.col-height', dict.height],
+                    ['th.col-width', dict.width],
+                    ['th.col-name', dict.item_name],
+                    ['th.col-rotate', dict.rotate],
                     ['th.col-delete']
                 ]
             ],
             ['tbody',
-                (r.get(itemsPath) as common.FormItem[]).map((item, index) => ['tr',
-                    ['td.col-name',
-                        ['div',
-                            input.text(
-                                item.name,
-                                nameValidator,
-                                val => r.set([itemsPath, index, 'name'], val)
-                            )
-                        ]
-                    ],
+                state.form.items.map((item, index) => ['tr',
                     ['td.col-quantity',
                         ['div',
                             input.number(
@@ -226,12 +233,21 @@ function items(): u.VNode {
                             )
                         ]
                     ],
+                    ['td.col-name',
+                        ['div',
+                            input.text(
+                                item.name,
+                                nameValidator,
+                                val => r.set([itemsPath, index, 'name'], val)
+                            )
+                        ]
+                    ],
                     ['td.col-rotate',
                         ['div',
                             input.checkbox(
                                 null,
-                                item.can_rotate,
-                                val => r.set([itemsPath, index, 'can_rotate'], val)
+                                item.canRotate,
+                                val => r.set([itemsPath, index, 'canRotate'], val)
                             )
                         ]
                     ],
@@ -240,7 +256,7 @@ function items(): u.VNode {
                             on: {
                                 click: () => r.change(itemsPath, u.omit(index))
                             }},
-                            ['span.fa.fa-minus']
+                            icon('list-remove')
                         ]
                     ]
                 ])
@@ -256,23 +272,23 @@ function items(): u.VNode {
                                 on: {
                                     click: common.addItem
                                 }},
-                                ['span.fa.fa-plus'],
-                                ' Add'
+                                icon('list-add'),
+                                ` ${dict.add_item}`
                             ],
                             ['span.spacer'],
                             ['button', {
                                 on: {
                                     click: common.csvImportItems
                                 }},
-                                ['span.fa.fa-download'],
-                                ' CSV Import'
+                                icon('document-import'),
+                                ` ${dict.csv_import}`
                             ],
                             ['button', {
                                 on: {
                                     click: common.csvExportItems
                                 }},
-                                ['span.fa.fa-upload'],
-                                ' CSV Export'
+                                icon('document-export'),
+                                ` ${dict.csv_export}`
                             ]
                         ]
                     ]
@@ -280,4 +296,13 @@ function items(): u.VNode {
             ]
         ]
     ];
+}
+
+
+function icon(name: string): u.VNode {
+    return ['img.icon', {
+        props: {
+            src: `icons/${name}.svg`
+        }
+    }];
 }

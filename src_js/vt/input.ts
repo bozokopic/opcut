@@ -66,14 +66,16 @@ export function checkbox(
 }
 
 
-export function select(
-    selected: string,
-    values: [string, string][],
-    onChange: (val: string) => void
+export function select<Value extends string, Selected extends Value>(
+    selected: Selected,
+    values: [Value, string][],
+    onChange: (val: Value) => void
 ): u.VNode {
     return ['select', {
         on: {
-            change: (evt: Event) => onChange((evt.target as HTMLSelectElement).value)
+            change: (evt: Event) => onChange(
+                (evt.target as HTMLSelectElement).value as Value
+            )
         }},
         values.map(([value, label]) => ['option', {
             props: {

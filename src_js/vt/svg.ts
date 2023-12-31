@@ -4,29 +4,24 @@ import * as u from '@hat-open/util';
 import * as common from '../common';
 
 
-export function main(): u.VNode | null {
-    const result = r.get('result') as common.Result | null;
-    const selected = r.get('selected') as {
-        panel: string | null,
-        item: string | null
-    };
-    if (!result || !selected.panel)
-        return null;
+export function main(): u.VNodeChild {
+    const state = common.getState();
 
-    const panel = result.params.panels[selected.panel];
-    const used = u.filter(i => i.panel == selected.panel, result.used);
-    const unused = u.filter(i => i.panel == selected.panel, result.unused);
+    if (!state.result || !state.selected.panel)
+        return [];
+
+    const result = state.result;
+    const selectedPanel = state.selected.panel;
+    const selectedItem = state.selected.item;
+
+    const panel = result.params.panels[selectedPanel];
+    const used = u.filter(i => i.panel == selectedPanel, state.result.used);
+    const unused = u.filter(i => i.panel == selectedPanel, state.result.unused);
 
     const fontSize = Math.max(panel.height, panel.width) * 0.02 *
-        u.strictParseFloat(r.get('svg', 'font_size') as string);
+        common.fontSizes[state.svg.fontSize];
     const nameFontSize = String(fontSize);
     const dimensionFontSize = String(fontSize * 0.8);
-    const showNames = r.get('svg', 'show_names');
-    const showDimensions = r.get('svg', 'show_dimensions');
-    const cutColor = r.get('svg', 'cut_color');
-    const itemColor = r.get('svg', 'item_color');
-    const selectedItemColor = r.get('svg', 'selected_color');
-    const unusedColor = r.get('svg', 'unused_color');
 
     return ['svg', {
         attrs: {
@@ -42,13 +37,14 @@ export function main(): u.VNode | null {
                 width: String(panel.width),
                 height: String(panel.height),
                 'stroke-width': '0',
-                fill: cutColor
+                fill: state.settings.colors.cut
             }}
         ],
         used.map(used => {
             const item = result.params.items[used.item];
             const width = (used.rotate ? item.height : item.width);
             const height = (used.rotate ? item.width : item.height);
+
             return ['rect', {
                 props: {
                     style: 'cursor: pointer'
@@ -59,32 +55,34 @@ export function main(): u.VNode | null {
                     width: String(width),
                     height: String(height),
                     'stroke-width': '0',
-                    fill: (used.item == selected.item ? selectedItemColor : itemColor)
+                    fill: (used.item == selectedItem ?
+                        state.settings.colors.selected :
+                        state.settings.colors.item
+                    )
                 },
                 on: {
                     click: () => r.set(['selected', 'item'], used.item)
                 }}
             ];
         }),
-        unused.map(unused => {
-            return ['rect', {
-                attrs: {
-                    x: String(unused.x),
-                    y: String(unused.y),
-                    width: String(unused.width),
-                    height: String(unused.height),
-                    'stroke-width': '0',
-                    fill: unusedColor
-                }}
-            ];
-        }),
+        unused.map(unused => ['rect', {
+            attrs: {
+                x: String(unused.x),
+                y: String(unused.y),
+                width: String(unused.width),
+                height: String(unused.height),
+                'stroke-width': '0',
+                fill: state.settings.colors.unused
+            }}
+        ]),
         used.map(used => {
             const item = result.params.items[used.item];
             const width = (used.rotate ? item.height : item.width);
             const height = (used.rotate ? item.width : item.height);
             const click = () => r.set(['selected', 'item'], used.item);
+
             return [
-                (!showNames ? [] : ['text', {
+                (!state.svg.showNames ? [] : ['text', {
                     props: {
                         style: 'cursor: pointer'
                     },
@@ -98,9 +96,9 @@ export function main(): u.VNode | null {
                     on: {
                         click: click
                     }},
-                    used.item + (used.rotate ? ' \u293E' : '')
+                    used.item + (used.rotate ? ' \u21BB' : '')
                 ]),
-                (!showDimensions ? [] : ['text', {
+                (!state.svg.showDimensions ? [] : ['text', {
                     props: {
                         style: 'cursor: pointer'
                     },
@@ -116,7 +114,7 @@ export function main(): u.VNode | null {
                     }},
                     String(width)
                 ]),
-                (!showDimensions ? [] : ['text', {
+                (!state.svg.showDimensions ? [] : ['text', {
                     props: {
                         style: 'cursor: pointer'
                     },

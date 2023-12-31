@@ -2,10 +2,12 @@
 import Papa from 'papaparse';
 
 
-export async function decode<TKey extends string>(
+export async function decode<T extends Record<string, any>>(
     blob: Blob,
-    header: Record<TKey, (val: string) => any>
-): Promise<Record<TKey, any>[]> {
+    header: {
+        [TKey in keyof T]: (val: string) => T[TKey]
+    }
+): Promise<T[]> {
     const data = await new Promise(resolve => {
         Papa.parse(blob, {
             header: true,
@@ -13,20 +15,26 @@ export async function decode<TKey extends string>(
         });
     }) as Record<string, string>[];
 
-    const result: Record<TKey, any>[] = [];
-    for (const i of data) {
-        let element = {} as Record<TKey, any> | null;
-        for (const [k, v] of Object.entries(header)) {
-            if (!(k in i)) {
-                element = null;
-                break;
-            }
-            (element as any)[k] = (v as any)(i[k]);
+    const decodeElement = (row: Record<string, string>) => {
+        const element: any = {};
+        for (const key in header) {
+            if (!(key in row))
+                return null;
+            element[key] = header[key](row[key]);
         }
-        if (element)
-            result.push(element);
+        return element as T;
+    };
+
+    const elements: T[] = [];
+    for (const row of data) {
+        const element = decodeElement(row);
+        if (!element)
+            continue;
+
+        elements.push(element);
     }
-    return result;
+
+    return elements;
 }
 
 
