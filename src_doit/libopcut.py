@@ -21,7 +21,7 @@ c_flags = ['-fPIC', '-O2']
 # c_flags = ['-fPIC', '-O0', '-ggdb']
 
 ld_flags = (['-Wl,--export-all']
-            if common.target_platform.name == common.Platform.WINDOWS_AMD64
+            if common.target_platform == common.Platform.WINDOWS_AMD64
             else [])
 
 build = CBuild(src_paths=[*src_c_dir.rglob('*.c')],
