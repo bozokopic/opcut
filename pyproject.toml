@@ -1,14 +1,14 @@
 [project]
 name = "opcut"
-version = "0.4.11"
+version = "0.4.12"
 description = "Cutting stock problem optimizer"
 readme = "README.rst"
 requires-python = ">=3.10"
 license = {text = "GPLv3"}
 dependencies = [
-    "aiohttp ~=3.9.1",
+    "aiohttp ~=3.9.3",
     "hat-aio ~=0.7.9",
-    "hat-json ~=0.5.20",
+    "hat-json ~=0.5.24",
     "pycairo ~=1.25.1",
 ]
 

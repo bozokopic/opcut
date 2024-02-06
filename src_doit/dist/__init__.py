@@ -17,7 +17,7 @@ wheel_dir = build_dir / 'py'
 dist_dir = build_dir / 'dist'
 dist_windows_dir = dist_dir / f'opcut-{common.get_version()}-windows'
 
-win_python_url = 'https://www.python.org/ftp/python/3.10.7/python-3.10.7-embed-amd64.zip'  # NOQA
+win_python_url = 'https://www.python.org/ftp/python/3.11.7/python-3.11.7-embed-amd64.zip'  # NOQA
 cache_win_python_path = cache_dir / win_python_url.split('/')[-1]
 
 
@@ -52,14 +52,14 @@ def _build_windows():
     with zipfile.ZipFile(str(cache_win_python_path)) as f:
         f.extractall(str(python_dir))
 
-    python_lib_path = python_dir / 'python310.zip'
+    python_lib_path = python_dir / 'python311.zip'
     python_lib_dir = python_dir / 'lib'
     common.mkdir_p(dist_windows_dir / 'python/lib')
     with zipfile.ZipFile(str(python_lib_path)) as f:
         f.extractall(str(python_lib_dir))
     common.rm_rf(python_lib_path)
 
-    (python_dir / 'python310._pth').write_text(
+    (python_dir / 'python311._pth').write_text(
         '..\\packages\n'
         'lib\n'
         '.\n'
@@ -74,6 +74,7 @@ def _build_windows():
                     '-t', str(packages_dir),
                     '--only-binary=:all:',
                     '--platform', 'win_amd64',
+                    '--python-version', '3.11',
                     *packages],
                    check=True)
 

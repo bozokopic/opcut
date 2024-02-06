@@ -22,6 +22,8 @@ __all__ = ['task_clean_all',
            'task_wheel',
            'task_check',
            'task_ui',
+           'task_scss',
+           'task_static',
            'task_node_modules',
            'task_format',
            'task_json_schema_repo',
@@ -32,12 +34,13 @@ __all__ = ['task_clean_all',
 
 
 build_dir = Path('build')
-src_py_dir = Path('src_py')
-src_js_dir = Path('src_js')
-src_static_dir = Path('src_static')
-schemas_dir = Path('schemas')
-node_modules_dir = Path('node_modules')
 man_dir = Path('man')
+node_modules_dir = Path('node_modules')
+schemas_dir = Path('schemas')
+src_js_dir = Path('src_js')
+src_py_dir = Path('src_py')
+src_scss_dir = Path('src_scss')
+src_static_dir = Path('src_static')
 
 build_py_dir = build_dir / 'py'
 ui_dir = src_py_dir / 'opcut/ui'
@@ -77,9 +80,6 @@ def task_ui():
 
     def build(args):
         args = args or []
-        common.rm_rf(ui_dir)
-        common.cp_r(src_static_dir, ui_dir)
-        common.cp_r(schemas_dir, ui_dir)
 
         with tempfile.TemporaryDirectory() as tmpdir:
             tmpdir = Path(tmpdir)
@@ -95,12 +95,56 @@ def task_ui():
     return {'actions': [build],
             'pos_arg': 'args',
             'task_dep': ['node_modules',
-                         'version']}
+                         'version',
+                         'static',
+                         'scss']}
+
+
+def task_scss():
+    """Build SCSS"""
+
+    def build(args):
+        args = args or []
+        subprocess.run([str(node_modules_dir / '.bin/sass'),
+                        '--no-source-map',
+                        *args,
+                        f'{src_scss_dir}:{ui_dir}'],
+                       check=True)
+
+    return {'actions': [build],
+            'pos_arg': 'args',
+            'task_dep': ['node_modules']}
+
+
+def task_static():
+    """Copy static files"""
+    for src_dir, dst_dir in [(src_static_dir, ui_dir),
+                             (schemas_dir, ui_dir)]:
+        for src_path in src_dir.rglob('*'):
+            if not src_path.is_file():
+                continue
+
+            dst_path = dst_dir / src_path.relative_to(src_dir)
+
+            yield {'name': str(dst_path),
+                   'actions': [(common.mkdir_p, [dst_path.parent]),
+                               (common.cp_r, [src_path, dst_path])],
+                   'file_dep': [src_path],
+                   'targets': [dst_path]}
 
 
 def task_node_modules():
     """Install node modules"""
-    return {'actions': ['yarn install --silent']}
+
+    def patch():
+        subprocess.run(
+            ['sed', '-i',
+             r's/^import { h } from ".\/h"\;$/import { h } from ".\/h.js"\;/',
+             str(node_modules_dir / 'snabbdom/build/jsx.js')],
+            check=True)
+
+    return {'actions': ['yarn install --silent',
+                        patch]}
 
 
 def task_format():
@@ -156,20 +200,6 @@ module.exports = {{
     }},
     module: {{
         rules: [
-            {{
-                test: /\.scss$/,
-                use: [
-                    "style-loader",
-                    {{
-                        loader: "css-loader",
-                        options: {{url: false}}
-                    }},
-                    {{
-                        loader: "sass-loader",
-                        options: {{sourceMap: true}}
-                    }}
-                ]
-            }},
             {{
                 test: /\.ts$/,
                 use: [

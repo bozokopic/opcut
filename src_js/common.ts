@@ -203,7 +203,7 @@ export function loadSettings(): Settings {
             (v, k) => merge(v, value[k as string]),
             defaultValue
         ) as T;
-    }
+    };
 
     return merge(defaultSettings, settings);
 }
@@ -372,13 +372,13 @@ function createCalculateParams(state: State): Params {
             throw dict.invalid_panel_name;
 
         if (panel.quantity < 1)
-            throw `${dict.invalid_quantity} (${dict.panel} ${panel.name})`
+            throw `${dict.invalid_quantity} (${dict.panel} ${panel.name})`;
 
         if (panel.height <= 0)
-            throw `${dict.invalid_height} (${dict.panel} ${panel.name})`
+            throw `${dict.invalid_height} (${dict.panel} ${panel.name})`;
 
         if (panel.width <= 0)
-            throw `${dict.invalid_width} (${dict.panel} ${panel.name})`
+            throw `${dict.invalid_width} (${dict.panel} ${panel.name})`;
 
         for (let i = 1; i <= panel.quantity; ++i) {
             const name = panel.quantity > 1 ? `${panel.name} ${i}` : panel.name;
@@ -400,13 +400,13 @@ function createCalculateParams(state: State): Params {
             throw dict.invalid_item_name;
 
         if (item.quantity < 1)
-            throw `${dict.invalid_quantity} (${dict.item} ${item.name})`
+            throw `${dict.invalid_quantity} (${dict.item} ${item.name})`;
 
         if (item.height <= 0)
-            throw `${dict.invalid_height} (${dict.item} ${item.name})`
+            throw `${dict.invalid_height} (${dict.item} ${item.name})`;
 
         if (item.width <= 0)
-            throw `${dict.invalid_width} (${dict.item} ${item.name})`
+            throw `${dict.invalid_width} (${dict.item} ${item.name})`;
 
         for (let i = 1; i <= item.quantity; ++i) {
             const name = item.quantity > 1 ? `${item.name} ${i}` : item.name;

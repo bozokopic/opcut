@@ -4,8 +4,6 @@ import r from '@hat-open/renderer';
 import * as common from './common';
 import * as vt from './vt/index';
 
-import '../src_scss/main.scss';
-
 
 function main() {
     const settings = common.loadSettings();

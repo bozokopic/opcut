@@ -12,10 +12,10 @@ opcut
 `opcut` is `cutting stock problem`_ optimizer utilizing multiple
 panels and guillotine cuts (end-to-end cuts). This project includes:
 
-    * multiple back-end optimizer implementations
-    * command line front-end
-    * REST service API (OpenAPI definition)
-    * single-page web application front-end
+* multiple back-end optimizer implementations
+* command line front-end
+* REST service API (OpenAPI definition)
+* single-page web application front-end
 
 Git repository is available at `<https://github.com/bozokopic/opcut.git>`_.
 
@@ -196,7 +196,7 @@ License
 
 opcut - cutting stock problem optimizer
 
-Copyright (C) 2017-2023 Bozo Kopic
+Copyright (C) 2017-2024 Bozo Kopic
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
