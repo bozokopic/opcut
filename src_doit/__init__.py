@@ -22,7 +22,6 @@ __all__ = ['task_clean_all',
            'task_wheel',
            'task_check',
            'task_ui',
-           'task_scss',
            'task_static',
            'task_node_modules',
            'task_format',
@@ -96,24 +95,7 @@ def task_ui():
             'pos_arg': 'args',
             'task_dep': ['node_modules',
                          'version',
-                         'static',
-                         'scss']}
-
-
-def task_scss():
-    """Build SCSS"""
-
-    def build(args):
-        args = args or []
-        subprocess.run([str(node_modules_dir / '.bin/sass'),
-                        '--no-source-map',
-                        *args,
-                        f'{src_scss_dir}:{ui_dir}'],
-                       check=True)
-
-    return {'actions': [build],
-            'pos_arg': 'args',
-            'task_dep': ['node_modules']}
+                         'static']}
 
 
 def task_static():
@@ -143,7 +125,7 @@ def task_node_modules():
              str(node_modules_dir / 'snabbdom/build/jsx.js')],
             check=True)
 
-    return {'actions': ['yarn install --silent',
+    return {'actions': ['npm install --silent --progress false',
                         patch]}
 
 

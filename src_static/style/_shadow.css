@@ -1,0 +1,19 @@
+
+:root {
+    --shadow-key-umbra-opacity: 0.2;
+    --shadow-key-penumbra-opacity: 0.14;
+    --shadow-ambient-shadow-opacity: 0.12;
+
+    --box-shadow-1dp: 0 1px 1px 0 rgb(0 0 0 / var(--shadow-key-penumbra-opacity)),
+                      0 2px 1px -1px rgba(0 0 0 / var(--shadow-key-umbra-opacity)),
+                      0 1px 2px 0 rgba(0 0 0 / var(--shadow-ambient-shadow-opacity));
+
+
+    --box-shadow-2dp: 0 2px 2px 0 rgb(0 0 0 / var(--shadow-key-penumbra-opacity)),
+                      0 3px 1px -2px rgb(0 0 0 / var(--shadow-key-umbra-opacity)),
+                      0 1px 5px 0 rgb(0 0 0 / var(--shadow-ambient-shadow-opacity));
+
+    --box-shadow-4dp: 0 4px 5px 0 rgb(0 0 0 / var(--shadow-key-penumbra-opacity)),
+                      0 1px 10px 0 rgb(0 0 0 / var(--shadow-ambient-shadow-opacity)),
+                      0 2px 4px -1px rgb(0 0 0 / var(--shadow-key-umbra-opacity));
+}

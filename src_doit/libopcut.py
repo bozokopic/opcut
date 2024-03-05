@@ -20,15 +20,10 @@ libopcut_path = src_py_dir / f'opcut/_libopcut{get_lib_suffix()}'
 c_flags = ['-fPIC', '-O2']
 # c_flags = ['-fPIC', '-O0', '-ggdb']
 
-ld_flags = (['-Wl,--export-all']
-            if common.target_platform == common.Platform.WINDOWS_AMD64
-            else [])
-
 build = CBuild(src_paths=[*src_c_dir.rglob('*.c')],
                build_dir=(build_dir / 'libopcut' /
                           common.target_platform.name.lower()),
                c_flags=c_flags,
-               ld_flags=ld_flags,
                task_dep=['libopcut_cleanup'])
 
 

@@ -141,7 +141,6 @@ Development requirements
 
 * C99 compiler (gcc, clang, ...)
 * nodejs >=7
-* yarn
 
 
 Build

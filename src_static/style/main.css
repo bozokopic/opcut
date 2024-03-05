@@ -1,5 +1,5 @@
-@import 'color';
-@import 'shadow';
+@import url('_color.css');
+@import url('_shadow.css');
 
 
 html, body, button, input, select {
@@ -32,12 +32,12 @@ body {
         }
 
         & > .left-panel {
-            @include shadow-4dp;
+            box-shadow: var(--box-shadow-4dp);
             width: 35rem;
             flex-shrink: 0;
             display: flex;
             flex-direction: column;
-            background-color: $color-grey-100;
+            background-color: var(--color-grey-100);
             overflow: auto;
 
             .invalid {
@@ -55,7 +55,7 @@ body {
                     flex-grow: 1;
                     font-size: 1.4rem;
                     font-weight: 500;
-                    color: $color-grey-700;
+                    color: var(--color-grey-700);
 
                     & > .version {
                         font-size: 0.8rem;
@@ -74,7 +74,7 @@ body {
 
                 & > .label {
                     font-weight: 600;
-                    color: $color-grey-800;
+                    color: var(--color-grey-800);
                 }
             }
 
@@ -112,7 +112,7 @@ body {
                         & > thead {
                             th {
                                 font-weight: 600;
-                                color: $color-grey-800;
+                                color: var(--color-grey-800);
                                 text-align: left;
 
                                 &.col-rotate {
@@ -173,12 +173,12 @@ body {
         }
 
         & > .right-panel {
-            @include shadow-4dp;
+            box-shadow: var(--box-shadow-4dp);
             width: 20rem;
             flex-shrink: 0;
             display: flex;
             flex-direction: column;
-            background-color: $color-grey-100;
+            background-color: var(--color-grey-100);
             overflow: auto;
 
             .form {
@@ -191,7 +191,7 @@ body {
 
                 & > .label {
                     font-weight: 600;
-                    color: $color-grey-800;
+                    color: var(--color-grey-800);
                 }
             }
 
@@ -199,7 +199,7 @@ body {
                 margin: 1.5rem 0;
 
                 & > *:hover {
-                    background-color: $color-grey-300;
+                    background-color: var(--color-grey-300);
                     cursor: pointer;
                 }
             }
@@ -209,7 +209,7 @@ body {
                 overflow: hidden;
                 text-overflow: ellipsis;
                 font-weight: 600;
-                color: $color-grey-800;
+                color: var(--color-grey-800);
             }
 
             .item {
@@ -223,12 +223,12 @@ body {
                 .item-rotate, .item-x, .item-y {
                     margin-left: 0.4rem;
                     font-weight: 600;
-                    color: $color-grey-800;
+                    color: var(--color-grey-800);
                 }
             }
 
             .selected {
-                background-color: $color-grey-300;
+                background-color: var(--color-grey-300);
             }
         }
 
@@ -245,13 +245,13 @@ body {
             align-items: center;
 
             & > .settings {
-                background-color: $color-grey-100;
+                background-color: var(--color-grey-100);
                 border-radius: 0.2rem;
 
                 & > .header {
                     display: flex;
                     padding: 0.2rem;
-                    background-color: $color-grey-800;
+                    background-color: var(--color-grey-800);
                     align-items: center;
                     border-radius: 0.2rem;
 
@@ -259,7 +259,7 @@ body {
                         flex-grow: 1;
                         text-align: center;
                         font-weight: 600;
-                        color: $color-grey-200;
+                        color: var(--color-grey-200);
                     }
 
                     & > button {
@@ -278,15 +278,15 @@ body {
 
                     & > .label {
                         font-weight: 600;
-                        color: $color-grey-800;
+                        color: var(--color-grey-800);
                     }
 
                     & > .title {
                         margin-top: 1rem;
                         grid-column-end: span 2;
-                        background-color: $color-grey-600;
+                        background-color: var(--color-grey-600);
                         font-weight: 600;
-                        color: $color-grey-200;
+                        color: var(--color-grey-200);
                         padding: 0.2rem 0.5rem;
                     }
                 }
@@ -306,7 +306,7 @@ body {
             margin: 0 0.5rem 0.5rem 0;
             padding: 1rem;
             border-radius: 0.2rem;
-            background-color: $color-red-200;
+            background-color: var(--color-red-200);
         }
     }
 }
