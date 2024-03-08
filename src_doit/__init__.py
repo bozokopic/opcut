@@ -34,7 +34,6 @@ __all__ = ['task_clean_all',
 
 build_dir = Path('build')
 man_dir = Path('man')
-node_modules_dir = Path('node_modules')
 schemas_dir = Path('schemas')
 src_js_dir = Path('src_js')
 src_py_dir = Path('src_py')
@@ -86,7 +85,7 @@ def task_ui():
             config_path.write_text(_webpack_conf.format(
                 src_path=(src_js_dir / 'main.ts').resolve(),
                 dst_dir=ui_dir.resolve()))
-            subprocess.run([str(node_modules_dir / '.bin/webpack'),
+            subprocess.run(['npx', 'webpack',
                             '--config', str(config_path),
                             *args],
                            check=True)
@@ -117,16 +116,7 @@ def task_static():
 
 def task_node_modules():
     """Install node modules"""
-
-    def patch():
-        subprocess.run(
-            ['sed', '-i',
-             r's/^import { h } from ".\/h"\;$/import { h } from ".\/h.js"\;/',
-             str(node_modules_dir / 'snabbdom/build/jsx.js')],
-            check=True)
-
-    return {'actions': ['npm install --silent --progress false',
-                        patch]}
+    return {'actions': ['npm install --silent --progress false']}
 
 
 def task_format():

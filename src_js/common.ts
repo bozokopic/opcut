@@ -156,8 +156,8 @@ export const defaultState: State = {
         method: 'forward_greedy_native',
         cutWidth: 0.3,
         minInitialUsage: true,
-        panels: [],
-        items: []
+        panels: [] as FormPanel[],
+        items: [] as FormItem[]
     },
     result: null,
     selected: {
