@@ -63,7 +63,7 @@ class Server(aio.Resource):
         try:
             data = await request.json()
             common.json_schema_repo.validate(
-                'opcut://opcut.yaml#/definitions/params', data)
+                'opcut://opcut.yaml#/$defs/params', data)
 
         except Exception:
             return aiohttp.web.Response(status=400,
@@ -89,7 +89,7 @@ class Server(aio.Resource):
         try:
             data = await request.json()
             common.json_schema_repo.validate(
-                'opcut://opcut.yaml#/definitions/result', data)
+                'opcut://opcut.yaml#/$defs/result', data)
 
         except Exception:
             return aiohttp.web.Response(status=400,

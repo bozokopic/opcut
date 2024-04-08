@@ -1,6 +1,6 @@
----
-id: "opcut://opcut.yaml#"
-definitions:
+$schema: "https://json-schema.org/draft/2020-12/schema"
+$id: "opcut://opcut.yaml"
+$defs:
     params:
         type: object
         description: |
@@ -24,14 +24,14 @@ definitions:
                     input panels (keys represent unique panel identifiers)
                 patternProperties:
                     ".+":
-                        $ref: "opcut://opcut.yaml#/definitions/panel"
+                        $ref: "opcut://opcut.yaml#/$defs/panel"
             items:
                 type: object
                 description: |
                     required items (keys represent unique item identifiers)
                 patternProperties:
                     ".+":
-                        $ref: "opcut://opcut.yaml#/definitions/item"
+                        $ref: "opcut://opcut.yaml#/$defs/item"
     result:
         type: object
         description: |
@@ -48,13 +48,21 @@ definitions:
                 description: |
                     resulting panels associated with required items
                 items:
-                    $ref: "opcut://opcut.yaml#/definitions/used"
+                    $ref: "opcut://opcut.yaml#/$defs/used"
             unused:
                 type: array
                 description: |
                     resulting unused panels
                 items:
-                    $ref: "opcut://opcut.yaml#/definitions/unused"
+                    $ref: "opcut://opcut.yaml#/$defs/unused"
+            cuts:
+                oneOf:
+                  - type: 'null'
+                  - type: array
+                    items:
+                        enum:
+                            - vertical
+                            - horizontal
     panel:
         type: object
         description: |
@@ -154,4 +162,3 @@ definitions:
                 type: number
                 description: |
                     used panel location based on input panel's height offset
-...

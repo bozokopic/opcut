@@ -15,8 +15,8 @@ import opcut.generate
 import opcut.server
 
 
-params_schema_id: str = 'opcut://opcut.yaml#/definitions/params'
-result_schema_id: str = 'opcut://opcut.yaml#/definitions/result'
+params_schema_id: str = 'opcut://opcut.yaml#/$defs/params'
+result_schema_id: str = 'opcut://opcut.yaml#/$defs/result'
 
 
 def create_argument_parser() -> argparse.ArgumentParser:

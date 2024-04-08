@@ -57,10 +57,13 @@ export type Unused = {
     y: number;
 };
 
+export type Cut = 'vertical' | 'horizontal';
+
 export type Result = {
     params: Params;
     used: Used[];
     unused: Unused[];
+    cuts?: Cut[] | null
 };
 
 export type FormPanel = {

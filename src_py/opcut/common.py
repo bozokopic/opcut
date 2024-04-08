@@ -29,8 +29,8 @@ class Item(typing.NamedTuple):
 class Params(typing.NamedTuple):
     cut_width: float
     min_initial_usage: bool
-    panels: typing.List[Panel]
-    items: typing.List[Item]
+    panels: list[Panel]
+    items: list[Item]
 
 
 class Used(typing.NamedTuple):
@@ -49,14 +49,20 @@ class Unused(typing.NamedTuple):
     y: float
 
 
+class Cut(enum.Enum):
+    VERTICAL = 'vertical'
+    HORIZONTAL = 'horizontal'
+
+
 class Result(typing.NamedTuple):
     params: Params
-    used: typing.List[Used]
-    unused: typing.List[Unused]
+    used: list[Used]
+    unused: list[Unused]
+    cuts: list[Cut] | None
 
 
 class OutputSettings(typing.NamedTuple):
-    pagesize: typing.Tuple[float, float] = (210 * mm, 297 * mm)
+    pagesize: tuple[float, float] = (210 * mm, 297 * mm)
     margin_top: float = 10 * mm
     margin_bottom: float = 20 * mm
     margin_left: float = 10 * mm
@@ -81,7 +87,7 @@ class UnresolvableError(Exception):
 
 def params_to_json(params: Params) -> json.Data:
     """Convert params to json serializable data specified by
-    ``opcut://opcut.yaml#/definitions/params``"""
+    ``opcut://opcut.yaml#/$defs/params``"""
     return {'cut_width': params.cut_width,
             'min_initial_usage': params.min_initial_usage,
             'panels': {panel.id: {'width': panel.width,
@@ -95,7 +101,7 @@ def params_to_json(params: Params) -> json.Data:
 
 def params_from_json(data: json.Data) -> Params:
     """Convert json serializable data specified by
-    ``opcut://opcut.yaml#/definitions/params`` to params"""
+    ``opcut://opcut.yaml#/$defs/params`` to params"""
     return Params(cut_width=data['cut_width'],
                   min_initial_usage=data.get('min_initial_usage', False),
                   panels=[Panel(id=k,
@@ -111,7 +117,7 @@ def params_from_json(data: json.Data) -> Params:
 
 def result_to_json(result: Result) -> json.Data:
     """Convert result to json serializable data specified by
-    ``opcut://opcut.yaml#/definitions/result``"""
+    ``opcut://opcut.yaml#/$defs/result``"""
     return {'params': params_to_json(result.params),
             'used': [{'panel': used.panel.id,
                       'item': used.item.id,
@@ -124,12 +130,14 @@ def result_to_json(result: Result) -> json.Data:
                         'height': unused.height,
                         'x': unused.x,
                         'y': unused.y}
-                       for unused in result.unused]}
+                       for unused in result.unused],
+            'cuts': (None if result.cuts is None
+                     else [cut.value for cut in result.cuts])}
 
 
 def result_from_json(data: json.Data) -> Result:
     """Convert json serializable data specified by
-    ``opcut://opcut.yaml#/definitions/result`` to result"""
+    ``opcut://opcut.yaml#/$defs/result`` to result"""
     params = params_from_json(data['params'])
     panels = {panel.id: panel for panel in params.panels}
     items = {item.id: item for item in params.items}
@@ -145,4 +153,6 @@ def result_from_json(data: json.Data) -> Result:
                                  height=unused['height'],
                                  x=unused['x'],
                                  y=unused['y'])
-                          for unused in data['unused']])
+                          for unused in data['unused']],
+                  cuts=(None if data.get('cuts') is None
+                        else [Cut(cut) for cut in data['cuts']]))

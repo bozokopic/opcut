@@ -1,6 +1,6 @@
 [project]
 name = "opcut"
-version = "0.4.13"
+version = "0.4.14"
 description = "Cutting stock problem optimizer"
 readme = "README.rst"
 requires-python = ">=3.10"
@@ -8,8 +8,8 @@ license = {text = "GPLv3"}
 dependencies = [
     "aiohttp ~=3.9.3",
     "hat-aio ~=0.7.9",
-    "hat-json ~=0.5.24",
-    "pycairo ~=1.25.1",
+    "hat-json ~=0.5.27",
+    "pycairo ~=1.26.0",
 ]
 
 [project.scripts]
@@ -20,10 +20,10 @@ Homepage = "https://opcut.kopic.xyz"
 Repository = "https://github.com/bozokopic/opcut.git"
 
 [project.optional-dependencies]
-dev = ["hat-doit ~=0.15.8"]
+dev = ["hat-doit ~=0.15.13"]
 
 [build-system]
-requires = ["hat-doit ~=0.15.8"]
+requires = ["hat-doit ~=0.15.13"]
 build-backend = "hat.doit.pep517"
 
 [tool.hat-doit]

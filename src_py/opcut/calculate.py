@@ -33,7 +33,8 @@ def _create_initial_result(params):
                                                height=panel.height,
                                                x=0,
                                                y=0)
-                                 for panel in params.panels])
+                                 for panel in params.panels],
+                         cuts=[])
 
 
 def _calculate_greedy(result):
@@ -97,9 +98,11 @@ def _get_next_results_for_item(result, item):
                 unused, item, rotate, result.params.cut_width, vertical)
             if not new_used:
                 continue
+            cut = common.Cut.VERTICAL if vertical else common.Cut.HORIZONTAL
             ret.append(result._replace(
                 used=result.used + [new_used],
-                unused=result.unused[:i] + new_unused + result.unused[i+1:]))
+                unused=result.unused[:i] + new_unused + result.unused[i+1:],
+                cuts=result.cuts + [cut]))
     return ret
 
 

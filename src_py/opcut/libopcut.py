@@ -1,4 +1,5 @@
 from pathlib import Path
+import collections
 import ctypes
 import sys
 
@@ -37,7 +38,8 @@ def calculate(method: common.Method,
         unused = list(_decode_unused(params, native_unused))
         return common.Result(params=params,
                              used=used,
-                             unused=unused)
+                             unused=unused,
+                             cuts=None)
 
     finally:
         _lib.opcut_allocator_destroy(a)
@@ -78,23 +80,29 @@ def _encode_params(params):
 
 
 def _decode_used(params, used):
+    queue = collections.deque()
     while used:
-        yield common.Used(panel=params.panels[used.contents.panel_id],
-                          item=params.items[used.contents.item_id],
-                          x=used.contents.x,
-                          y=used.contents.y,
-                          rotate=used.contents.rotate)
+        queue.appendleft(
+            common.Used(panel=params.panels[used.contents.panel_id],
+                        item=params.items[used.contents.item_id],
+                        x=used.contents.x,
+                        y=used.contents.y,
+                        rotate=used.contents.rotate))
         used = used.contents.next
+    return queue
 
 
 def _decode_unused(params, unused):
+    queue = collections.deque()
     while unused:
-        yield common.Unused(panel=params.panels[unused.contents.panel_id],
-                            width=unused.contents.width,
-                            height=unused.contents.height,
-                            x=unused.contents.x,
-                            y=unused.contents.y)
+        queue.appendleft(
+            common.Unused(panel=params.panels[unused.contents.panel_id],
+                          width=unused.contents.width,
+                          height=unused.contents.height,
+                          x=unused.contents.x,
+                          y=unused.contents.y))
         unused = unused.contents.next
+    return queue
 
 
 class _Lib:
