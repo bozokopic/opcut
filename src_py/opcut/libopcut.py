@@ -14,8 +14,8 @@ def calculate(method: common.Method,
 
     native_method = _encode_method(method)
 
-    a = _lib.opcut_allocator_create(ctypes.pythonapi.PyMem_Malloc,
-                                    ctypes.pythonapi.PyMem_Free)
+    a = _lib.opcut_allocator_create(ctypes.pythonapi.PyMem_RawMalloc,
+                                    ctypes.pythonapi.PyMem_RawFree)
     if a is None:
         raise Exception("allocation error")
 

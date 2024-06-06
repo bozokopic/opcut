@@ -141,6 +141,7 @@ Development requirements
 
 * C99 compiler (gcc, clang, ...)
 * nodejs >=7
+* npm
 
 
 Build

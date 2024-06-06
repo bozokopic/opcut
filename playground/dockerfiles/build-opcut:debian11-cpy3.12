@@ -1,0 +1,9 @@
+FROM python:3.12-bullseye as base
+RUN apt update -qy && \
+    apt install -qy pkg-config gcc libcairo2-dev nodejs npm git jq
+
+FROM base
+WORKDIR /opcut
+VOLUME /opcut/dist
+VOLUME /root/.cache/pip
+COPY . .

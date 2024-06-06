@@ -1,0 +1,9 @@
+FROM python:3.12-alpine3.20 as base
+RUN apk update && \
+    apk add build-base pkgconf cargo cairo-dev nodejs npm git jq
+
+FROM base
+WORKDIR /opcut
+VOLUME /opcut/dist
+VOLUME /root/.cache/pip
+COPY . .
