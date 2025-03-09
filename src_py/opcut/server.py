@@ -18,6 +18,7 @@ async def create(host: str,
     server = Server()
     server._timeout = timeout
     server._async_group = aio.Group()
+    server._validator = json.DefaultSchemaValidator(common.json_schema_repo)
 
     try:
         exit_stack = contextlib.ExitStack()
@@ -62,8 +63,7 @@ class Server(aio.Resource):
     async def _calculate_handler(self, request):
         try:
             data = await request.json()
-            common.json_schema_repo.validate(
-                'opcut://opcut.yaml#/$defs/params', data)
+            self._validator.validate('opcut://opcut.yaml#/$defs/params', data)
 
         except Exception:
             return aiohttp.web.Response(status=400,
@@ -88,8 +88,7 @@ class Server(aio.Resource):
     async def _generate_handler(self, request):
         try:
             data = await request.json()
-            common.json_schema_repo.validate(
-                'opcut://opcut.yaml#/$defs/result', data)
+            self._validator.validate('opcut://opcut.yaml#/$defs/result', data)
 
         except Exception:
             return aiohttp.web.Response(status=400,

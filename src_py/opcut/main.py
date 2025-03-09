@@ -132,7 +132,8 @@ def calculate(method: common.Method,
                    if params_path == Path('-')
                    else json.decode_file(params_path, input_format))
 
-    common.json_schema_repo.validate(params_schema_id, params_json)
+    validator = json.DefaultSchemaValidator(common.json_schema_repo)
+    validator.validate(params_schema_id, params_json)
     params = common.params_from_json(params_json)
 
     try:
@@ -162,7 +163,8 @@ def generate(input_format: typing.Optional[json.Format],
                    if result_path == Path('-')
                    else json.decode_file(result_path, input_format))
 
-    common.json_schema_repo.validate(result_schema_id, result_json)
+    validator = json.DefaultSchemaValidator(common.json_schema_repo)
+    validator.validate(result_schema_id, result_json)
     result = common.result_from_json(result_json)
 
     data = opcut.generate.generate(result=result,
