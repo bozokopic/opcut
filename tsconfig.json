@@ -5,7 +5,9 @@
         "allowJs": true,
         "strict": true,
         "moduleResolution": "node",
-        "esModuleInterop": true
+        "esModuleInterop": true,
+        "rootDir": "src_js",
+        "outDir": "src_py/opcut/ui/script"
     },
     "include": ["src_js/**/*"]
 }

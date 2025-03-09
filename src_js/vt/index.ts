@@ -1,12 +1,12 @@
 import r from '@hat-open/renderer';
 import * as u from '@hat-open/util';
 
-import * as common from '../common';
+import * as common from '../common.js';
 
-import * as params from './params';
-import * as result from './result';
-import * as settings from './settings';
-import * as svg from './svg';
+import * as params from './params.js';
+import * as result from './result.js';
+import * as settings from './settings.js';
+import * as svg from './svg.js';
 
 
 export function main(): u.VNode {

@@ -9,7 +9,17 @@
     <link rel="license" href="https://www.gnu.org/licenses/gpl-3.0.html" />
     <link rel="help" href="https://github.com/bozokopic/opcut" />
     <link rel="stylesheet" href="style/main.css" />
-    <script src="main.js"></script>
+    <script type="importmap">
+    {
+        "imports": {
+            "@hat-open/renderer": "./script/@hat-open/renderer/index.js",
+            "@hat-open/util": "./script/@hat-open/util/index.js",
+            "snabbdom": "./script/snabbdom/build/index.js",
+            "papaparse": "./script/papaparse/papaparse.js"
+        }
+    }
+    </script>
+    <script type="module" src="script/main.js"></script>
 </head>
 <body>
 </body>

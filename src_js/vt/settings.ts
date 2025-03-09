@@ -1,11 +1,11 @@
 import r from '@hat-open/renderer';
 import * as u from '@hat-open/util';
 
-import version from '../version';
-import * as common from '../common';
-import * as i18n from '../i18n';
+import version from '../version.js';
+import * as common from '../common.js';
+import * as i18n from '../i18n.js';
 
-import * as input from './input';
+import * as input from './input.js';
 
 
 export function main(): u.VNode {

@@ -1,8 +1,8 @@
 import * as u from '@hat-open/util';
 import r from '@hat-open/renderer';
 
-import * as common from './common';
-import * as vt from './vt/index';
+import * as common from './common.js';
+import * as vt from './vt/index.js';
 
 
 function main() {

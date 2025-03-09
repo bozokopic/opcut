@@ -3,9 +3,7 @@ from .libopcut import *  # NOQA
 
 from pathlib import Path
 import subprocess
-import tempfile
 
-from hat import json
 from hat.doit import common
 from hat.doit.js import (ESLintConf,
                          run_eslint)
@@ -21,7 +19,7 @@ from . import libopcut
 __all__ = ['task_clean_all',
            'task_wheel',
            'task_check',
-           'task_ui',
+           'task_ts',
            'task_static',
            'task_node_modules',
            'task_format',
@@ -34,6 +32,8 @@ __all__ = ['task_clean_all',
 
 build_dir = Path('build')
 man_dir = Path('man')
+node_modules_dir = Path('node_modules')
+node_modules_patch_path = Path('node_modules.patch')
 schemas_dir = Path('schemas')
 src_js_dir = Path('src_js')
 src_py_dir = Path('src_py')
@@ -62,7 +62,8 @@ def task_wheel():
         platform=common.target_platform,
         data_paths=[(man_dir / 'opcut.1', Path('share/man/man1/opcut.1'))],
         task_dep=['json_schema_repo',
-                  'ui',
+                  'static',
+                  'ts',
                   'libopcut'])
 
 
@@ -73,50 +74,52 @@ def task_check():
             'task_dep': ['node_modules']}
 
 
-def task_ui():
-    """Build UI"""
+def task_ts():
+    """Build TypeScript"""
 
     def build(args):
         args = args or []
-
-        with tempfile.TemporaryDirectory() as tmpdir:
-            tmpdir = Path(tmpdir)
-            config_path = tmpdir / 'webpack.config.js'
-            config_path.write_text(_webpack_conf.format(
-                src_path=(src_js_dir / 'main.ts').resolve(),
-                dst_dir=ui_dir.resolve()))
-            subprocess.run(['npx', 'webpack',
-                            '--config', str(config_path),
-                            *args],
-                           check=True)
+        subprocess.run(['npx', 'tsc', *args],
+                       check=True)
 
     return {'actions': [build],
             'pos_arg': 'args',
             'task_dep': ['node_modules',
-                         'version',
-                         'static']}
+                         'version']}
 
 
 def task_static():
     """Copy static files"""
-    for src_dir, dst_dir in [(src_static_dir, ui_dir),
-                             (schemas_dir, ui_dir)]:
-        for src_path in src_dir.rglob('*'):
-            if not src_path.is_file():
-                continue
-
-            dst_path = dst_dir / src_path.relative_to(src_dir)
-
-            yield {'name': str(dst_path),
-                   'actions': [(common.mkdir_p, [dst_path.parent]),
-                               (common.cp_r, [src_path, dst_path])],
-                   'file_dep': [src_path],
-                   'targets': [dst_path]}
+    return common.get_task_copy(
+        [(src_static_dir, ui_dir),
+         (schemas_dir, ui_dir),
+         (node_modules_dir / '@hat-open/renderer',
+          ui_dir / 'script/@hat-open/renderer'),
+         (node_modules_dir / '@hat-open/util',
+          ui_dir / 'script/@hat-open/util'),
+         (node_modules_dir / 'snabbdom',
+          ui_dir / 'script/snabbdom'),
+         (node_modules_dir / 'papaparse/LICENSE',
+          ui_dir / 'script/papaparse/LICENSE'),
+         (node_modules_dir / 'papaparse/README.md',
+          ui_dir / 'script/papaparse/README.md'),
+         (node_modules_dir / 'papaparse/package.json',
+          ui_dir / 'script/papaparse/package.json'),
+         (node_modules_dir / 'papaparse/papaparse.js',
+          ui_dir / 'script/papaparse/papaparse.js')],
+        task_dep=['node_modules'])
 
 
 def task_node_modules():
     """Install node modules"""
-    return {'actions': ['npm install --silent --progress false']}
+
+    def patch():
+        subprocess.run(['patch', '-u', '-p', '1', '-N',
+                        '-i', str(node_modules_patch_path)],
+                       stdout=subprocess.DEVNULL)
+
+    return {'actions': ['npm install --silent --progress false',
+                        patch]}
 
 
 def task_format():
@@ -127,16 +130,8 @@ def task_format():
 
 def task_json_schema_repo():
     """Generate JSON Schema Repository"""
-    src_paths = [schemas_dir / 'opcut.yaml']
-
-    def generate():
-        repo = json.SchemaRepository(*src_paths)
-        data = repo.to_json()
-        json.encode_file(data, json_schema_repo_path, indent=None)
-
-    return {'actions': [generate],
-            'file_dep': src_paths,
-            'targets': [json_schema_repo_path]}
+    return common.get_task_json_schema_repo([schemas_dir / 'opcut.yaml'],
+                                            json_schema_repo_path)
 
 
 def task_version():
@@ -160,40 +155,3 @@ def task_pip_requirements():
 
 
 _version_ts = "export default '{version}';\n"
-
-
-_webpack_conf = r"""
-module.exports = {{
-    mode: 'none',
-    entry: '{src_path}',
-    output: {{
-        filename: 'main.js',
-        path: '{dst_dir}'
-    }},
-    module: {{
-        rules: [
-            {{
-                test: /\.ts$/,
-                use: [
-                    {{
-                        loader: 'ts-loader',
-                        options: {{
-                            compilerOptions: {{
-                                sourceMap: true
-                            }}
-                        }}
-                    }}
-                ]
-            }}
-        ]
-    }},
-    resolve: {{
-        extensions: ['.ts', '.js']
-    }},
-    watchOptions: {{
-        ignored: /node_modules/
-    }},
-    devtool: 'source-map',
-    stats: 'errors-only'
-}};
-"""

@@ -1,8 +1,8 @@
 import r from '@hat-open/renderer';
 import * as u from '@hat-open/util';
 
-import * as csv from './csv';
-import * as i18n from './i18n';
+import * as csv from './csv.js';
+import * as i18n from './i18n.js';
 
 
 export const methods = {

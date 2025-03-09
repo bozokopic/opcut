@@ -7,10 +7,11 @@ from hat import json
 
 mm: float = 72 / 25.4
 
-with importlib.resources.path(__package__, 'json_schema_repo.json') as _path:
-    json_schema_repo: json.SchemaRepository = json.SchemaRepository(
+with importlib.resources.as_file(importlib.resources.files(__package__) /
+                                 'json_schema_repo.json') as _path:
+    json_schema_repo: json.SchemaRepository = json.merge_schema_repositories(
         json.json_schema_repo,
-        json.SchemaRepository.from_json(_path))
+        json.decode_file(_path))
 
 
 class Panel(typing.NamedTuple):

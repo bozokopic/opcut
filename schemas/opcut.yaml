@@ -108,7 +108,7 @@ $defs:
             - panel
             - item
             - x
-            - y
+            - 'y'
             - rotate
         properties:
             panel:
@@ -140,7 +140,7 @@ $defs:
             - width
             - height
             - x
-            - y
+            - 'y'
         properties:
             panel:
                 type: string

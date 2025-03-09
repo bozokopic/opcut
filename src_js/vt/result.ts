@@ -1,9 +1,9 @@
 import r from '@hat-open/renderer';
 import * as u from '@hat-open/util';
 
-import * as common from '../common';
+import * as common from '../common.js';
 
-import * as input from './input';
+import * as input from './input.js';
 
 
 export function main(): u.VNodeChild {
